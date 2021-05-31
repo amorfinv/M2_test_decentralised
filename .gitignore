@@ -1,2 +1,4 @@
 graph_definition/cache/
 graph_definition/funcs/__pycache__/
+
+graph_definition/gis/data/street_graph/
