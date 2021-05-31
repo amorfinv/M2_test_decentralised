@@ -1,3 +1,4 @@
+from networkx.readwrite.graph6 import data_to_n
 import osmnx as ox
 import networkx as nx
 from matplotlib import pyplot as plt
@@ -5,23 +6,24 @@ import numpy as np
 from shapely.geometry import shape, LineString
 import math
 import fiona
-import coins
+from funcs import coins
+from os import path
 
 # use osmnx environment here
 
 def main():
 
-    # working path
-    working_path = '/Users/andresmorfin/Desktop/M2/test_scenario1/'
+    # working paths
+    gis_data_path = path.join('gis','data')
 
     # convert shapefile to shapely polygon
-    center_poly = poly_shapefile_to_shapely(f"{working_path}gis/data/street_info/poly_shapefile.shp")
+    center_poly = poly_shapefile_to_shapely(path.join(gis_data_path, 'street_info', 'poly_shapefile.shp'))
 
     # create MultiDigraph from polygon
     G = ox.graph_from_polygon(center_poly, network_type='drive', simplify=True)
 
     # save as osmnx graph
-    ox.save_graphml(G, filepath=f'{working_path}gis/data/street_graph/raw_streets.graphml')
+    ox.save_graphml(G, filepath=path.join(gis_data_path, 'street_graph', 'raw_streets.graphml'))
 
     # remove unconnected streets and add edge bearing attrbute 
     G = remove_unconnected_streets(G)
@@ -61,18 +63,18 @@ def main():
     # create graph and save edited
     G = ox.graph_from_gdfs(nodes, edges)
     # save as osmnx graph
-    ox.save_graphml(G, filepath=f'{working_path}gis/data/street_graph/processed_graph.graphml')
+    ox.save_graphml(G, filepath=path.join(gis_data_path, 'street_graph', 'processed_graph.graphml'))
 
     # Save geopackage for import to QGIS and momepy
-    ox.save_graph_geopackage(G, filepath=f'{working_path}gis/data/street_graph/processed_graph.gpkg')
+    ox.save_graph_geopackage(G, filepath=path.join(gis_data_path, 'street_graph', 'processed_graph.gpkg'))
 
     # save projected
     G_projected = ox.project_graph(G)
-    ox.save_graph_geopackage(G_projected, filepath=f'{working_path}gis/data/street_graph/projected_graph.gpkg')
+    ox.save_graph_geopackage(G_projected, filepath=path.join(gis_data_path, 'street_graph', 'projected_graph.gpkg'))
 
     # save csv for reference
-    edges.to_csv(f'{working_path}gis/data/street_graph/edges.csv')
-    nodes.to_csv(f'{working_path}gis/data/street_graph/nodes.csv')
+    edges.to_csv(path.join(gis_data_path, 'street_graph', 'edges.csv'))
+    nodes.to_csv(path.join(gis_data_path, 'street_graph', 'nodes.csv'))
 
 
 # general TODO: perhas no need to convert to geodataframe
