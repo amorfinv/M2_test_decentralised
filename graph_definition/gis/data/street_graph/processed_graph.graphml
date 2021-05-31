@@ -782,7 +782,7 @@
     </node>
     <edge source="378728" target="1629378075" id="0">
       <data key="d5">[337654522, 385800228]</data>
-      <data key="d6">['4', '3']</data>
+      <data key="d6">['3', '4']</data>
       <data key="d7">Währinger Gürtel</data>
       <data key="d8">primary</data>
       <data key="d9">50</data>
@@ -904,7 +904,7 @@
     </edge>
     <edge source="655018" target="33344802" id="0">
       <data key="d5">[502918368, 30282227, 502918372]</data>
-      <data key="d6">['4', '3']</data>
+      <data key="d6">['3', '4']</data>
       <data key="d7">Währinger Gürtel</data>
       <data key="d8">primary</data>
       <data key="d9">50</data>
@@ -1323,7 +1323,7 @@
     </edge>
     <edge source="33144366" target="3312560802" id="0">
       <data key="d5">[679596246, 24412287]</data>
-      <data key="d6">['4', '3']</data>
+      <data key="d6">['3', '4']</data>
       <data key="d7">Währinger Gürtel</data>
       <data key="d8">primary</data>
       <data key="d9">50</data>
@@ -3302,7 +3302,7 @@
     </edge>
     <edge source="33344809" target="2423479559" id="0">
       <data key="d5">[5010787, 24939860]</data>
-      <data key="d7">['Gertrudplatz', 'Maynollogasse']</data>
+      <data key="d7">['Maynollogasse', 'Gertrudplatz']</data>
       <data key="d8">living_street</data>
       <data key="d10">True</data>
       <data key="d11">152.328</data>

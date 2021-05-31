@@ -889,7 +889,7 @@
     <edge source="378728" target="1629378075" id="0">
       <data key="d8">[337654522, 385800228]</data>
       <data key="d9">True</data>
-      <data key="d10">['4', '3']</data>
+      <data key="d10">['3', '4']</data>
       <data key="d16">B221</data>
       <data key="d11">Währinger Gürtel</data>
       <data key="d12">primary</data>
@@ -1121,7 +1121,7 @@
     <edge source="655018" target="33344802" id="0">
       <data key="d8">[502918368, 30282227, 502918372]</data>
       <data key="d9">True</data>
-      <data key="d10">['4', '3']</data>
+      <data key="d10">['3', '4']</data>
       <data key="d16">B221</data>
       <data key="d11">Währinger Gürtel</data>
       <data key="d12">primary</data>
@@ -1551,7 +1551,7 @@
     <edge source="33144366" target="3312560802" id="0">
       <data key="d8">[679596246, 24412287]</data>
       <data key="d9">True</data>
-      <data key="d10">['4', '3']</data>
+      <data key="d10">['3', '4']</data>
       <data key="d16">B221</data>
       <data key="d11">Währinger Gürtel</data>
       <data key="d12">primary</data>
@@ -2531,7 +2531,7 @@
     <edge source="33344809" target="2423479559" id="0">
       <data key="d8">[5010787, 24939860]</data>
       <data key="d9">True</data>
-      <data key="d11">['Gertrudplatz', 'Maynollogasse']</data>
+      <data key="d11">['Maynollogasse', 'Gertrudplatz']</data>
       <data key="d12">living_street</data>
       <data key="d14">152.328</data>
       <data key="d15">LINESTRING (16.3438705 48.2249874, 16.3438959 48.2250684, 16.3440662 48.2256117, 16.3440785 48.2256511, 16.3440831 48.2256657, 16.3442969 48.2262828, 16.3443058 48.2263002, 16.3443097 48.2263099, 16.3443157 48.2263246)</data>
@@ -2995,7 +2995,7 @@
     <edge source="33345319" target="29048469" id="0">
       <data key="d8">[38690113, 24939398]</data>
       <data key="d9">True</data>
-      <data key="d11">['Klostergasse', 'Staudgasse']</data>
+      <data key="d11">['Staudgasse', 'Klostergasse']</data>
       <data key="d12">residential</data>
       <data key="d13">30</data>
       <data key="d14">191.162</data>
@@ -3858,7 +3858,7 @@
       <data key="d14">47.024</data>
       <data key="d15">LINESTRING (16.3388439 48.2255898, 16.3384327 48.2257589, 16.3383056 48.2258139)</data>
     </edge>
-    <data key="d0">2021-05-31 16:22:08</data>
+    <data key="d0">2021-05-31 16:23:54</data>
     <data key="d1">OSMnx 1.1.1</data>
     <data key="d2">epsg:4326</data>
     <data key="d3">True</data>
