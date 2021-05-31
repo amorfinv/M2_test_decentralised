@@ -893,7 +893,7 @@
       <data key="d6">2</data>
       <data key="d7">Schulgasse</data>
       <data key="d8">secondary</data>
-      <data key="d9">['50', '30']</data>
+      <data key="d9">['30', '50']</data>
       <data key="d10">True</data>
       <data key="d11">74.995</data>
       <data key="d12">LINESTRING (16.3479451 48.224684, 16.348777 48.2246222, 16.3488214 48.2246194, 16.3489507 48.2246067)</data>
@@ -1991,7 +1991,7 @@
     </edge>
     <edge source="33144414" target="33345332" id="0">
       <data key="d5">[657079587, 657079588, 537932457, 537932460, 679596247, 337654522]</data>
-      <data key="d6">['4', '3']</data>
+      <data key="d6">['3', '4']</data>
       <data key="d7">Währinger Gürtel</data>
       <data key="d8">primary</data>
       <data key="d9">50</data>
@@ -3302,7 +3302,7 @@
     </edge>
     <edge source="33344809" target="2423479559" id="0">
       <data key="d5">[5010787, 24939860]</data>
-      <data key="d7">['Maynollogasse', 'Gertrudplatz']</data>
+      <data key="d7">['Gertrudplatz', 'Maynollogasse']</data>
       <data key="d8">living_street</data>
       <data key="d10">True</data>
       <data key="d11">152.328</data>

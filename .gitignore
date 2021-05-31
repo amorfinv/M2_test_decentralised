@@ -1,1 +1,2 @@
-graph_definition/cache/*
+graph_definition/cache/
+graph_definition/funcs/__pycache__/
