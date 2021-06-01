@@ -19,6 +19,7 @@ def main():
 
     # save as osmnx graph
     ox.save_graphml(G, filepath=path.join(gis_data_path, 'street_graph', 'raw_streets.graphml'))
+    ox.save_graph_geopackage(G, filepath=path.join(gis_data_path, 'street_graph', 'raw_graph.gpkg'))
 
     # remove unconnected streets and add edge bearing attrbute 
     G = graph_funcs.remove_unconnected_streets(G)
