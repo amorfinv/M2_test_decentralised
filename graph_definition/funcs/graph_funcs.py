@@ -455,43 +455,52 @@ def remove_long_way_edges(edges):
 
     return edges
 
-def set_direction(edges):
+def set_direction(edges, edge_directions):
 
-    ##Create the search graph
-    stroke_groups = list(np.unique(np.array(edges['stroke_group'].values)))
+    # Create list of stroke groups
+    stroke_groups = list(np.sort(np.unique(np.array(edges['stroke_group'].values))))
 
-    # make group directions for all edges
-    group_direct_0 = (1629378075, 378728, 0)
-
-    # initialize correct index order list and line data list
+    # initialize correct index order list and line data list for new geo dataframe
     index_order = []
-    line_data = []
+    my_geodata = []
 
-    for stroke_group in stroke_groups:
+    for num_group, stroke_group_list in enumerate(stroke_groups):
 
         # get edges in specific group
-        edge_in_group = edges.loc[edges['stroke_group']== stroke_group]
+        edge_in_group = edges.loc[edges['stroke_group']== stroke_group_list]
 
         # get edge indices of stroke group in a list
         edge_uv = list(edge_in_group.index.values)
 
+        # get desired group direction from edge_directions
+        group_direction = edge_directions[num_group]
+
+        # Find index of direction setting edge
+        if group_direction in edge_uv:
+            jdx = edge_uv.index(group_direction)
+        else:
+            jdx = edge_uv.index((group_direction[1], group_direction[0], 0))
+
+        # create counter for while loop
+        idx = 0
+
         # create a copy of edge_in_group for while loop. TODO: smarter way to do this
         edges_removed = edge_in_group
+        numb_edges_stroke = len(edge_in_group)
 
-        # counter
-        jdx = 0
         while len(edges_removed):
             curr_edge = edge_in_group.iloc[jdx]
             curr_index = edge_uv[jdx]
 
-            if curr_index[0] == group_direct_0[0]:
-                print(f'{curr_index} edge going correct direction')
+            if curr_index[0] == group_direction[0]:
+                #print(f'{curr_index} edge going correct direction')
                 new_index = (curr_index[0], curr_index[1], 0)
                 edge_line_direct = edge_in_group.loc[curr_index, 'geometry']
 
             else:
-                print(f'{curr_index} edge going incorrect direction')
+                #print(f'{curr_index} edge going incorrect direction')
                 new_index = (curr_index[1], curr_index[0], 0)
+                
                 # reverse linestring from edge
                 wrong_line_direct = list(edge_in_group.loc[curr_index, 'geometry'].coords)
                 wrong_line_direct.reverse()
@@ -503,22 +512,49 @@ def set_direction(edges):
             # add new_index to index order
             index_order.append(new_index)
 
-            # add line_string data to list
-            line_data.append(edge_line_direct)
+            # add line_string data to list (make this dynamic)
+            osmid = edge_in_group.loc[curr_index, 'osmid']
+            lanes = edge_in_group.loc[curr_index, 'lanes']
+            name = edge_in_group.loc[curr_index, 'name']
+            highway = edge_in_group.loc[curr_index, 'highway']
+            maxspeed = edge_in_group.loc[curr_index, 'maxspeed']
+            oneway = edge_in_group.loc[curr_index, 'oneway']
+            length = edge_in_group.loc[curr_index, 'length']
+            geom = edge_line_direct
+            bearing = edge_in_group.loc[curr_index, 'bearing']
+            ref = edge_in_group.loc[curr_index, 'ref']
+            layer_height = edge_in_group.loc[curr_index, 'layer_height']
+            edge_interior_angle = edge_in_group.loc[curr_index, 'edge_interior_angle']
+            stroke_group_label = edge_in_group.loc[curr_index, 'stroke_group']
 
-            # set new jdx based on current edge
-            node_to_find = new_index[1]
-            edge_with_node = [item for item in edge_uv if node_to_find in item]
-            edge_with_node.remove(curr_index)
-            next_edge = edge_with_node[0]
-            jdx = edge_uv.index(next_edge)
+            my_geodata.append([new_index[0], new_index[1], new_index[2], osmid, lanes, name, highway, maxspeed, oneway, length, 
+                               geom, bearing, ref, layer_height, edge_interior_angle, stroke_group_label])
 
-            # set desired direction for next edge
-            if node_to_find == next_edge[0]:
-                group_direct_0 = next_edge
-            else:
-                group_direct_0 = (next_edge[1], next_edge[0], 0)
+            # set new jdx based on current edge (only if not last edge)
+            if not idx == numb_edges_stroke - 1:
+                node_to_find = new_index[1]
+                edge_with_node = [item for item in edge_uv if node_to_find in item]
+                edge_with_node.remove(curr_index)
+                next_edge = edge_with_node[0]
+                jdx = edge_uv.index(next_edge)
 
+                # set desired direction for next edge
+                if node_to_find == next_edge[0]:
+                    group_direction = next_edge
+                else:
+                    group_direction = (next_edge[1], next_edge[0], 0)
+            
+            # advance counter
+            idx = idx + 1
+
+    # create edge geodataframe
+    column_names = ['u', 'v', 'key', 'osmid', 'lanes', 'name', 'highway', 'maxspeed', 'oneway', 'length', 'geometry', 
+                    'bearing', 'ref', 'layer_height', 'edge_interior_angle', 'stroke_group']
+    edge_gdf = gpd.GeoDataFrame(my_geodata, columns=column_names, crs=edges.crs)
+
+    edge_gdf.set_index(['u', 'v', 'key'], inplace=True)
+
+    return edge_gdf
 
 
             
