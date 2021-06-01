@@ -287,9 +287,17 @@ graph=[]
 omsnx_keys_list=list(G._node.keys())
 G_list=list(G._node)
 
+group_direct_0 = (1629378075, 378728, 0)
+
 for stroke_group in stroke_groups:
-    edge_in_group = edge_gdf[edge_gdf['stroke_group' == stroke_group]]
-    print(edge_in_group)
+    edge_in_group = edge_gdf.loc[edge_gdf['stroke_group']== stroke_group]
+    
+    for index, edge in edge_in_group.iterrows():
+        
+        if index[0] == group_direct_0[0]:
+            print(f'{index}edge in correct direction')
+            node_next = group_direct_0[1] 
+        else
 
 if 0: #one layer
     for i in range(len(omsnx_keys_list)):
