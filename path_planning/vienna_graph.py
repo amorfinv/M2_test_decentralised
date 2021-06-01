@@ -236,14 +236,21 @@ def get_path(path):
 
 
 osmnx.config(use_cache=True, log_console=True)
-G = osmnx.graph_from_bbox(48.2037, 48.2129, 16.3636, 16.3781, network_type='drive')
+# G = osmnx.graph_from_bbox(48.2037, 48.2129, 16.3636, 16.3781, network_type='drive')
+G = osmnx.io.load_graphml(filepath='/Users/andresmorfin/Desktop/M2/M2_test_scenario/graph_definition/gis/data/street_graph/processed_graph.graphml')
+# convert graph to geodataframe
+g = osmnx.graph_to_gdfs(G)
+
+# # get node and edge geodataframe
+nodes_gdf = g[0]
+edge_gdf = g[1]
 
 #gdf_nodes = osmnx.graph_to_gdfs(G, edges=False, node_geometry=False)#[["x", "y"]]
 edges_geometry=osmnx.graph_to_gdfs(G, nodes=False)["geometry"]
 
 #G1 = osmnx.graph_from_bbox(48.21, 48.213, 16.3765, 16.378, network_type='drive')
 
-print(G[685044][453544241][0]['length'])
+# print(G[685044][453544241][0]['length'])
 
 #plt.scatter(48.213, 16.3765,color='g')
 fig, ax = osmnx.plot_graph(G,node_color="w",show=False,close=False)
@@ -270,12 +277,21 @@ fig, ax = osmnx.plot_graph(G,node_color="w",show=False,close=False)
 #g_degree=G.degree[685044]
 #g_nodes=G.nodes[685044]
 
+import numpy as np
 
 ##Create the search graph
+stroke_groups = list(np.unique(np.array(edge_gdf['stroke_group'].values)))
+edge_keys = list(G.edges())[0][0]
+
 graph=[]
 omsnx_keys_list=list(G._node.keys())
 G_list=list(G._node)
-if 1: #one layer
+
+for stroke_group in stroke_groups:
+    edge_in_group = edge_gdf[edge_gdf['stroke_group' == stroke_group]]
+    print(edge_in_group)
+
+if 0: #one layer
     for i in range(len(omsnx_keys_list)):
         key=omsnx_keys_list[i]
         x=G._node[key]['x']
