@@ -5,14 +5,11 @@ Created on Tue Jun  1 09:50:37 2021
 @author: andub
 """
 
-import numpy as np
-import osmnx as ox
-
 class BlueskySCNTools():
     def __init__(self):
         return
 
-    def Drone2Scn(drone_id, start_time, turn_speed, lats, lons, turnbool, alts = None):
+    def Drone2Scn(self, drone_id, start_time, lats, lons, turnbool, alts = None):
         """Converts arrays to Bluesky scenario files. The first
         and last waypoints will be taken as the origin and 
         destination of the drone.
@@ -29,22 +26,25 @@ class BlueskySCNTools():
         turn_speed : float [kts]
             The speed with which to turn at turn waypoints in knots.
             
-        lats : float array [deg]
+        lats : float array/list [deg]
             The lattitudes of the waypoints.
             
-        lons : float array [deg]
+        lons : float array/list [deg]
             The longitudes of the waypoints.
             
-        turnbool : bool array
+        turnbool : bool array/list
             True if waypoint is a turn waypoint, else false.
             
-        alts : float array, optional [ft]
+        alts : float array/list, optional [ft]
             Defines the required altitude at waypoints.
     
         """
         
         # Define the lines list to be returned
         lines = []
+        
+        # Set turn speed to 10 kts for now
+        turn_speed = 10
         
         # First, define some strings we will often be using
         trn = f'ADDWPT {drone_id} FLYTURN\n'
@@ -95,17 +95,71 @@ class BlueskySCNTools():
 
         return lines
     
+    def Dict2Scn(self, filepath, dictionary):
+        """Creates a scenario file from dictionary given that dictionary
+        has the correct format.
+    
+        Parameters
+        ----------
+        filepath : str
+            The file path and name of the scn file. 
+            
+        dictionary : dict
+            This dictionary needs the format needed to use the Drone2Scn function.
+            Drone_id is used as a main key, and then a sub dictionary is defined
+            with the other variables.
+            
+            Example:
+                dictionary = dict()
+                dictionary['drone_id'] = dict()
+                dictionary['drone_id']['start_time'] = start_time
+                dictionary['drone_id']['lats'] = lats
+                dictionary['drone_id']['lons'] = lons
+                dictionary['drone_id']['truebool'] = turnbool
+                dictionary['drone_id']['alts'] = alts
+                
+            Set alts as None if no altitude constraints are needed.
+    
+        """
+        if filepath[-4:] != '.scn':
+            filepath = filepath + '.scn'
+        
+        with open(filepath, 'w+') as f:
+            for drone_id in dictionary:
+                #try:
+                start_time = dictionary[drone_id]['start_time']
+                lats = dictionary[drone_id]['lats']
+                lons = dictionary[drone_id]['lons']
+                turnbool = dictionary[drone_id]['truebool']
+                alts = dictionary[drone_id]['alts']
+                #except:
+                 #   print('Key error. Make sure the dictionary is formatted correctly.')
+                   # return
+                
+                lines = self.Drone2Scn(drone_id, start_time, lats, lons, turnbool, alts)
+                f.write(''.join(lines))
+                
+    
 # Testing here       
 def main():
-    bst = BlueskySCNTools
-    lats = [1,2,3,4,5]
-    lons = [1,2,3,4,5]
-    turnbool = [False, False, True, False, False]
-    lines = bst.Drone2Scn('M1', 0, 10, lats, lons, turnbool)
-    with open('text.scn', 'w+') as f:
-        for line in lines:
-            f.write(line)
-    return
+    bst = BlueskySCNTools()
+    # Test dictionary
+    dictionary = dict()
+    dictionary['M1'] = dict()
+    dictionary['M1']['start_time'] = 0
+    dictionary['M1']['lats'] = [1,2,3,4,5]
+    dictionary['M1']['lons'] = [1,2,3,4,5]
+    dictionary['M1']['truebool'] = [False, True, False, True, False]
+    dictionary['M1']['alts'] = [0,0,0,0,0]
+    
+    dictionary['M2'] = dict()
+    dictionary['M2']['start_time'] = 548
+    dictionary['M2']['lats'] = [5,4,3,2,1]
+    dictionary['M2']['lons'] = [5,4,3,2,1]
+    dictionary['M2']['truebool'] = [False, False, True, False, False]
+    dictionary['M2']['alts'] = None
+    
+    bst.Dict2Scn('test', dictionary)
 
 if __name__ == '__main__':
     main()
