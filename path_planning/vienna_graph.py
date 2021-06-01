@@ -296,8 +296,7 @@ for stroke_group in stroke_groups:
         
         if index[0] == group_direct_0[0]:
             print(f'{index}edge in correct direction')
-            node_next = group_direct_0[1] 
-        else
+            node_next = group_direct_0[1]
 
 if 0: #one layer
     for i in range(len(omsnx_keys_list)):
