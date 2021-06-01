@@ -56,6 +56,9 @@ def main():
     # Perform COINS algorithm to add stroke groups
     coins.COINS(edges)
 
+    # set directionality of edges
+    graph_funcs.set_direction(edges)
+
     # create graph and save edited
     G = ox.graph_from_gdfs(nodes, edges)
     # save as osmnx graph

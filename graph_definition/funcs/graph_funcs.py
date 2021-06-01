@@ -1,3 +1,4 @@
+from networkx.classes.function import number_of_edges
 import osmnx as ox
 import networkx as nx
 from matplotlib import pyplot as plt
@@ -5,6 +6,8 @@ import numpy as np
 from shapely.geometry import shape, LineString
 import math
 import fiona
+import geopandas as gpd
+import pygeos
 
 def poly_shapefile_to_shapely(filepath):
     '''
@@ -451,3 +454,75 @@ def remove_long_way_edges(edges):
     edges.drop(edges_remove, inplace=True)
 
     return edges
+
+def set_direction(edges):
+
+    ##Create the search graph
+    stroke_groups = list(np.unique(np.array(edges['stroke_group'].values)))
+
+    # make group directions for all edges
+    group_direct_0 = (1629378075, 378728, 0)
+
+    # initialize correct index order list and line data list
+    index_order = []
+    line_data = []
+
+    for stroke_group in stroke_groups:
+
+        # get edges in specific group
+        edge_in_group = edges.loc[edges['stroke_group']== stroke_group]
+
+        # get edge indices of stroke group in a list
+        edge_uv = list(edge_in_group.index.values)
+
+        # create a copy of edge_in_group for while loop. TODO: smarter way to do this
+        edges_removed = edge_in_group
+
+        # counter
+        jdx = 0
+        while len(edges_removed):
+            curr_edge = edge_in_group.iloc[jdx]
+            curr_index = edge_uv[jdx]
+
+            if curr_index[0] == group_direct_0[0]:
+                print(f'{curr_index} edge going correct direction')
+                new_index = (curr_index[0], curr_index[1], 0)
+                edge_line_direct = edge_in_group.loc[curr_index, 'geometry']
+
+            else:
+                print(f'{curr_index} edge going incorrect direction')
+                new_index = (curr_index[1], curr_index[0], 0)
+                # reverse linestring from edge
+                wrong_line_direct = list(edge_in_group.loc[curr_index, 'geometry'].coords)
+                wrong_line_direct.reverse()
+                edge_line_direct = LineString(wrong_line_direct)
+                
+            # drop edge from dataframe for while loop (TODO: smarter way to do this)
+            edges_removed = edges_removed.drop(index=curr_index)
+
+            # add new_index to index order
+            index_order.append(new_index)
+
+            # add line_string data to list
+            line_data.append(edge_line_direct)
+
+            # set new jdx based on current edge
+            node_to_find = new_index[1]
+            edge_with_node = [item for item in edge_uv if node_to_find in item]
+            edge_with_node.remove(curr_index)
+            next_edge = edge_with_node[0]
+            jdx = edge_uv.index(next_edge)
+
+            # set desired direction for next edge
+            if node_to_find == next_edge[0]:
+                group_direct_0 = next_edge
+            else:
+                group_direct_0 = (next_edge[1], next_edge[0], 0)
+
+
+
+            
+
+
+
+
