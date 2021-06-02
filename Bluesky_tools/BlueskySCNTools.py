@@ -4,6 +4,11 @@ Created on Tue Jun  1 09:50:37 2021
 
 @author: andub
 """
+import numpy as np
+import random
+import osmnx as ox
+import networkx as nx
+import os 
 
 class BlueskySCNTools():
     def __init__(self):
@@ -139,6 +144,104 @@ class BlueskySCNTools():
                 lines = self.Drone2Scn(drone_id, start_time, lats, lons, turnbool, alts)
                 f.write(''.join(lines))
                 
+    def Graph2Traf(self, G, concurrent_ac, aircraft_vel, max_time, dt, min_dist):
+        """Creates random traffic using the nodes of graph G as origins and
+        destinations.
+    
+        Parameters
+        ----------
+        G : graphml
+            OSMNX graph, can be created using create_graph.py
+            
+        concurrent_ac : int
+            The approximate number of concurrent aircraft at one time.
+            
+        aircraft_vel : int/float [m/s]
+            The approximate average velocity of aircraft
+            
+        max_time : int [s]
+            The timespan for aircraft generation.
+            
+        dt : int [s]
+            The time step to use. A smaller time step is faster but the number
+            of concurrent aircraft will be less stable. 
+            
+        min_dist : int/float [m]
+            The minimum distance a mission should have. This filters out the
+            very short missions. 
+    
+        """
+        nodes = []
+
+        for node in G.nodes:
+            nodes.append((G.nodes[node]['y'], G.nodes[node]['x']))
+            
+        # Some parameters
+        timestep = 0
+        dt = 20 # [s]
+        ac_no = 1
+        start_time = 0
+        
+        trafgen = []
+        trafdist = np.empty((0,2))
+        
+        # This loop is for time steps
+        while timestep * dt <= max_time:
+            possible_origins = nodes.copy()
+            possible_destinations = nodes.copy()
+            
+            # We want to keep track of what aircraft might have reached their
+            # destinations.
+            # Skip first time step
+            if timestep > 0:
+                for aircraft in trafdist:
+                    i = np.where(np.all(trafdist==aircraft,axis=1))[0]
+                    # Subtract a dt*speed from length for each aircraft
+                    dist = float(aircraft[1]) - aircraft_vel * dt
+                    if dist < 0:
+                        # Aircraft probably reached its destination
+                        trafdist = np.delete(trafdist, i, 0)
+                    else:
+                        trafdist[i, 1] = dist
+            
+            # Amount of aircraft we need to add
+            decrement_me = concurrent_ac - len(trafdist)
+            # This loop is for each wave
+            while decrement_me > 0:
+                # Pick a random node from possible_origins
+                idx_origin = random.randint(0, len(possible_origins)-1)
+                origin = possible_origins[idx_origin]
+                # Do the same thing for destination
+                idx_dest = random.randint(0, len(possible_destinations)-1)
+                destination = possible_destinations[idx_dest]
+                # Let's see how close they are
+                orig_node = ox.distance.nearest_nodes(G, origin[1], origin[0])
+                target_node = ox.distance.nearest_nodes(G, destination[1], destination[0])
+                try:
+                    length = nx.shortest_path_length(G=G, source=orig_node, target=target_node, weight='length')
+                except:
+                    # There is no solution to get from one node to the other
+                    continue
+                
+                if length < min_dist:
+                    # Distance is too short, try again
+                    continue
+                
+                # Remove destinations and origins
+                possible_origins.pop(idx_origin)
+                possible_destinations.pop(idx_dest)
+                # Append the new aircraft
+                trafgen.append(('D'+str(ac_no), start_time, origin, destination, length))
+                trafdist = np.vstack([trafdist, ['D'+str(ac_no),  length]])
+                ac_no += 1
+                decrement_me -= 1
+                
+            # Go to the next time step
+            timestep += 1
+            start_time += timestep * dt
+            
+        return trafgen
+                
     
 # Testing here       
 def main():
@@ -160,6 +263,20 @@ def main():
     dictionary['M2']['alts'] = None
     
     bst.Dict2Scn('test', dictionary)
+    
+    # Also test trafgen
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    graph_path = dir_path.replace('Bluesky_tools', 
+              'graph_definition/gis/data/street_graph/processed_graph.graphml')
+    G = ox.io.load_graphml(graph_path)
+    concurrent_ac = 10
+    aircraft_vel = 13
+    max_time = 400
+    dt = 20
+    min_dist = 1000
+    
+    trafgen = bst.Graph2Traf(G, concurrent_ac, aircraft_vel, max_time, dt, min_dist)
+    print(trafgen)
 
 if __name__ == '__main__':
     main()
