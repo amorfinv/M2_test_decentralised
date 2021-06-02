@@ -1,13 +1,9 @@
-from networkx.classes.function import number_of_edges
 import osmnx as ox
-import networkx as nx
-from matplotlib import pyplot as plt
 import numpy as np
 from shapely.geometry import shape, LineString
 import math
 import fiona
 import geopandas as gpd
-import pygeos
 
 def poly_shapefile_to_shapely(filepath):
     '''
