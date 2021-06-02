@@ -357,9 +357,10 @@ class line:
             stroke_group.append(inv_edges[edge])
 
         # create new attribute with stroke group
-        self.edge_gdf['stroke_group'] = stroke_group
+        edge_gdf = self.edge_gdf
+        edge_gdf['stroke_group'] = stroke_group
 
-        return self.edge_gdf
+        return edge_gdf
 
 ########################################################################################
 ########################################################################################
