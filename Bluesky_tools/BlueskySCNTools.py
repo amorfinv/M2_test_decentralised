@@ -154,7 +154,7 @@ class BlueskySCNTools():
             OSMNX graph, can be created using create_graph.py
             
         concurrent_ac : int
-            The approximate number of concurrent aircraft at one time.
+            The approximate number of aircraft flying at the same time.
             
         aircraft_vel : int/float [m/s]
             The approximate average velocity of aircraft
