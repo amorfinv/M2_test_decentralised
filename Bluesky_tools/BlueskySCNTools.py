@@ -178,7 +178,6 @@ class BlueskySCNTools():
             
         # Some parameters
         timestep = 0
-        dt = 20 # [s]
         ac_no = 1
         start_time = 0
         
@@ -186,7 +185,7 @@ class BlueskySCNTools():
         trafdist = np.empty((0,2))
         
         # This loop is for time steps
-        while timestep * dt <= max_time:
+        while start_time <= max_time:
             possible_origins = nodes.copy()
             possible_destinations = nodes.copy()
             
@@ -226,7 +225,6 @@ class BlueskySCNTools():
                 if length < min_dist:
                     # Distance is too short, try again
                     continue
-                
                 # Remove destinations and origins
                 possible_origins.pop(idx_origin)
                 possible_destinations.pop(idx_dest)
@@ -235,10 +233,10 @@ class BlueskySCNTools():
                 trafdist = np.vstack([trafdist, ['D'+str(ac_no),  length]])
                 ac_no += 1
                 decrement_me -= 1
-                
+            print(start_time)    
             # Go to the next time step
             timestep += 1
-            start_time += timestep * dt
+            start_time += dt
             
         return trafgen
                 
