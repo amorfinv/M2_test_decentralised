@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import heapq
 import pandas as pd
 import numpy as np
+import os
 
 class Node:
     av_speed_horizontal=0.005#10.0
@@ -75,7 +76,7 @@ def heuristic(current, goal):
     h=abs(goal.x-current.x)/current.av_speed_horizontal+abs(goal.y-current.y)/current.av_speed_horizontal+abs(goal.z-current.z)/current.av_speed_vertical
     return h
 
-def compute_c(current,neigh):
+def compute_c(current,neigh, G):
     g=1
     if(current.z!=neigh.z):
         g=abs(neigh.z-current.z)/current.av_speed_vertical
@@ -121,7 +122,7 @@ def update_vertex(path,node):
                 raise ValueError('more than one ' + id + ' in the queue!')
             path.queue.remove(id_in_queue[0])
             
-def compute_shortest_path(path,graph):
+def compute_shortest_path(path,graph, G):
     path.start.key=calculateKey(path.start, path.start, path.k_m)
     k_old=top_key(path.queue)
    
@@ -153,7 +154,7 @@ def compute_shortest_path(path,graph):
                 for p in current_node.parents:
                     pred_node=graph[p]  
                     if pred_node!=path.goal:
-                        pred_node.rhs=min(pred_node.rhs,current_node.g+compute_c(pred_node,current_node))
+                        pred_node.rhs=min(pred_node.rhs,current_node.g+compute_c(pred_node,current_node, G))
                     update_vertex(path, pred_node)
         else:
             g_old=current_node.g
@@ -164,16 +165,16 @@ def compute_shortest_path(path,graph):
                     tt=()
                     for ch in pred_node.children:
                         child=graph[ch]
-                        tt.append(child.g+compute_c(child, pred_node))
+                        tt.append(child.g+compute_c(child, pred_node, G))
                     pred_node.rhs=min(tt)
             for p in current_node.parents:
                 parent=graph[p]
-                if parent.rhs==(g_old+compute_c(current_node, parent)):
+                if parent.rhs==(g_old+compute_c(current_node, parent, G)):
                     if(parent!=path.goal):
                         tt=()
                         for ch in parent.children:
                             child=graph[ch]
-                            tt.append(child.g+compute_c(child, parent))
+                            tt.append(child.g+compute_c(child, parent, G))
                         parent.rhs=min(tt)
                 update_vertex(path, parent)
             pred_node=current_node
@@ -182,13 +183,13 @@ def compute_shortest_path(path,graph):
                     tt=()
                     for ch in pred_node.children:
                         child=graph[ch]
-                        tt.append(child.g+compute_c(child, pred_node))
+                        tt.append(child.g+compute_c(child, pred_node, G))
                     pred_node.rhs=min(tt)
             update_vertex(path, pred_node)
-    return 1
+    return 'Path found!'
             
             
-def get_path(path,graph):
+def get_path(path,graph, G):
     change=False
     edges_geometry=osmnx.graph_to_gdfs(G, nodes=False)["geometry"]
     change_list=[]# a list with the nodes between which the cost changed
@@ -203,8 +204,8 @@ def get_path(path,graph):
         minim=float('inf')
         for ch in path.start.children:
             n=graph[ch]
-            if compute_c(path.start, n)+n.g<minim:
-                minim=compute_c(path.start, n)+n.g
+            if compute_c(path.start, n, G)+n.g<minim:
+                minim=compute_c(path.start, n, G)+n.g
                 current_node=n
 
         if current_node.key_index!=path.start.key_index:
@@ -225,18 +226,18 @@ def get_path(path,graph):
         if change: #Scan for changes
             path.k_m=path.k_m+heuristic(current_node, path.start)
             for c in change_list:
-                c_old=compute_c(c[0], c[1])
+                c_old=compute_c(c[0], c[1], G)
                 #update cost and obstacles here
                 if c_old>compute_c(c[0], c[1]):
                     if(c[0]!=path.goal):
-                        c[0].rhs=min(c[0].rhs,compute_c(c[0], c[1])+c[1].g)
+                        c[0].rhs=min(c[0].rhs,compute_c(c[0], c[1], G)+c[1].g)
                 elif c[0].rhs== c_old+c[1].g:
                     if c[0]!=path.goal:
                         #child_list=get_child_list(path, c[0])
                         tt=[]
                         for ch in c[0].children:
                             child=graph[ch]
-                            tt.append(child.g+compute_c(child, c[0]))
+                            tt.append(child.g+compute_c(child, c[0], G))
                         c[0].rhs=min(tt)
                 update_vertex(path, c[0])
                 compute_shortest_path(path)
@@ -256,17 +257,18 @@ def get_path(path,graph):
         
 class PathPlanning:
     
-    def __init__(self,start_x,start_y,goal_x,goal_y):
+    def __init__(self,G ,start_x,start_y,goal_x,goal_y):
         self.s_x=start_x
         self.s_y=start_y
         self.g_x=goal_x
         self.g_y=goal_y
+        self.G = G
 
         osmnx.config(use_cache=True, log_console=True)
         
 
         # convert graph to geodataframe
-        g = osmnx.graph_to_gdfs(G)
+        g = osmnx.graph_to_gdfs(self.G)
         
         # # get node and edge geodataframe
         nodes_gdf = g[0]
@@ -279,20 +281,20 @@ class PathPlanning:
 
         ##Create the search graph
         stroke_groups = list(np.unique(np.array(edge_gdf['stroke_group'].values)))
-        edge_keys = list(G.edges())[0][0]
+        edge_keys = list(self.G.edges())[0][0]
         
         #Create the graph
         self.graph=[]
-        omsnx_keys_list=list(G._node.keys())
-        G_list=list(G._node)
+        omsnx_keys_list=list(self.G._node.keys())
+        G_list=list(self.G._node)
         
         new_nodes_counter=0
         for i in range(len(omsnx_keys_list)):
            key=omsnx_keys_list[i]
-           x=G._node[key]['x']
-           y=G._node[key]['y']    
-           parents=list(G._pred[key].keys())
-           children=list(G._succ[key].keys())
+           x=self.G._node[key]['x']
+           y=self.G._node[key]['y']    
+           parents=list(self.G._pred[key].keys())
+           children=list(self.G._succ[key].keys())
            my_group={}
         
            ii=0
@@ -344,8 +346,8 @@ class PathPlanning:
         #add the children and parents to each node                
         for i in self.graph:
             key=i.key_index
-            parents=list(G._pred[key].keys())
-            children=list(G._succ[key].keys())
+            parents=list(self.G._pred[key].keys())
+            children=list(self.G._succ[key].keys())
             for p in parents:
                 for j in self.graph:
                     if p==j.key_index and (j.group==i.group or i.group==-1) :
@@ -367,8 +369,8 @@ class PathPlanning:
         goal_id=-1
         #key=G_list[start_id]
 
-        start_index=osmnx.distance.nearest_nodes(G,self.s_x,self.s_y, return_dist=False)
-        goal_index=osmnx.distance.nearest_nodes(G,self.g_x,self.g_y, return_dist=False)
+        start_index=osmnx.distance.nearest_nodes(self.G,self.s_x,self.s_y, return_dist=False)
+        goal_index=osmnx.distance.nearest_nodes(self.G,self.g_x,self.g_y, return_dist=False)
         
         for i in self.graph:
             if i.key_index==start_index:
@@ -393,50 +395,55 @@ class PathPlanning:
         
         initialise(path)
         
-        path_found=compute_shortest_path(path,self.graph)
+        path_found=compute_shortest_path(path,self.graph, self.G)
         print(path_found)
         
         route=[]
         turns=[]
         if path_found:
-            route,turns=get_path(path,self.graph)
+            route,turns=get_path(path,self.graph, self.G)
             
         return route,turns
 
-########################
-G = osmnx.io.load_graphml(filepath='C:/Users/nipat/Downloads/M2_test_scenario-main/M2_test_scenario-main/graph_definition/gis/data/street_graph/processed_graph1.graphml')
-#provide the start and destination coordinates 
-start_x=16.3281
-start_y=48.223
-goal_x=16.33
-goal_y=48.228
-plan1=PathPlanning(start_x,start_y,goal_x,goal_y)
 
-route=[] #the list containing the points of the route
-turns=[] #list to show if each point is a turn (1) or a flyover point (0)
+# ########################
+# dir_path = os.path.dirname(os.path.realpath(__file__))
+# graph_path = dir_path.replace('graph_definition', 
+#           'graph_definition/gis/data/street_graph/processed_graph.graphml')
+# G = osmnx.io.load_graphml(filepath=graph_path)
+# #provide the start and destination coordinates 
+# start_x=16.3281
+# start_y=48.223
+# goal_x=16.33
+# goal_y=48.228
+# plan1=PathPlanning(start_x,start_y,goal_x,goal_y)
 
-route,turns=plan1.plan()
+# route=[] #the list containing the points of the route
+# turns=[] #list to show if each point is a turn (1) or a flyover point (0)
 
-########   
-print(route)
-print(turns)
+# route,turns=plan1.plan()
 
-fig, ax = osmnx.plot_graph(G,node_color="w",show=False,close=False)
+# ########   
+# print(route)
+# print(turns)
+
+# fig, ax = osmnx.plot_graph(G,node_color="w",show=False,close=False)
 
 
-x_list=[]
-y_list=[]
-x_list_up=[]
-y_list_up=[]
-for r in route:
-    if(r[2]==0):
-        x_list.append(r[0])
-        y_list.append(r[1])
-    else:
-        x_list_up.append(r[0])
-        y_list_up.append(r[1])
-ax.scatter(x_list,y_list, color='g')
-ax.scatter(x_list_up,y_list_up, color='y')
-ax.scatter(start_x,start_y, color='b')
-ax.scatter(goal_x,goal_y, color='r')
-plt.show()
+# x_list=[]
+# y_list=[]
+# x_list_up=[]
+# y_list_up=[]
+# for r in route:
+#     if(r[2]==0):
+#         x_list.append(r[0])
+#         y_list.append(r[1])
+#     else:
+#         x_list_up.append(r[0])
+#         y_list_up.append(r[1])
+# ax.scatter(x_list,y_list, color='g')
+# ax.scatter(x_list_up,y_list_up, color='y')
+# ax.scatter(start_x,start_y, color='b')
+# ax.scatter(goal_x,goal_y, color='r')
+# plt.show()
+
