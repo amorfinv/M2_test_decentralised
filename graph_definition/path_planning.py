@@ -13,14 +13,14 @@ import numpy as np
 class Node:
     av_speed_horizontal=0.005#10.0
     av_speed_vertical=2.0
-    def __init__(self,key_index,x,y,index,group):
+    def __init__(self,key_index,x,y,z,index,group):
         self.key_index=key_index # the index the osmnx graph
         self.index=index# the index in the search graph
 
         #the coordinates of the node as given by osmnx (latitude,longitude)
         self.x=x
         self.y=y
-        self.z=0
+        self.z=z
 
         #the parents(predessecors) and children(successor) of the node expressed as lists containing their indexes in the graph 
         self.parents=[]
@@ -273,8 +273,9 @@ class PathPlanning:
         edge_gdf = g[1]
         
         
-        
-        
+        north_south_list=[2,5,6,7,8,9,10,11,13,14,17,19,20,21,22,23,26,25,28,29,30,31,34,36,37]#fly at 10 meters
+        east_west_list=[0,1,3,4,12,15,16,18,24,27,32,33,35] #fly at 15 meters
+
         
 
         ##Create the search graph
@@ -290,7 +291,8 @@ class PathPlanning:
         for i in range(len(omsnx_keys_list)):
            key=omsnx_keys_list[i]
            x=G._node[key]['x']
-           y=G._node[key]['y']    
+           y=G._node[key]['y'] 
+           z=10
            parents=list(G._pred[key].keys())
            children=list(G._succ[key].keys())
            my_group={}
@@ -301,7 +303,11 @@ class PathPlanning:
                if not ii:
                    if p in edge_gdf.index and key in edge_gdf.loc[p].index: 
                        group=edge_gdf.loc[p].loc[key].loc[0]['stroke_group']
-                       node=Node(key,x,y,i+new_nodes_counter,group)
+                       if int(group) in north_south_list:
+                           z=10
+                       elif (int(group) in east_west_list):
+                           z=15
+                       node=Node(key,x,y,z,i+new_nodes_counter,group)
                        my_group.update({i+new_nodes_counter:group})
                        self.graph.append(node)
                        tmp.append(group)
@@ -310,7 +316,11 @@ class PathPlanning:
                 if p in edge_gdf.index and key in edge_gdf.loc[p].index: 
                         new_nodes_counter=new_nodes_counter+1
                         group=edge_gdf.loc[p].loc[key].loc[0]['stroke_group']
-                        node=Node(key,x,y,i+new_nodes_counter,group)
+                        if int(group) in north_south_list:
+                           z=10
+                        elif int(group) in east_west_list:
+                           z=15
+                        node=Node(key,x,y,z,i+new_nodes_counter,group)
                         my_group.update({i+new_nodes_counter:group})
                         self.graph.append(node)
                         tmp.append(group)
@@ -321,7 +331,11 @@ class PathPlanning:
                 group=edge_gdf.loc[key].loc[ch].loc[0]['stroke_group']
                 if not group in tmp:
                     new_nodes_counter=new_nodes_counter+1
-                    node=Node(key,x,y,i+new_nodes_counter,group)
+                    if int(group) in north_south_list:
+                           z=10
+                    elif int(group) in east_west_list:
+                           z=15
+                    node=Node(key,x,y,z,i+new_nodes_counter,group)
                     my_group.update({i+new_nodes_counter:group})
                     self.graph.append(node)
                     tmp.append(group)
@@ -408,8 +422,8 @@ G = osmnx.io.load_graphml(filepath='C:/Users/nipat/Downloads/M2_test_scenario-ma
 #provide the start and destination coordinates 
 start_x=16.3281
 start_y=48.223
-goal_x=16.33
-goal_y=48.228
+goal_x=16.34
+goal_y=48.225
 plan1=PathPlanning(start_x,start_y,goal_x,goal_y)
 
 route=[] #the list containing the points of the route
@@ -429,7 +443,7 @@ y_list=[]
 x_list_up=[]
 y_list_up=[]
 for r in route:
-    if(r[2]==0):
+    if(r[2]==10):
         x_list.append(r[0])
         y_list.append(r[1])
     else:
