@@ -1,20 +1,6 @@
 import osmnx as ox
 import json
 
-from functools import singledispatch
-
-@singledispatch
-def keys_to_strings(ob):
-    return ob
-
-@keys_to_strings.register
-def _handle_dict(ob: dict):
-    return {str(k): keys_to_strings(v) for k, v in ob.items()}
-
-@keys_to_strings.register
-def _handle_list(ob: list):
-    return [keys_to_strings(v) for v in ob]
-
 graph_path = '../graph_definition/gis/data/street_graph/processed_graph.graphml'
 G = ox.io.load_graphml(graph_path)
 
@@ -45,6 +31,12 @@ edge_dict[(283324403, 655012)]['layer_height'] = 'height 2'
 edge_dict[(655012, 33344801)]['layer_height'] = 'height 2'
 edge_dict[(33344801, 33344802)]['layer_height'] = 'height 2'
 
+# simplify edge_dict keys into a string rather than tuple
+edge_dict_new = {}
+for key, value in edge_dict.items():
+    new_key = f'{key[0]}-{key[1]}'
+    edge_dict_new[new_key] = value
+
 # save nodes to a text file
 with open('node_osmids.txt', 'w') as filehandle:
     for listitem in node_list:
@@ -52,11 +44,11 @@ with open('node_osmids.txt', 'w') as filehandle:
 
 # save edge dictionary as json
 with open('edges.json', 'w') as fp:
-    json.dump(keys_to_strings(edge_dict), fp)
-
-node_osmids = []
+    json.dump(edge_dict_new, fp)
 
 # open node_osmid.txt and save to a file
+node_osmids = []
+
 with open('node_osmids.txt', 'r') as filehandle:
     for line in filehandle:
         # remove linebreak which is the last character of the string
