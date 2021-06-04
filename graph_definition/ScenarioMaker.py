@@ -7,7 +7,7 @@ Created on Thu Jun  3 11:47:30 2021
 import osmnx as ox
 import numpy as np
 import BlueskySCNTools
-import path_planning as pp
+from path_planning import PathPlanning
 import os
 
 # Initialize stuff
@@ -35,7 +35,7 @@ for flight in generated_traffic:
     # First get the route and turns
     origin = flight[2]
     destination = flight[3]
-    plan = pp.PathPlanning(G, origin[1], origin[0], destination[1], destination[0])
+    plan = PathPlanning(G, origin[1], origin[0], destination[1], destination[0])
     route=[]
     turns=[]
     route,turns=plan.plan()
@@ -51,12 +51,12 @@ for flight in generated_traffic:
     #Add turnbool
     scenario_dict[flight[0]]['turnbool'] = turns
     #Add alts
-    scenario_dict[flight[0]]['alts'] = None
+    scenario_dict[flight[0]]['alts'] = route[:,2]
     
 print('All paths created!')
     
 # Step 4: Create scenario file from dictionary
-bst.Dict2Scn('Test_Scenario.scn', scenario_dict)
+bst.Dict2Scn(r'C:\Users\andub\Desktop\Bluesky\scenario\Test_Scenario.scn', scenario_dict)
 
 print('Scenario file created!')
     

@@ -9,6 +9,8 @@ import random
 import osmnx as ox
 import networkx as nx
 import os 
+nm = 1852
+ft = 1/0.3048
 
 class BlueskySCNTools():
     def __init__(self):
@@ -48,13 +50,18 @@ class BlueskySCNTools():
         # Define the lines list to be returned
         lines = []
         
-        # Set turn speed to 10 kts for now
-        turn_speed = 10
+        # Speeds
+        turn_speed = 10 # [kts]
+        cruise_speed = 30 # [kts]
+        speed_dist = 30 # [m]
+        turn_dist = 15 # [m]
+        speeds, turnbool = self.TurnSpeedBuffer(lats, lons, turnbool, alts, 
+                            turn_speed, cruise_speed, speed_dist, turn_dist)
         
         # First, define some strings we will often be using
         trn = f'ADDWPT {drone_id} FLYTURN\n'
         trn_spd = f'ADDWPT {drone_id} TURNSPEED {turn_speed}\n'
-        fvr = f'ADDWPT {drone_id} FLYOVER\n'
+        fvr = f'ADDWPT {drone_id} FLYBY\n'
         lnav = f'LNAV {drone_id} ON\n'
         vnav = f'VNAV {drone_id} ON\n'
         # Convert start_time to Bluesky format
@@ -66,7 +73,7 @@ class BlueskySCNTools():
         # Everyone starts at 25ft above ground
         # First, we need to create the drone, Matrice 600 going 30 kts for now.
         # Let's calculate its required heading.
-        qdr = self.qdr(lats[0], lons[0], lats[1], lons[1])
+        qdr = self.qdrdist(lats[0], lons[0], lats[1], lons[1], 'qdr')
         cre_text = f'CRE {drone_id} M600 {lats[0]} {lons[0]} {qdr} 25 30\n'
         lines.append(start_time_txt + cre_text)
         
@@ -87,11 +94,20 @@ class BlueskySCNTools():
                     lines.append(start_time_txt + fvr)
                     
             # Add the waypoint
-            if alts:
-                wpt_txt = f'ADDWPT {drone_id} {lats[i]} {lons[i]} {alts[i]} 30\n'
+            if any(alts):
+                wpt_txt = f'ADDWPT {drone_id} {lats[i]} {lons[i]} {alts[i]} {speeds[i]}\n'
             else:
-                wpt_txt = f'ADDWPT {drone_id} {lats[i]} {lons[i]} ,, 30\n'
+                wpt_txt = f'ADDWPT {drone_id} {lats[i]} {lons[i]} ,, {speeds[i]}\n'
             lines.append(start_time_txt + wpt_txt)
+            
+            # if turnbool[i] == 1 or turnbool[i] == True:
+            #     # Slow down at certain distance from waypoint to counteract
+            #     # flyover waypoint close to turn waypoint
+            #     lines.append(start_time_txt + 
+            #                  f'{drone_id} ATDIST {lats[i]} {lons[i]} {50/nm} SPD {drone_id} {turn_speed}\n')
+            #     lines.append(start_time_txt + 
+            #                  f'{drone_id} ATDIST {lats[i]} {lons[i]} {5/nm} VNAV {drone_id} ON\n')
+            
             
             # Set prev waypoint type value
             prev_wpt_turn = turnbool[i]
@@ -132,6 +148,7 @@ class BlueskySCNTools():
             filepath = filepath + '.scn'
         
         with open(filepath, 'w+') as f:
+            f.write('00:00:00>HOLD\n00:00:00>PAN 48.223775 16.337976\n00:00:00>ZOOM 50\n')
             for drone_id in dictionary:
                 try:
                     start_time = dictionary[drone_id]['start_time']
@@ -261,13 +278,13 @@ class BlueskySCNTools():
             
         return trafgen
     
-    def qdr(self, latd1, lond1, latd2, lond2):
+    def qdrdist(self, latd1, lond1, latd2, lond2, mode):
         """ Calculate bearing and distance, using WGS'84
             In:
                 latd1,lond1 en latd2, lond2 [deg] :positions 1 & 2
             Out:
                 qdr [deg] = heading from 1 to 2
-                d [nm]    = distance from 1 to 2 in nm """
+                d [m]    = distance from 1 to 2 in m """
     
         # Haversine with average radius for direction
     
@@ -315,8 +332,13 @@ class BlueskySCNTools():
     
         qdr = np.degrees(np.arctan2(np.sin(lon2 - lon1) * coslat2,
             coslat1 * np.sin(lat2) - np.sin(lat1) * coslat2 * np.cos(lon2 - lon1)))
-    
-        return qdr
+        
+        if mode == 'qdr':
+            return qdr
+        elif mode == 'dist':
+            return d
+        else:
+            return qdr, d
     
     def rwgs84(self, latd):
         """ Calculate the earths radius with WGS'84 geoid definition
@@ -337,6 +359,77 @@ class BlueskySCNTools():
         r = np.sqrt((an * an + bn * bn) / (ad * ad + bd * bd))
     
         return r
+    
+    def TurnSpeedBuffer(self, lats, lons, turnbool, alts, turnspeed, cruisespeed, speed_dist, turn_dist):
+        """ Filters out waypoints that are very close to turn waypoints.
+        
+
+        Parameters
+        ----------
+        lats : array
+            Waypoint latitudes
+        lons : array
+            Waypoint longitudes
+        turnbool : bool array
+            Whether waypoint is a turn waypoint or not.
+        alts : array
+            Altitude at waypoints.
+        turnspeed : int [kts]
+            The speed at which we are turning.
+        cruisespeed : int[kts]
+            The speed at which we are cruising.
+        turndist : int [m]
+            The buffer distance around a turn waypoint to filter for.
+
+        Returns
+        -------
+        speeds : array
+            The required speed at each waypoint.
+
+        """
+        # Number of waypoints
+        num_wpts = len(lats)
+        # Array that holds the speeds
+        speeds = [cruisespeed] * num_wpts
+        for i in range(num_wpts):
+            if turnbool[i] == 0 or turnbool[i] == False:
+                # We're only interested in turn waypoints
+                continue
+            # If we get here, it's a turn waypoint
+            speeds[i] = turnspeed
+            # What we want to do is check both future and previous waypoints
+            # to see if they are too close to the turn waypoint.
+            # First, let's check previous waypoints
+            cumulative_distance = 0
+            # Initialize the iterator
+            j = i - 1
+            while j >= 0:
+                dist2wpt = self.qdrdist(lats[j], lons[j], lats[j+1], lons[j+1], 'dist')
+                cumulative_distance += dist2wpt
+                if cumulative_distance < turn_dist:
+                    turnbool[j] = 1
+                if cumulative_distance < speed_dist:
+                    speeds[j] = turnspeed
+                    j = j - 1
+                else:
+                    break
+            
+            # Check future waypoints
+            cumulative_distance = 0
+            # Initialize the iterator
+            j = i + 1
+            while j < num_wpts:
+                dist2wpt = self.qdrdist(lats[j], lons[j], lats[j-1], lons[j-1], 'dist')
+                cumulative_distance += dist2wpt
+                if cumulative_distance < turn_dist:
+                    turnbool[j] = 1
+                if cumulative_distance < speed_dist:
+                    speeds[j] = turnspeed
+                    j = j + 1
+                else:
+                    break                
+              
+        return speeds, turnbool
                 
     
 # Testing here       
