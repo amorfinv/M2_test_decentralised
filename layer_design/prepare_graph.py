@@ -14,13 +14,21 @@ edge_gdf = g[1]
 # remove the key level from geodataframe index as it should all be equal to zero
 edge_gdf.reset_index(level=2, drop=True, inplace=True)
 
-# also remove some columns for dataframe
+# also remove some columns from dataframe
 edge_gdf.drop(['osmid', 'lanes', 'name', 'highway', 'maxspeed', 'oneway', 'length', 'geometry', 
                'bearing', 'ref', 'edge_interior_angle'], axis=1, inplace=True)
 
+node_gdf.drop(['street_count', 'highway', 'geometry'], axis=1, inplace=True)
 
-# convert nodes into a list of osmids
-node_list = list(node_gdf.index.values)
+# rename x,y into lat long
+node_gdf.rename(columns={'y': 'lat', 'x': 'lon'}, inplace=True)
+
+# convert nodes into a dictionary with osmid as key and lat lon
+node_dict = node_gdf.to_dict(orient='index')
+
+# save node dictionary to JSON
+with open('nodes.json', 'w') as fp:
+    json.dump(node_dict, fp)
 
 # convert edges into a dictionary with the directionality as the key. 
 # and with the values as another sub dictionary, with stroke_group and layer_height
@@ -37,26 +45,14 @@ for key, value in edge_dict.items():
     new_key = f'{key[0]}-{key[1]}'
     edge_dict_new[new_key] = value
 
-# save nodes to a text file
-with open('node_osmids.txt', 'w') as filehandle:
-    for listitem in node_list:
-        filehandle.write('%s\n' % listitem)
-
 # save edge dictionary as json
 with open('edges.json', 'w') as fp:
     json.dump(edge_dict_new, fp)
 
-# open node_osmid.txt and save to a file
-node_osmids = []
-
-with open('node_osmids.txt', 'r') as filehandle:
-    for line in filehandle:
-        # remove linebreak which is the last character of the string
-        node_osmid = line[:-1]
-
-        # add item to the list
-        node_osmids.append(node_osmid)
-
 # Opening edges.JSON as a dictionary
 with open('edges.json', 'r') as filename:
+    edge_dict = json.load(filename)
+
+# Opening edges.JSON as a dictionary
+with open('nodes.json', 'r') as filename:
     edge_dict = json.load(filename)
