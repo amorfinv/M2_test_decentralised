@@ -9,3 +9,6 @@ graph_definition/Layer_Concepts.xlsx
 
 # ignore vscode
 .DS_Store
+
+#ignore cpython randomness
+**/*cpython*.pyc

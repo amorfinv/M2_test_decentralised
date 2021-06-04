@@ -20,11 +20,19 @@ edge_gdf.drop(['osmid', 'lanes', 'name', 'highway', 'maxspeed', 'oneway', 'lengt
 
 node_gdf.drop(['street_count', 'highway', 'geometry'], axis=1, inplace=True)
 
-# rename x,y into lat long
-node_gdf.rename(columns={'y': 'lat', 'x': 'lon'}, inplace=True)
+# create a lat, lon and osmid list to make a dictionary of nodes
+lat_list = node_gdf['y'].tolist()
+lon_list = node_gdf['x'].tolist()
+osmid_list = node_gdf.index.values.tolist()
 
-# convert nodes into a dictionary with osmid as key and lat lon
-node_dict = node_gdf.to_dict(orient='index')
+# join lists into a dictionary with lat-lon as key and osmid as value
+lat_lon_list = []
+node_dict = {}
+for idx , _ in enumerate(lat_list):
+    lat_lon = f'{lat_list[idx]}-{lon_list[idx]}'
+    osmid = osmid_list[idx]
+
+    node_dict[lat_lon] = osmid
 
 # save node dictionary to JSON
 with open('nodes.json', 'w') as fp:
@@ -53,6 +61,6 @@ with open('edges.json', 'w') as fp:
 with open('edges.json', 'r') as filename:
     edge_dict = json.load(filename)
 
-# Opening edges.JSON as a dictionary
+# Opening nodes.JSON as a dictionary
 with open('nodes.json', 'r') as filename:
-    edge_dict = json.load(filename)
+    node_dict = json.load(filename)
