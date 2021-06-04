@@ -29,7 +29,7 @@ osmid_list = node_gdf.index.values.tolist()
 lat_lon_list = []
 node_dict = {}
 for idx , _ in enumerate(lat_list):
-    lat_lon = f'{lat_list[idx]}-{lon_list[idx]}'
+    lat_lon = format(lat_list[idx], '.8f') + '-' + format(lon_list[idx], '.8f')
     osmid = osmid_list[idx]
 
     node_dict[lat_lon] = osmid
