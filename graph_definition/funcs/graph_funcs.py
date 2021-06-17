@@ -455,6 +455,21 @@ def set_direction(edges, edge_directions):
 
     # Create list of stroke groups
     stroke_groups = list(np.sort(np.unique(np.array(edges['stroke_group'].values))))
+    
+    # We need to put edge_directions in the same order as the edges
+    new_edge_directions = []
+    for num_group, stroke_group_list in enumerate(stroke_groups):
+        # get edges in specific group
+        edge_in_group = edges.loc[edges['stroke_group']== stroke_group_list]
+
+        # get edge indices of stroke group in a list
+        edge_uv = list(edge_in_group.index.values)
+        for direction in edge_directions:
+            if (direction in edge_uv) or ((direction[1], direction[0], 0) in edge_uv):
+                new_edge_directions.append(direction)
+                break
+            
+    edge_directions = new_edge_directions
 
     # initialize correct index order list and line data list for new geo dataframe
     index_order = []
