@@ -74,7 +74,7 @@ class BlueskySCNTools():
         # First, we need to create the drone, Matrice 600 going 30 kts for now.
         # Let's calculate its required heading.
         qdr = self.qdrdist(lats[0], lons[0], lats[1], lons[1], 'qdr')
-        cre_text = f'CRE {drone_id} M600 {lats[0]} {lons[0]} {qdr} 25 30\n'
+        cre_text = f'CRE {drone_id} M600 {lats[0]} {lons[0]} {qdr} 25 {turn_speed}\n'
         lines.append(start_time_txt + cre_text)
         
         # Then we need to for loop through all the lats
@@ -100,18 +100,11 @@ class BlueskySCNTools():
                 wpt_txt = f'ADDWPT {drone_id} {lats[i]} {lons[i]} ,, {speeds[i]}\n'
             lines.append(start_time_txt + wpt_txt)
             
-            # if turnbool[i] == 1 or turnbool[i] == True:
-            #     # Slow down at certain distance from waypoint to counteract
-            #     # flyover waypoint close to turn waypoint
-            #     lines.append(start_time_txt + 
-            #                  f'{drone_id} ATDIST {lats[i]} {lons[i]} {50/nm} SPD {drone_id} {turn_speed}\n')
-            #     lines.append(start_time_txt + 
-            #                  f'{drone_id} ATDIST {lats[i]} {lons[i]} {5/nm} VNAV {drone_id} ON\n')
-            
-            
             # Set prev waypoint type value
             prev_wpt_turn = turnbool[i]
-            
+        
+        # Delete aircraft at destination waypoint
+        lines.append(start_time_txt + f'{drone_id} ATDIST {lats[-1]} {lons[-1]} {5/nm} DEL {drone_id}\n')
         # Enable vnav and lnav
         lines.append(start_time_txt + vnav)
         lines.append(start_time_txt + lnav)
@@ -149,6 +142,7 @@ class BlueskySCNTools():
         
         with open(filepath, 'w+') as f:
             f.write('00:00:00>HOLD\n00:00:00>PAN 48.223775 16.337976\n00:00:00>ZOOM 50\n')
+            f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASED\n')
             for drone_id in dictionary:
                 try:
                     start_time = dictionary[drone_id]['start_time']
@@ -163,7 +157,8 @@ class BlueskySCNTools():
                 lines = self.Drone2Scn(drone_id, start_time, lats, lons, turnbool, alts)
                 f.write(''.join(lines))
                 
-    def Graph2Traf(self, G, concurrent_ac, aircraft_vel, max_time, dt, min_dist):
+    def Graph2Traf(self, G, concurrent_ac, aircraft_vel, max_time, dt, min_dist, 
+                   orig_nodes = None, dest_nodes = None):
         """Creates random traffic using the nodes of graph G as origins and
         destinations.
     
@@ -189,6 +184,14 @@ class BlueskySCNTools():
             The minimum distance a mission should have. This filters out the
             very short missions. 
             
+        orig_nodes : list
+            List of nodes to serve as the origin nodes. If not given, origin
+            nodes will be taken randomly from existing ones.
+            
+        dest_nodes : list
+            List of nodes to serve as destination nodes. If not given, destination
+            nodes will be taken randomly from existing ones.
+            
         Output
         ------
         (ID, start_time, origin, destination, path_length)
@@ -212,7 +215,7 @@ class BlueskySCNTools():
         nodes = []
 
         for node in G.nodes:
-            nodes.append((G.nodes[node]['y'], G.nodes[node]['x']))
+            nodes.append((G.nodes[node]['y'], G.nodes[node]['x'], node))
             
         # Some parameters
         timestep = 0
@@ -222,10 +225,31 @@ class BlueskySCNTools():
         trafgen = []
         trafdist = np.empty((0,2))
         
+        # Check if origins or destinations were given, otherwise just stick to
+        # randomly spawning in network.
+        if orig_nodes == None:
+            origins = nodes.copy()
+        else:
+            # Create the origins list
+            origins = []
+            for node in nodes:
+                if node[2] in orig_nodes:
+                    origins.append(node)
+                    
+        # Do the same for destinations
+        if dest_nodes == None:
+            destinations = nodes.copy()
+        else:
+            # Create the origins list
+            destinations = []
+            for node in nodes:
+                if node[2] in dest_nodes:
+                    destinations.append(node)       
+        
         # This loop is for time steps
         while start_time <= max_time:
-            possible_origins = nodes.copy()
-            possible_destinations = nodes.copy()
+            possible_origins = origins.copy()
+            possible_destinations = destinations.copy()
             
             # We want to keep track of what aircraft might have reached their
             # destinations.
@@ -322,10 +346,6 @@ class BlueskySCNTools():
                      np.sin(lat1)*np.sin(lat2))
     
         # Bearing from Ref. http://www.movable-type.co.uk/scripts/latlong.html
-    
-        sin1 = np.sin(0.5 * (lat2 - lat1))
-        sin2 = np.sin(0.5 * (lon2 - lon1))
-    
         coslat1 = np.cos(lat1)
         coslat2 = np.cos(lat2)
     

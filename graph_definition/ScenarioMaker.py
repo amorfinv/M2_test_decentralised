@@ -22,11 +22,21 @@ print('Graph loaded!')
 
 # Step 2: Generate traffic from it
 concurrent_ac = 10
-aircraft_vel = 12
-max_time = 600
+aircraft_vel = 12 # [m/s]
+max_time = 600 # [s]
 dt = 10
-min_dist = 1000
-generated_traffic = bst.Graph2Traf(G, concurrent_ac, aircraft_vel, max_time, dt, min_dist)
+min_dist = 1000 # [m]
+
+orig_nodes = [30696015, 3155094143, 33345321,  25280685, 1119870220, 33302019,
+              33144416, 378696, 33143911, 264055537, 33144706, 33144712, 
+              33144719, 92739749]
+
+dest_nodes = [291088171,  60957703, 30696019, 392251, 33301346, 26405238, 
+              3963787755, 33345333, 378699, 33144821, 264061926, 33144695,
+              33174086, 33345331]
+
+generated_traffic = bst.Graph2Traf(G, concurrent_ac, aircraft_vel, max_time, 
+                                   dt, min_dist, orig_nodes, dest_nodes)
 print('Traffic generated!')
 
 # Step 3: Loop through traffic, find path, add to dictionary
@@ -56,7 +66,8 @@ for flight in generated_traffic:
 print('All paths created!')
     
 # Step 4: Create scenario file from dictionary
-bst.Dict2Scn(r'C:\Users\andub\Desktop\Bluesky\scenario\Test_Scenario.scn', scenario_dict)
+bst.Dict2Scn(r'Test_Scenario.scn', 
+             scenario_dict)
 
 print('Scenario file created!')
     
