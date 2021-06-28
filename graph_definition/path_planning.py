@@ -275,8 +275,8 @@ class PathPlanning:
         edge_gdf = g[1]
         
         
-        north_south_list=[2,5,6,7,8,9,10,11,13,14,17,19,20,21,22,23,26,25,28,29,30,31,34,36,37]#fly at 10 meters
-        east_west_list=[0,1,3,4,12,15,16,18,24,27,32,33,35] #fly at 20 meters
+        north_south_list=[0,3,6,7,8,9,10,11,12,14,15,17,19,22,23,24,25,26,27,28,31,32,33,34,35,38,39,42,44,45]#fly at 10 meters
+        east_west_list=[1,2,4,5,13,16,18,20,21,29,30,36,37,40,41,43] #fly at 20 meters
 
         
 
@@ -308,7 +308,7 @@ class PathPlanning:
                        if int(group) in north_south_list:
                            z=25 #ft
                        elif (int(group) in east_west_list):
-                           z=50 #ft
+                           z=75 #ft
                        node=Node(key,x,y,z,i+new_nodes_counter,group)
                        my_group.update({i+new_nodes_counter:group})
                        self.graph.append(node)
@@ -321,7 +321,7 @@ class PathPlanning:
                         if int(group) in north_south_list:
                            z=25 #ft
                         elif int(group) in east_west_list:
-                           z=50 #ft
+                           z=75 #ft
                         node=Node(key,x,y,z,i+new_nodes_counter,group)
                         my_group.update({i+new_nodes_counter:group})
                         self.graph.append(node)
@@ -334,9 +334,9 @@ class PathPlanning:
                 if not group in tmp:
                     new_nodes_counter=new_nodes_counter+1
                     if int(group) in north_south_list:
-                           z=10
+                           z=25
                     elif int(group) in east_west_list:
-                           z=15
+                           z=75
                     node=Node(key,x,y,z,i+new_nodes_counter,group)
                     my_group.update({i+new_nodes_counter:group})
                     self.graph.append(node)
