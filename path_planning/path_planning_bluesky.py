@@ -11,6 +11,8 @@ import pandas as pd
 from shapely.geometry import LineString
 import numpy as np
 import pickle
+import networkx as nx
+
 
 class osmnx_graph:
     def __init__(self):
@@ -21,6 +23,43 @@ class osmnx_graph:
         self.edges=[]
         
         
+def euclidean_dist_vec(y1, x1, y2, x2):
+    """
+    Vectorized function to calculate the euclidean distance between two points
+    or between vectors of points.
+    Parameters
+    ----------
+    y1 : float or array of float
+    x1 : float or array of float
+    y2 : float or array of float
+    x2 : float or array of float
+    Returns
+    -------
+    distance : float or array of float
+        distance or vector of distances from (x1, y1) to (x2, y2) in graph units
+    """
+
+    # euclid's formula
+    distance = ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+    return distance 
+       
+def nearest_node(G,x,y):
+# based on the osmnx function get_nearest_node(G, point, method='haversine', return_dist=False)
+    point=(y, x)
+    # dump graph node coordinates into a pandas dataframe indexed by node id
+    # with x and y columns
+    coords = [[node, data['x'], data['y']] for node, data in G.nodes(data=True)]
+    df = pd.DataFrame(coords, columns=['node', 'x', 'y']).set_index('node')
+
+    # add columns to the dataframe representing the (constant) coordinates of
+    # the reference point
+    df['reference_y'] = point[0]
+    df['reference_x'] = point[1]
+    distances = euclidean_dist_vec(y1=df['reference_y'], x1=df['reference_x'],y2=df['y'],x2=df['x'])
+    nearest_node = distances.idxmin()
+    return nearest_node#np.array(nn) 
+ 
+ 
 class Node:
     av_speed_horizontal=0.005#10.0
     av_speed_vertical=2.0
@@ -267,13 +306,11 @@ def get_path(path,graph):
         
 class PathPlanning:
     
-    def __init__(self,start,goal):
-        self.s_x=0
-        self.s_y=0
-        self.g_x=0
-        self.g_y=0
-        self.start_id=start
-        self.goal_id=goal
+    def __init__(self,start_x,start_y,goal_x,goal_y):
+        self.s_x=start_x
+        self.s_y=start_y
+        self.g_x=goal_x
+        self.g_y=goal_y
 
 
         
@@ -291,7 +328,6 @@ class PathPlanning:
         ##Create the search graph
         stroke_groups = list(np.unique(np.array(edge_gdf['stroke_group'].values)))
         #edge_keys = list(G.edges())[0][0]
-        edge_keys = G.edges[0][0]
         
         #Create the graph
         self.graph=[]
@@ -384,16 +420,6 @@ class PathPlanning:
                         break
         
             
-        self.s_x=G._node[self.start_id]['x']
-        self.s_y=G._node[self.start_id]['y']
-        self.g_x=G._node[self.goal_id]['x']
-        self.g_y=G._node[self.goal_id]['y']
-        
-        global start_x,start_y,goal_x,goal_y
-        start_x=self.s_x
-        start_y=self.s_y
-        goal_x=self.g_x
-        goal_y=self.g_y
                              
     def plan(self):
                 
@@ -402,10 +428,11 @@ class PathPlanning:
         #key=G_list[start_id]
 
 
-        #start_index=osmnx.distance.nearest_nodes(G,self.s_x,self.s_y, return_dist=False)
-        #goal_index=osmnx.distance.nearest_nodes(G,self.g_x,self.g_y, return_dist=False)
-        start_index=self.start_id
-        goal_index=self.goal_id
+     
+        start_index=nearest_node(G,self.s_x,self.s_y)
+        goal_index=nearest_node(G,self.g_x,self.g_y)
+        #start_index=self.start_id
+        #goal_index=self.goal_id
         
         for i in self.graph:
             if i.key_index==start_index:
@@ -442,7 +469,8 @@ class PathPlanning:
 
 ########################
 
-G= pickle.load(open("GG.pickle", "rb"))#load G
+# G= pickle.load(open("GG.pickle", "rb"))#load G
+G= pickle.load(open("G-multigraph.pickle", "rb"))#load G
 
 with open('g.pickle', 'rb') as f:
      g = pickle.load(f)
@@ -450,10 +478,16 @@ edges_geometry=pickle.load(open("edges_geometry.pickle", "rb"))#load edges_geome
 
 
 #provide the start and destination osmx keys
-start_index=378727
-goal_index=655018
+#start_index=378727
+#goal_index=655018
 
-plan1=PathPlanning(start_index,goal_index)
+#plan1=PathPlanning(start_index,goal_index)
+
+start_x=16.3281
+start_y=48.223
+goal_x=16.34
+goal_y=48.225
+plan1=PathPlanning(start_x,start_y,goal_x,goal_y)
 
 route=[] #the list containing the points of the route
 turns=[] #list to show if each point is a turn (1) or a flyover point (0)

@@ -54,3 +54,5 @@ for i in omsnx_keys_list:
 osG.edges=list(G.edges())
 
 pickle.dump(osG, file = open("GG.pickle", "wb"))
+
+pickle.dump(G, file = open("G-multigraph.pickle", "wb"))
