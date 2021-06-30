@@ -137,7 +137,7 @@ def main():
     route = hierholzer(G_euler)
     
     ox.plot_graph(G_euler)
-    #ox.plot_graph_route(G_euler, route)
+    ox.plot_graph_route(G_euler, route)
     
     # save as osmnx graph
     ox.save_graphml(G, filepath=path.join(gis_data_path, 'street_graph', 'processed_graph.graphml'))
