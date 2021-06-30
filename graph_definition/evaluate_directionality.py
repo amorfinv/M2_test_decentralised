@@ -5,10 +5,12 @@ Created on Tue Jun 29 13:55:27 2021
 @author: nipat
 ## code bassed on : https://www.redblobgames.com/pathfinding/a-star/implementation.html"""
 
-import osmnx
+import osmnx as ox
 import matplotlib.pyplot as plt
 import numpy as np
 import heapq
+import os
+from typing import Protocol, Dict, List, Iterator, Tuple, TypeVar, Optional
 
 #create a node class for each osmnx node
 class Node:
@@ -82,7 +84,10 @@ def dijkstra_search(graph, start, goal,printPaths=False):
 
 
 ##Load the street map
-G = osmnx.io.load_graphml(filepath='C:/Users/nipat/Downloads/M2_test_scenario-main/M2_test_scenario-main/graph_definition/gis/data/street_graph/processed_graph1.graphml')
+dir_path = os.path.dirname(os.path.realpath(__file__))
+graph_path = dir_path.replace('graph_definition', 
+          'graph_definition/gis/data/street_graph/processed_graph.graphml')
+G = ox.io.load_graphml(graph_path)
 omsnx_keys_list=list(G._node.keys())
 G_list=list(G._node)
 
@@ -107,12 +112,12 @@ start_node=graph[key]
 x_start=G._node[key]['x']
 y_start=G._node[key]['y']
 
-##Define the goals, it is a lost of osmnx keys 
+##Define the goals, it is a list of osmnx keys 
 goals=[]
-goal_id=0
+goal_id=6
 key=G_list[goal_id]
 goals.append(key)
-goal_id=56
+goal_id=80
 key=G_list[goal_id]
 goals.append(key)
 
@@ -127,7 +132,7 @@ print(start_node.key)
 print(costs)
 
 ##Print paths
-fig, ax = osmnx.plot_graph(G,node_color="w",show=False,close=False)
+fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
 x_list=[]
 y_list=[]
 for g in goals:

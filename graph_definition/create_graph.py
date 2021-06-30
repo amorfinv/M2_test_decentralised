@@ -68,6 +68,8 @@ def main():
 
     # Perform COINS algorithm to add stroke groups
     edges = coins.COINS(edges)
+    
+    print(edges)
 
     # set directionality of groups with one edge
     edge_directions = [(33302019, 378727, 0),   # group 0
