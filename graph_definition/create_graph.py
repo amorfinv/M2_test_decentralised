@@ -3,6 +3,7 @@ import networkx as nx
 from matplotlib import pyplot as plt
 from funcs import coins, graph_funcs
 from os import path
+from hierholzer import hierholzer
 
 # use osmnx environment here
 
@@ -68,8 +69,6 @@ def main():
 
     # Perform COINS algorithm to add stroke groups
     edges = coins.COINS(edges)
-    
-    print(edges)
 
     # set directionality of groups with one edge
     edge_directions = [(33302019, 378727, 0),   # group 0
@@ -125,6 +124,11 @@ def main():
     # create graph and save edited
     G = ox.graph_from_gdfs(nodes, edges)
 
+    # Apply the hierholzer algorithm, get the circuit
+    route = hierholzer(nx.eulerize(ox.get_undirected(G)))
+    
+    ox.plot_graph_route(G, route)
+    
     # save as osmnx graph
     ox.save_graphml(G, filepath=path.join(gis_data_path, 'street_graph', 'processed_graph.graphml'))
 

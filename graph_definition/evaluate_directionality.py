@@ -117,7 +117,7 @@ goals=[]
 goal_id=6
 key=G_list[goal_id]
 goals.append(key)
-goal_id=80
+goal_id=70
 key=G_list[goal_id]
 goals.append(key)
 
