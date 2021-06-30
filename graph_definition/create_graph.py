@@ -26,7 +26,7 @@ def main():
     G = graph_funcs.remove_unconnected_streets(G)
     ox.add_edge_bearings(G)
     
-    ox.plot.plot_graph(G)
+    #ox.plot.plot_graph(G)
 
     # manually remove some nodes and edges to clean up graph
     nodes_to_remove = [33144419, 33182073, 33344823, 83345330, 33345337,
@@ -43,7 +43,7 @@ def main():
     G.remove_nodes_from(nodes_to_remove)
     G.remove_edges_from(edges_to_remove)
     
-    ox.plot.plot_graph(G)
+    #ox.plot.plot_graph(G)
 
     # convert graph to geodataframe
     g = ox.graph_to_gdfs(G)
@@ -124,10 +124,20 @@ def main():
     # create graph and save edited
     G = ox.graph_from_gdfs(nodes, edges)
 
-    # Apply the hierholzer algorithm, get the circuit
-    route = hierholzer(nx.eulerize(ox.get_undirected(G)))
+    # get undirected graph
+    G_un = ox.get_undirected(G)
+
+    # get eulerized graph
+    G_euler = nx.eulerize(G_un)
+
+    # add geometry info to added edges
+    ox.distance.add_edge_lengths(G_euler)
     
-    ox.plot_graph_route(G, route)
+    # # Apply the hierholzer algorithm, get the circuit
+    route = hierholzer(G_euler)
+    
+    ox.plot_graph(G_euler)
+    #ox.plot_graph_route(G_euler, route)
     
     # save as osmnx graph
     ox.save_graphml(G, filepath=path.join(gis_data_path, 'street_graph', 'processed_graph.graphml'))
