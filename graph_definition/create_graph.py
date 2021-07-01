@@ -71,7 +71,7 @@ def main():
     edges = coins.COINS(edges)
 
     # set directionality of groups with one edge
-    edge_directions = [(33302019, 378727, 0),   # group 0
+    edge_directions = [(378727, 33302019, 0),   # group 0
                     (33144416, 33144414, 0),    # group 1
                     (30696015, 64975746, 0),    # group 2
                     (378728, 33345331, 0),      # group 3
@@ -136,8 +136,8 @@ def main():
     # # Apply the hierholzer algorithm, get the circuit
     route = hierholzer(G_euler)
     
-    ox.plot_graph(G_euler)
-    ox.plot_graph_route(G_euler, route)
+    #ox.plot_graph(G_euler)
+    #ox.plot_graph_route(G_euler, route)
     
     # save as osmnx graph
     ox.save_graphml(G, filepath=path.join(gis_data_path, 'street_graph', 'processed_graph.graphml'))

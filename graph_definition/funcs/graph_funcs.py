@@ -498,7 +498,8 @@ def set_direction(edges, edge_directions):
         # create a copy of edge_in_group for while loop. TODO: smarter way to do this
         edges_removed = edge_in_group
         numb_edges_stroke = len(edge_in_group)
-
+        search_direct_front = True  # true if searching from front
+        search_direct_back = True
         while len(edges_removed):
             curr_edge = edge_in_group.iloc[jdx]
             curr_index = edge_uv[jdx]
@@ -543,17 +544,39 @@ def set_direction(edges, edge_directions):
 
             # set new jdx based on current edge (only if not last edge)
             if not idx == numb_edges_stroke - 1:
-                node_to_find = new_index[1]
-                edge_with_node = [item for item in edge_uv if node_to_find in item]
-                edge_with_node.remove(curr_index)
-                next_edge = edge_with_node[0]
-                jdx = edge_uv.index(next_edge)
+                # front node
+                node_to_find_front = new_index[1]
+                edge_with_node_front = [item for item in edge_uv if node_to_find_front in item]
 
-                # set desired direction for next edge
-                if node_to_find == next_edge[0]:
-                    group_direction = next_edge
-                else:
-                    group_direction = (next_edge[1], next_edge[0], 0)
+                # back node
+                node_to_find_back = new_index[0]
+                edge_with_node_back = [item for item in edge_uv if node_to_find_back in item]
+
+                # either go forwards or backwards
+                edge_with_node_front.remove(curr_index)
+                edge_with_node_back.remove(curr_index)
+
+                if (edge_with_node_front and search_direct_front):
+                    search_direct_back = False
+                    next_edge = edge_with_node_front[0]
+                    jdx = edge_uv.index(next_edge)
+
+                    # set desired direction for next edge
+                    if node_to_find_front == next_edge[0]:
+                        group_direction = next_edge
+                    else:
+                        group_direction = (next_edge[1], next_edge[0], 0)
+                
+                elif (edge_with_node_back and search_direct_back):
+                    search_direct_front = False
+                    next_edge = edge_with_node_back[0]
+                    jdx = edge_uv.index(next_edge)
+
+                    # set desired direction for next edge
+                    if node_to_find_back == next_edge[1]:
+                        group_direction = next_edge
+                    else:
+                        group_direction = (next_edge[1], next_edge[0], 0)
             
             # advance counter
             idx = idx + 1
