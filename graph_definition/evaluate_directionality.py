@@ -5,10 +5,12 @@ Created on Tue Jun 29 13:55:27 2021
 @author: nipat
 ## code bassed on : https://www.redblobgames.com/pathfinding/a-star/implementation.html"""
 
-import osmnx
+import osmnx as ox
 import matplotlib.pyplot as plt
 import numpy as np
 import heapq
+from typing import Protocol, Dict, List, Iterator, Tuple, TypeVar, Optional
+import os
 
 #create a node class for each osmnx node
 class Node:
@@ -33,8 +35,16 @@ class PriorityQueue:
         return heapq.heappop(self.elements)[2]
 
 
-def dijkstra_search(graph, start, goal,printPaths=False):
-    goals_duplicate=goal.copy()
+def dijkstra_search_multiple(graph, starts, goals, printPaths = False):
+    totalcost = 0
+    for start in starts:
+        costs = dijkstra_search(graph, start, goals, printPaths)
+        totalcost += sum(costs.values())
+    return totalcost
+
+
+def dijkstra_search(graph, start, goals, printPaths=False):
+    goals_duplicate=goals.copy()
     start.c=0#const to start from start is 0
     frontier = PriorityQueue()
     frontier.put(start, 0)
@@ -66,7 +76,7 @@ def dijkstra_search(graph, start, goal,printPaths=False):
                 came_from[next] = current.key
          
     for g in goal:
-        costs[g]=-1# if no path is foucn cost=-1
+        costs[g]=100000# if no path is foucn cost=-1
     if printPaths:
         for g in goals_duplicate:
             if not g in goal:
@@ -80,14 +90,13 @@ def dijkstra_search(graph, start, goal,printPaths=False):
                     cc=came_from[cc]
                 paths[g]=route
         return costs, paths
-    
-
-
     return costs
 
 
 ##Load the street map
-G = osmnx.io.load_graphml(filepath='C:/Users/nipat/Downloads/M2_test_scenario-main/M2_test_scenario-main/graph_definition/gis/data/street_graph/processed_graph.graphml')
+dir_path = os.path.dirname(os.path.realpath(__file__))
+graph_path = dir_path.replace('graph_definition','graph_definition/gis/data/street_graph/processed_graph.graphml')
+G = ox.io.load_graphml(graph_path)
 omsnx_keys_list=list(G._node.keys())
 G_list=list(G._node)
 
@@ -114,12 +123,15 @@ y_start=G._node[key]['y']
 
 ##Define the goals, it is a lost of osmnx keys 
 goals=[]
-goal_id=6
-key=G_list[goal_id]
-goals.append(key)
-goal_id=70
-key=G_list[goal_id]
-goals.append(key)
+# goal_id=6
+# key=G_list[goal_id]
+# goals.append(key)
+# goal_id=80
+# key=G_list[goal_id]
+# goals.append(key)
+
+for goal in [1,2,3,4,5,6,7,8,9,10, 11, 12,13,14,15,16,45,67,34,87,54,27]:
+    goals.append(G_list[goal])
 
 #here call the path planning algortihm, it needs defined a s a dictionary as shown above, 
 ##the start node and a list of the osmnx keys of the desired goal nodes
@@ -132,7 +144,7 @@ print(start_node.key)
 print(costs)
 
 ##Print paths
-fig, ax = osmnx.plot_graph(G,node_color="w",show=False,close=False)
+fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
 x_list=[]
 y_list=[]
 for g in paths.keys():
