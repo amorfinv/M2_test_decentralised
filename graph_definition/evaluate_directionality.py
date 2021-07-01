@@ -40,11 +40,12 @@ def dijkstra_search_multiple(graph, starts, goals, printPaths = False):
     for start in starts:
         costs = dijkstra_search(graph, start, goals, printPaths)
         totalcost += sum(costs.values())
+    print(totalcost)
     return totalcost
 
 
-def dijkstra_search(graph, start, goals, printPaths=False):
-    goals_duplicate=goals.copy()
+def dijkstra_search(graph, start, goal, printPaths=False):
+    goals_duplicate=goal.copy()
     start.c=0#const to start from start is 0
     frontier = PriorityQueue()
     frontier.put(start, 0)
@@ -92,7 +93,7 @@ def dijkstra_search(graph, start, goals, printPaths=False):
         return costs, paths
     return costs
 
-
+'''
 ##Load the street map
 dir_path = os.path.dirname(os.path.realpath(__file__))
 graph_path = dir_path.replace('graph_definition','graph_definition/gis/data/street_graph/processed_graph.graphml')
@@ -155,3 +156,4 @@ for g in paths.keys():
 ax.scatter(x_list,y_list, color='g')
 ax.scatter(x_start,y_start, color='b')
 plt.show()
+'''

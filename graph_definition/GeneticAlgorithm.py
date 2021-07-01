@@ -12,13 +12,22 @@ from deap import base
 from deap import creator
 from deap import tools
 from os import path
+import numpy as np
 from funcs import coins, graph_funcs
 from evaluate_directionality import dijkstra_search_multiple
 import random
+import os
+
+class Node:
+    def __init__(self,key,x,y):
+        self.key=key
+        self.x=x
+        self.y=y
+        self.children={}# each element of neigh is like [ox_key,edge_cost] 
 
 class GeneticAlgorithm:
     def GeneticAlgorithm(self):
-        self.orig_nodes = [30696015, 3155094143, 33345321,  25280685, 1119870220, 33302019,
+        self.orig_nodes_numbers = [30696015, 3155094143, 33345321,  25280685, 1119870220, 33302019,
                   33144416, 378696, 33143911, 264055537, 33144706, 33144712, 
                   33144719, 92739749]
     
@@ -26,74 +35,18 @@ class GeneticAlgorithm:
                       3963787755, 33345333, 378699, 33144821, 264061926, 33144695,
                       33174086, 33345331]
         
-        ################################## CREATE GRAPH #####################################
-        # working paths
-        gis_data_path = path.join('gis','data')
-    
-        # convert shapefile to shapely polygon
-        center_poly = graph_funcs.poly_shapefile_to_shapely(path.join(gis_data_path, 'street_info', 'new_poly_shapefile.shp'))
-    
-        # create MultiDigraph from polygon
-        G = ox.graph_from_polygon(center_poly, network_type='drive', simplify=True)
-    
-        # save as osmnx graph
-        ox.save_graphml(G, filepath=path.join(gis_data_path, 'street_graph', 'raw_streets.graphml'))
-        ox.save_graph_geopackage(G, filepath=path.join(gis_data_path, 'street_graph', 'raw_graph.gpkg'))
-    
-        # remove unconnected streets and add edge bearing attrbute 
-        G = graph_funcs.remove_unconnected_streets(G)
-        ox.add_edge_bearings(G)
-        
-        #ox.plot.plot_graph(G)
-    
-        # manually remove some nodes and edges to clean up graph
-        nodes_to_remove = [33144419, 33182073, 33344823, 83345330, 33345337,
-                           33345330, 33344804, 30696018, 5316966255, 5316966252, 33344821,
-                           2335589819, 245498397, 287914700, 271016303, 2451285012, 393097]
-        edges_to_remove = [(291088171, 3155094143), (60957703, 287914700), (2451285012, 287914700),
-                           (25280685, 30696019), (30696019, 25280685), (392251, 25280685), 
-                           (25280685, 392251), (33301346, 1119870220),  
-                           (33345331, 33345333), (378699, 378696), (378696, 33143911), 
-                           (33143911, 33144821), (264061926, 264055537), (33144706, 33144712),
-                           (33144712, 33174086), (33174086, 33144719), (33144719, 92739749),
-                           (33345319, 29048469), (287914700, 60957703), (213287623, 251207325),
-                           (251207325, 213287623)]
-        G.remove_nodes_from(nodes_to_remove)
-        G.remove_edges_from(edges_to_remove)
-        
-        #ox.plot.plot_graph(G)
-    
-        # convert graph to geodataframe
-        g = ox.graph_to_gdfs(G)
-    
-        # # get node and edge geodataframe
+        self.orig_nodes = []
+        ################################## LOAD #####################################
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        graph_path = dir_path.replace('graph_definition','graph_definition/gis/data/street_graph/processed_graph.graphml')
+        self.G = ox.io.load_graphml(graph_path)
+            
+        g = ox.graph_to_gdfs(self.G)
+        self.edges = g[1]
         self.nodes = g[0]
-        edges = g[1]
-    
-        # remove double two way edges
-        edges = graph_funcs.remove_two_way_edges(edges)
-    
-        # remove non parallel opposite edges (or long way)
-        edges = graph_funcs.remove_long_way_edges(edges)
-    
-        # allocated edge height based on cardinal method
-        layer_allocation, _ = graph_funcs.allocate_edge_height(edges, 0)
-    
-        # Assign layer allocation to geodataframe
-        edges['layer_height'] = layer_allocation
-    
-        # # add interior angles at all intersections
-        edges = graph_funcs.add_edge_interior_angles(edges)
-    
-        # Perform COINS algorithm to add stroke groups
-        self.edges = coins.COINS(edges)
-        
-        ##########################################################################
-        # Until here, we have a graph, but the groups are undirected. We will apply
-        # an initial condition.
     
         # set directionality of groups with one edge
-        self.init_directions = [(33302019, 378727, 0),   # group 0
+        self.edge_directions = [(33302019, 378727, 0),   # group 0
                         (33144416, 33144414, 0),    # group 1
                         (30696015, 64975746, 0),    # group 2
                         (378728, 33345331, 0),      # group 3
@@ -144,27 +97,105 @@ class GeneticAlgorithm:
         
         # Start genetic algorithm
         creator.create("FitnessMin", base.Fitness, weights = (-1.0,))
-        creator.create("Individual", self.boollist, fitness = creator.FitnessMin)
+        creator.create("Individual", list, fitness = creator.FitnessMin)
         
         toolbox = base.Toolbox()
         
-        toolbox.register("n_per_product", self.n_per_product)
+        toolbox.register("boollist", self.boollist)
+        toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.boollist, n=1)
+        toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+        
+        toolbox.register("evaluate", self.CostFunction)
+        toolbox.register("mate", tools.cxTwoPoint)
+        toolbox.register("mutate", tools.mutFlipBit, indpb = 0.05)
+        toolbox.register("select", tools.selTournament, tournsize=3)
+        
+        # Do algorithm
+        pop = toolbox.population(n = 15)
+        fitnesses = list(map(toolbox.evaluate, pop))
+        for ind, fit in zip(pop, fitnesses):
+            ind.fitness.values = fit
+            
+        CXPB, MUTPB = 0.5, 0.2
+        
+        fits = [ind.fitness.values[0] for ind in pop]
+        
+        g = 0
+        
+        while g<20:
+            g = g + 1
+            offspring = toolbox.select(pop, len(pop))
+            offspring = list(map(toolbox.clone, offspring))
+            
+            for child1, child2 in zip(offspring[::2], offspring[1::2]):
+                if random.random() < CXPB:
+                    del child1.fitness.values
+                    del child2.fitness.values
+                    
+            for mutant in offspring:
+                if random.random() < MUTPB:
+                    toolbox.mutate(mutant[0])
+                    del mutant.fitness.values
+                    
+            invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+            fitnesses = map(toolbox.evaluate, invalid_ind)
+            for ind, fit in zip(invalid_ind, fitnesses):
+                ind.fitness.values = fit
+                
+            pop[:] = offspring
+            
+            fits = [ind.fitness.values[0] for ind in pop]
+        
+        best = pop[np.argmin([toolbox.evaluate(x) for x in pop])]
+        return best
+            
         
         
-        
-    def boollist():
+    def boollist(self):
         return [random.randint(0,1) for i in range(45)]
         
-    def n_per_product():
-        return [0] * 45
-    
     def CostFunction(self, bool_list):
+        print(bool_list[0])
+        # Make a copy of edge directions
+        directions = self.edge_directions.copy()
+        # Change direction in function of bool_list
+        for i in range(len(bool_list[0])):
+            if i == 1 or i == True:
+                direction = directions[i]
+                direction = (direction[1], direction[0], direction[2])
+                directions[i] = direction
+                
         # reoroder edge geodatframe
         self.edges = graph_funcs.set_direction(self.edges, self.edge_directions)
         
-        # create graph
-        G = ox.graph_from_gdfs(self.nodes, self.edges)
+        self.G = ox.graph_from_gdfs(self.nodes, self.edges)
+        
+        # Process nodes to put em in the right form
+        omsnx_keys_list=list(self.G._node.keys())
+        G_list=list(self.G._node)
+        
+        ###Initialise the graph for the search
+        self.graph={}
+        for i in range(len(omsnx_keys_list)):
+            key=omsnx_keys_list[i]
+            x=self.G._node[key]['x']
+            y=self.G._node[key]['y']
+            node=Node(key,x,y)
+            children=list(self.G._succ[key].keys())
+            for ch in children:
+                cost=self.G[key][ch][0]['length']
+                node.children[ch]=cost
+            
+            self.graph[key]=node
+            
+        for i, node in enumerate(self.orig_nodes_numbers):
+            self.orig_nodes.append(self.graph[node])
         
         # Get cost
-        cost = dijkstra_search_multiple(G, self.orig_nodes, self.dest_nodes)
+        cost = dijkstra_search_multiple(self.graph, self.orig_nodes, self.dest_nodes)
         return cost
+    
+# Let's do genetics
+GA = GeneticAlgorithm()
+
+print(GA.GeneticAlgorithm())
