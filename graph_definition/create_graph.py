@@ -1,7 +1,7 @@
 import osmnx as ox
 import networkx as nx
 from matplotlib import pyplot as plt
-from funcs import coins, graph_funcs
+from funcs import coins_fancy, graph_funcs
 from os import path
 from hierholzer import hierholzer
 
@@ -68,7 +68,9 @@ def main():
     edges = graph_funcs.add_edge_interior_angles(edges)
 
     # Perform COINS algorithm to add stroke groups
-    edges = coins.COINS(edges)
+    coins_obj = coins_fancy.COINS(edges)
+    edges['stroke_group'] = coins_obj.stroke_attribute()
+    group_gdf = coins_obj.stroke_gdf()
 
     # set directionality of groups with one edge
     edge_directions = [(33302019, 378727, 0),   # group 0
