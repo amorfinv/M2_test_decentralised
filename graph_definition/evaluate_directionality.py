@@ -93,7 +93,7 @@ def dijkstra_search(graph, start, goal, printPaths=False):
         return costs, paths
     return costs
 
-'''
+
 ##Load the street map
 dir_path = os.path.dirname(os.path.realpath(__file__))
 graph_path = dir_path.replace('graph_definition','graph_definition/gis/data/street_graph/processed_graph.graphml')
@@ -116,11 +116,13 @@ for i in range(len(omsnx_keys_list)):
     graph[key]=node
 
 ##Define the start node
-start_id=23
-key=G_list[start_id]
-start_node=graph[key] 
-x_start=G._node[key]['x']
-y_start=G._node[key]['y']
+starts = []
+for start_id in [1,2,6,3,7]:
+    # start_id=23
+    key=G_list[start_id]
+    starts.append(graph[key]) 
+    # x_start=G._node[key]['x']
+    # y_start=G._node[key]['y']
 
 ##Define the goals, it is a lost of osmnx keys 
 goals=[]
@@ -139,21 +141,21 @@ for goal in [1,2,3,4,5,6,7,8,9,10, 11, 12,13,14,15,16,45,67,34,87,54,27]:
 #the function returns a dictionary with the keys being the keys of the goal nodes 
 ##and the values of each key is the length of the path from the start to that node expressed in meters
 ##If you want the function to also return the paths you need to put True as the forth input, that will increase the memory and time consumption of the function
-costs,paths= dijkstra_search(graph,start_node,goals.copy(),True)
+# costs,paths= dijkstra_search(graph,start_node,goals.copy(),True)
 
-print(start_node.key)
-print(costs)
+# print(start_node.key)
+# print(costs)
 
-##Print paths
-fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
-x_list=[]
-y_list=[]
-for g in paths.keys():
-    for r in paths[g]:
-        x_list.append(r[0])
-        y_list.append(r[1])
+# ##Print paths
+# fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
+# x_list=[]
+# y_list=[]
+# for g in paths.keys():
+#     for r in paths[g]:
+#         x_list.append(r[0])
+#         y_list.append(r[1])
 
-ax.scatter(x_list,y_list, color='g')
-ax.scatter(x_start,y_start, color='b')
-plt.show()
-'''
+# ax.scatter(x_list,y_list, color='g')
+# ax.scatter(x_start,y_start, color='b')
+# plt.show()
+
