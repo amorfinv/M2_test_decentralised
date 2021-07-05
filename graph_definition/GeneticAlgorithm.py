@@ -35,16 +35,6 @@ class GeneticAlgorithm:
         self.dest_nodes = [291088171,  60957703, 30696019, 392251, 33301346, 26405238, 
                       3963787755, 33345333, 378699, 33144821, 264061926, 33144695,
                       33174086, 33345331]
-        
-        self.orig_nodes = []
-        ################################## LOAD #####################################
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        graph_path = dir_path.replace('graph_definition','graph_definition/gis/data/street_graph/processed_graph.graphml')
-        G = ox.io.load_graphml(graph_path)
-            
-        g = ox.graph_to_gdfs(G)
-        self.edges = g[1]
-        self.nodes = g[0]
     
         # set directionality of groups with one edge
         self.edge_directions = [(33302019, 378727, 0),   # group 0
@@ -95,63 +85,61 @@ class GeneticAlgorithm:
                         (64975131, 60957703, 0)     # group 45 
                         ]
         
-        while True:
-            print(self.CostFunction(self.boollist()))
         
+        # Start genetic algorithm
+        creator.create("FitnessMin", base.Fitness, weights = (-1.0,))
+        creator.create("Individual", list, fitness = creator.FitnessMin)
         
-        # # Start genetic algorithm
-        # creator.create("FitnessMin", base.Fitness, weights = (-1.0,))
-        # creator.create("Individual", list, fitness = creator.FitnessMin)
+        toolbox = base.Toolbox()
         
-        # toolbox = base.Toolbox()
+        toolbox.register("boollist", self.boollist)
+        toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.boollist, n=1)
+        toolbox.register("population", tools.initRepeat, list, toolbox.individual)
         
-        # toolbox.register("boollist", self.boollist)
-        # toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.boollist, n=1)
-        # toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+        toolbox.register("evaluate", self.CostFunction)
+        toolbox.register("mate", tools.cxTwoPoint)
+        toolbox.register("mutate", tools.mutFlipBit, indpb = 0.05)
+        toolbox.register("select", tools.selTournament, tournsize=3)
         
-        # toolbox.register("evaluate", self.CostFunction)
-        # toolbox.register("mate", tools.cxTwoPoint)
-        # toolbox.register("mutate", tools.mutFlipBit, indpb = 0.05)
-        # toolbox.register("select", tools.selTournament, tournsize=3)
-        
-        # # Do algorithm
-        # pop = toolbox.population(n = 15)
-        # fitnesses = list(map(toolbox.evaluate, pop))
-        # for ind, fit in zip(pop, fitnesses):
-        #     ind.fitness.values = fit
+        # Do algorithm
+        pop = toolbox.population(n = 50)
+        fitnesses = list(map(toolbox.evaluate, pop))
+        print(fitnesses)
+        for ind, fit in zip(pop, fitnesses):
+            ind.fitness.values = fit
             
-        # CXPB, MUTPB = 0.5, 0.2
+        CXPB, MUTPB = 0.5, 0.2
         
-        # fits = [ind.fitness.values[0] for ind in pop]
+        fits = [ind.fitness.values[0] for ind in pop]
         
-        # g = 0
+        g = 0
         
-        # while g<20:
-        #     g = g + 1
-        #     offspring = toolbox.select(pop, len(pop))
-        #     offspring = list(map(toolbox.clone, offspring))
+        while g<300:
+            g = g + 1
+            offspring = toolbox.select(pop, len(pop))
+            offspring = list(map(toolbox.clone, offspring))
             
-        #     for child1, child2 in zip(offspring[::2], offspring[1::2]):
-        #         if random.random() < CXPB:
-        #             del child1.fitness.values
-        #             del child2.fitness.values
+            for child1, child2 in zip(offspring[::2], offspring[1::2]):
+                if random.random() < CXPB:
+                    del child1.fitness.values
+                    del child2.fitness.values
                     
-        #     for mutant in offspring:
-        #         if random.random() < MUTPB:
-        #             toolbox.mutate(mutant[0])
-        #             del mutant.fitness.values
+            for mutant in offspring:
+                if random.random() < MUTPB:
+                    toolbox.mutate(mutant[0])
+                    del mutant.fitness.values
                     
-        #     invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-        #     fitnesses = map(toolbox.evaluate, invalid_ind)
-        #     for ind, fit in zip(invalid_ind, fitnesses):
-        #         ind.fitness.values = fit
+            invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+            fitnesses = map(toolbox.evaluate, invalid_ind)
+            for ind, fit in zip(invalid_ind, fitnesses):
+                ind.fitness.values = fit
                 
-        #     pop[:] = offspring
+            pop[:] = offspring
             
-        #     fits = [ind.fitness.values[0] for ind in pop]
+            fits = [ind.fitness.values[0] for ind in pop]
         
-        # best = pop[np.argmin([toolbox.evaluate(x) for x in pop])]
-        # return best
+        best = pop[np.argmin([toolbox.evaluate(x) for x in pop])]
+        return best
             
         
         
@@ -159,13 +147,21 @@ class GeneticAlgorithm:
         return [random.randint(0,1) for i in range(46)]
         
     def CostFunction(self, bool_list):
+        ################################## LOAD #####################################
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        graph_path = dir_path.replace('graph_definition',
+            'graph_definition/gis/data/street_graph/processed_graph.graphml')
+        G_init = ox.io.load_graphml(graph_path)
+            
+        g = ox.graph_to_gdfs(G_init)
+        edges = g[1]
+        nodes = g[0]
         # Make a copy of edge directions
-        directions = self.edge_directions.copy()
-        edges = copy.copy(self.edges)
-        nodes = copy.copy(self.nodes)
+        directions = copy.copy(self.edge_directions)
+        dest_nodes = copy.copy(self.dest_nodes)
         # Change direction in function of bool_list
-        for i in range(len(bool_list)):
-            if i == 1 or i == True:
+        for i in range(len(bool_list[0])):
+            if bool_list[0][i] == 1 or bool_list[0][i] == True:
                 direction = copy.copy(directions[i])
                 directions[i] = (direction[1], direction[0], direction[2])
                 
@@ -173,7 +169,6 @@ class GeneticAlgorithm:
         edges_new = graph_funcs.set_direction(edges, directions)
         
         print(bool_list)
-        print(edges_new)
         
         G = ox.graph_from_gdfs(nodes, edges_new)
         
@@ -199,7 +194,7 @@ class GeneticAlgorithm:
             orig_nodes.append(graph[node])
         
         # Get cost
-        cost = dijkstra_search_multiple(graph, orig_nodes, self.dest_nodes)
+        cost = dijkstra_search_multiple(graph, orig_nodes, dest_nodes)
         return cost
     
 # Let's do genetics

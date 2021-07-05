@@ -11,6 +11,7 @@ import numpy as np
 import heapq
 from typing import Protocol, Dict, List, Iterator, Tuple, TypeVar, Optional
 import os
+import copy
 
 #create a node class for each osmnx node
 class Node:
@@ -41,11 +42,11 @@ def dijkstra_search_multiple(graph, starts, goals, printPaths = False):
         costs = dijkstra_search(graph, start, goals, printPaths)
         totalcost += sum(costs.values())
     print(totalcost)
-    return totalcost
+    return totalcost, 
 
 
 def dijkstra_search(graph, start, goal, printPaths=False):
-    goals_duplicate=goal.copy()
+    goals_duplicate=copy.copy(goal)
     start.c=0#const to start from start is 0
     frontier = PriorityQueue()
     frontier.put(start, 0)
@@ -94,38 +95,38 @@ def dijkstra_search(graph, start, goal, printPaths=False):
     return costs
 
 
-##Load the street map
-dir_path = os.path.dirname(os.path.realpath(__file__))
-graph_path = dir_path.replace('graph_definition','graph_definition/gis/data/street_graph/processed_graph.graphml')
-G = ox.io.load_graphml(graph_path)
-omsnx_keys_list=list(G._node.keys())
-G_list=list(G._node)
+# ##Load the street map
+# dir_path = os.path.dirname(os.path.realpath(__file__))
+# graph_path = dir_path.replace('graph_definition','graph_definition/gis/data/street_graph/processed_graph.graphml')
+# G = ox.io.load_graphml(graph_path)
+# omsnx_keys_list=list(G._node.keys())
+# G_list=list(G._node)
 
-###Initialise the graph for the search
-graph={}
-for i in range(len(omsnx_keys_list)):
-    key=omsnx_keys_list[i]
-    x=G._node[key]['x']
-    y=G._node[key]['y']
-    node=Node(key,x,y)
-    children=list(G._succ[key].keys())
-    for ch in children:
-        cost=G[key][ch][0]['length']
-        node.children[ch]=cost
+# ###Initialise the graph for the search
+# graph={}
+# for i in range(len(omsnx_keys_list)):
+#     key=omsnx_keys_list[i]
+#     x=G._node[key]['x']
+#     y=G._node[key]['y']
+#     node=Node(key,x,y)
+#     children=list(G._succ[key].keys())
+#     for ch in children:
+#         cost=G[key][ch][0]['length']
+#         node.children[ch]=cost
     
-    graph[key]=node
+#     graph[key]=node
 
 ##Define the start node
-starts = []
-for start_id in [1,2,6,3,7]:
+# starts = []
+# for start_id in [56, 84]:
     # start_id=23
-    key=G_list[start_id]
-    starts.append(graph[key]) 
+    # key=G_list[start_id]
+    # starts.append(graph[key]) 
     # x_start=G._node[key]['x']
     # y_start=G._node[key]['y']
 
 ##Define the goals, it is a lost of osmnx keys 
-goals=[]
+# goals=[]
 # goal_id=6
 # key=G_list[goal_id]
 # goals.append(key)
@@ -133,8 +134,8 @@ goals=[]
 # key=G_list[goal_id]
 # goals.append(key)
 
-for goal in [1,2,3,4,5,6,7,8,9,10, 11, 12,13,14,15,16,45,67,34,87,54,27]:
-    goals.append(G_list[goal])
+# for goal in [1,2,3,4,5,6,7,8,9,10, 11, 12,13,14,15,16,45,67,34,87,54,27]:
+#     goals.append(G_list[goal])
 
 #here call the path planning algortihm, it needs defined a s a dictionary as shown above, 
 ##the start node and a list of the osmnx keys of the desired goal nodes
@@ -142,7 +143,10 @@ for goal in [1,2,3,4,5,6,7,8,9,10, 11, 12,13,14,15,16,45,67,34,87,54,27]:
 ##and the values of each key is the length of the path from the start to that node expressed in meters
 ##If you want the function to also return the paths you need to put True as the forth input, that will increase the memory and time consumption of the function
 # costs,paths= dijkstra_search(graph,start_node,goals.copy(),True)
-
+# i = 0
+# while i < 100:
+#     dijkstra_search_multiple(graph, starts, goals, printPaths = False)
+#     i += 1
 # print(start_node.key)
 # print(costs)
 
