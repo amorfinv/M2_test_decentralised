@@ -5,6 +5,7 @@ from funcs import coins_fancy, graph_funcs
 from os import path
 from hierholzer import hierholzer
 from directionality import calcDirectionality
+import copy
 
 # use osmnx environment here
 
@@ -121,6 +122,13 @@ def main():
                     (33345321, 33345291, 0),    # group 44
                     (64975131, 60957703, 0)     # group 45 
                     ]
+    # direction bool coming out of genetic algorithm (cost 19382.145). Switch directions based on this
+    bool_list = [[0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0]]
+    for i in range(len(bool_list[0])):
+        if bool_list[0][i] == 1 or bool_list[0][i] == True:
+            direction = copy.copy(edge_directions[i])
+            edge_directions[i] = (direction[1], direction[0], direction[2])
+
     # Apply direction algorithm
     edge_directions = calcDirectionality(group_gdf, edge_directions)
     
