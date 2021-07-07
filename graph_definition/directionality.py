@@ -6,45 +6,86 @@ Created on Fri Jul  2 15:00:22 2021
 """
 import numpy as np
 from shapely.geometry import LineString
+from shapely.strtree import STRtree
+from shapely.ops import nearest_points
 from rtree import index
+import copy
 nm  = 1852.
 
 
-def calcDirectionality(group_gdf, edge_directions):
+def calcDirectionality(group_gdf, nodes_gdf, edge_directions):
     # We need to create an rtree for each direction
     # Fow now, let's consider two directions
     treeNS = index.Index()
     treeEW = index.Index()
-    geomsNS = dict()
-    geomsEW = dict()
+    geomsNS = []
+    geomsEW = []
+    bool_list = [None] * len(edge_directions)
+    directions = copy.copy(edge_directions)
     for idx, group in enumerate(group_gdf.geometry):
         sort_var = sortLine(group)
         if sort_var == 'NS':
+            group.id = idx
             treeNS.insert(idx, group.bounds)
-            geomsNS[idx] = group
+            geomsNS.append(group)
         elif sort_var == 'EW':
+            group.id = idx
             treeEW.insert(idx, group.bounds)
-            geomsEW[idx] = group
+            geomsEW.append(group)
+
+    for group in geomsNS:
+        neighbors = getNeighbors(group, geomsNS)
+        print(group.id, neighbors)
+        
+    for group in geomsEW:
+        neighbors = getNeighbors(group, geomsEW)
+        print(group.id, neighbors)
+        
+    for i in range(len(bool_list)):
+        if bool_list[i] == 1 or bool_list[i] == True:
+            direction = copy.copy(directions[i])
+            directions[i] = (direction[1], direction[0], direction[2])
             
-    # Now that we have the rtrees, we can go through each group again, and
-    # allocate directionality this way
-    for key in geomsNS.keys():
-        print('NS', key)
-    for key in geomsEW.keys():
-        print('EW', key)
-        
-        
-        
-        
-    
     return edge_directions
+
+def getNeighbors(line, geoms, num = 10):
+    '''Returns <num> closest neighbors of line that are within twice the distance
+    of the second neighbor.'''
+    neighbors = []
+    distances = []
+    # First, remove the line we're looking for
+    geomlist = copy.copy(geoms)
+    geomlist.pop(geomlist.index(line))
+    # Get neighbors
+    for i in range(num):
+        # Return if templist empty
+        if len(geomlist) == 0:
+            return neighbors
+        # Create query-only strtree
+        strtreeNS = STRtree(geomlist)
+        neighbor = strtreeNS.nearest(line)
+        p1, p2 = nearest_points(neighbor, line)
+        qdr, dist = qdrdist(p1.y, p1.x, p2.y, p2.x)
+        distances.append(dist * nm)
+        
+        # Check for distances
+        if i>1 and distances[-1] > distances[1] * 2:
+            return neighbors
+        
+        neighbors.append(neighbor.id)
+        
+        # Eliminate from geom list
+        geomlist.pop(geomlist.index(neighbor))
+    return neighbors
 
 def sortLine(line):
     '''Sorts a line by bearing, returns a string.'''
     # Extract max and min coordinates of line. Bounds are xmin, ymin, xmax, ymax.
-    print(line.bounds)
     lon1, lat1, lon2, lat2 = line.bounds
     qdr, dist = qdrdist(lat1, lon1, lat2, lon2)
+    
+    if dist * 1852 < 200:
+        return None
     
     # QDR is between -180 and 180 deg
     if (qdr < -135) or (135 < qdr) or (-45 < qdr < 45):

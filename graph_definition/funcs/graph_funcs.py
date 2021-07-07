@@ -5,6 +5,29 @@ import math
 import fiona
 import geopandas as gpd
 
+def get_first_group_edges(G, group_gdf, edges):
+    edgedict = dict()
+    first_edges = []
+    # Create own directionary of edges
+    for index, edge in edges.iterrows():
+        group_no = edge['stroke_group']
+        if group_no not in edgedict:
+            edgedict[group_no] = []
+        edgedict[group_no].append(index)
+        
+    # Create first_edges
+    for idx, group in enumerate(group_gdf.geometry):
+        first_node = ox.nearest_nodes(G, group.coords[0][0], group.coords[0][1])
+        for edge in edgedict[idx]:
+            if edge[0] == first_node:
+                first_edges.append(edge)
+                break
+            
+            elif edge[1] == first_node:
+                first_edges.append((edge[1], edge[0], edge[2]))
+                break
+    return first_edges
+
 def poly_shapefile_to_shapely(filepath):
     '''
     Convert a polygon shapefile into a shapely polygon. This is done so that a QGIS shapefile can be used to generate a street network
