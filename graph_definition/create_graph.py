@@ -5,6 +5,7 @@ from funcs import coins_fancy, graph_funcs
 from os import path
 from hierholzer import hierholzer
 from directionality import calcDirectionality
+import copy
 
 # use osmnx environment here
 
