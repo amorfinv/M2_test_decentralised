@@ -4,12 +4,12 @@ Created on Wed May  5 12:19:13 2021
 
 @author: nipat
 """
-import osmnx
 import matplotlib.pyplot as plt
 import heapq
 import pandas as pd
 import numpy as np
 import os
+import osmnx
 
 class Node:
     av_speed_horizontal=0.005#10.0
@@ -257,35 +257,27 @@ def get_path(path,graph, G):
         
 class PathPlanning:
     
-    def __init__(self,G ,start_x,start_y,goal_x,goal_y):
+    def __init__(self,G ,edges,start_x,start_y,goal_x,goal_y):
         self.s_x=start_x
         self.s_y=start_y
         self.g_x=goal_x
         self.g_y=goal_y
         self.G = G
+        self.edge_gdf=edges
 
-        osmnx.config(use_cache=True, log_console=True)
         
-
-        # convert graph to geodataframe
-        g = osmnx.graph_to_gdfs(self.G)
-        
-        # # get node and edge geodataframe
-        nodes_gdf = g[0]
-        edge_gdf = g[1]
-        
-        
+## that information should be provided by the edge graph and belongs to preprocessing
         north_south_list=[0,3,6,7,8,9,10,11,12,14,15,17,19,22,23,24,25,26,27,28,31,32,33,34,35,38,39,42,44,45]#fly at 10 meters
         east_west_list=[1,2,4,5,13,16,18,20,21,29,30,36,37,40,41,43] #fly at 20 meters
 
         
 
         ##Create the search graph
-        stroke_groups = list(np.unique(np.array(edge_gdf['stroke_group'].values)))
+        stroke_groups = list(np.unique(np.array(self.edge_gdf['stroke_group'].values)))
         edge_keys = list(self.G.edges())[0][0]
         
         #Create the graph
-        self.graph=[]
+        self.graph={}
         omsnx_keys_list=list(self.G._node.keys())
         G_list=list(self.G._node)
         
@@ -303,34 +295,34 @@ class PathPlanning:
            tmp=[]#list if the groups that the node has been added
            for p in parents:
                if not ii:
-                   if p in edge_gdf.index and key in edge_gdf.loc[p].index: 
-                       group=edge_gdf.loc[p].loc[key].loc[0]['stroke_group']
+                   if p in self.edge_gdf.index and key in self.edge_gdf.loc[p].index: 
+                       group=self.edge_gdf.loc[p].loc[key].loc[0]['stroke_group']
                        if int(group) in north_south_list:
                            z=25 #ft
                        elif (int(group) in east_west_list):
                            z=75 #ft
                        node=Node(key,x,y,z,i+new_nodes_counter,group)
-                       my_group.update({i+new_nodes_counter:group})
-                       self.graph.append(node)
+                       my_group.update({key:group})
+                       self.graph[key]=node
                        tmp.append(group)
                        ii=ii+1
                else: 
-                if p in edge_gdf.index and key in edge_gdf.loc[p].index: 
+                if p in self.edge_gdf.index and key in self.edge_gdf.loc[p].index: 
                         new_nodes_counter=new_nodes_counter+1
-                        group=edge_gdf.loc[p].loc[key].loc[0]['stroke_group']
+                        group=self.edge_gdf.loc[p].loc[key].loc[0]['stroke_group']
                         if int(group) in north_south_list:
                            z=25 #ft
                         elif int(group) in east_west_list:
                            z=75 #ft
                         node=Node(key,x,y,z,i+new_nodes_counter,group)
-                        my_group.update({i+new_nodes_counter:group})
-                        self.graph.append(node)
+                        my_group.update({key:group})
+                        self.graph[key]=node
                         tmp.append(group)
         
                         ii=ii+1
         
            for ch in children:
-                group=edge_gdf.loc[key].loc[ch].loc[0]['stroke_group']
+                group=self.edge_gdf.loc[key].loc[ch].loc[0]['stroke_group']
                 if not group in tmp:
                     new_nodes_counter=new_nodes_counter+1
                     if int(group) in north_south_list:
@@ -338,15 +330,15 @@ class PathPlanning:
                     elif int(group) in east_west_list:
                            z=75
                     node=Node(key,x,y,z,i+new_nodes_counter,group)
-                    my_group.update({i+new_nodes_counter:group})
-                    self.graph.append(node)
+                    my_group.update({key:group})
+                    self.graph[key]=node
                     tmp.append(group)
                     ii=ii+1
                     
         
            if ii==0:
                 node=Node(key,x,y,i+new_nodes_counter,-1)
-                self.graph.append(node)
+                self.graph[key]=node
                         
         
         
@@ -358,20 +350,20 @@ class PathPlanning:
                             self.graph[index].parents.append(index_)
                       
         #add the children and parents to each node                
-        for i in self.graph:
+        for i in self.graph.values():
             key=i.key_index
             parents=list(self.G._pred[key].keys())
             children=list(self.G._succ[key].keys())
             for p in parents:
-                for j in self.graph:
+                for j in self.graph.values():
                     if p==j.key_index and (j.group==i.group or i.group==-1) :
-                        i.parents.append(j.index)
+                        i.parents.append(j.key_index)
                        
                         break
             for ch in children:
-                for j in self.graph:
+                for j in self.graph.values():
                     if ch==j.key_index and (j.group==i.group or i.group==-1):
-                        i.children.append(j.index)
+                        i.children.append(j.key_index)
                         break
         
             
@@ -386,19 +378,19 @@ class PathPlanning:
         start_index=osmnx.distance.nearest_nodes(self.G,self.s_x,self.s_y, return_dist=False)
         goal_index=osmnx.distance.nearest_nodes(self.G,self.g_x,self.g_y, return_dist=False)
         
-        for i in self.graph:
+        for i in self.graph.values():
             if i.key_index==start_index:
                 start_id=i.index
             if i.key_index==goal_index:
                 goal_id=i.index
             if start_id!=-1 and goal_id!=-1:
                 break
-        
-        start_node=self.graph[start_id] 
+        print(start_id)
+        start_node=self.graph[start_index] 
         x_start=start_node.x
         y_start=start_node.y#G._node[key]['y']
         
-        goal_node=self.graph[goal_id] 
+        goal_node=self.graph[goal_index] 
         
         x_goal=goal_node.x
         y_goal=goal_node.y
@@ -418,6 +410,7 @@ class PathPlanning:
             route,turns=get_path(path,self.graph, self.G)
             
         return route,turns
+
 
 # =======
 # ########################
