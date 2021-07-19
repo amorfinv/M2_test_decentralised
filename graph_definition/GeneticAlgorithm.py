@@ -8,6 +8,7 @@ Created on Wed Jun 30 21:14:52 2021
 import osmnx as ox
 import networkx as nx
 from deap import algorithms
+import multiprocessing
 from deap import base
 from deap import creator
 from deap import tools
@@ -18,6 +19,12 @@ from evaluate_directionality import dijkstra_search_multiple
 import random
 import os
 import copy
+
+# Start genetic algorithm
+creator.create("FitnessMin", base.Fitness, weights = (-1.0,))
+creator.create("Individual", list, fitness = creator.FitnessMin)
+
+pool = multiprocessing.Pool()
 
 class Node:
     def __init__(self,key,x,y):
@@ -85,11 +92,6 @@ class GeneticAlgorithm:
                         (64975131, 60957703, 0)     # group 45 
                         ]
         
-        
-        # Start genetic algorithm
-        creator.create("FitnessMin", base.Fitness, weights = (-1.0,))
-        creator.create("Individual", list, fitness = creator.FitnessMin)
-        
         toolbox = base.Toolbox()
         
         toolbox.register("boollist", self.boollist)
@@ -100,6 +102,9 @@ class GeneticAlgorithm:
         toolbox.register("mate", tools.cxTwoPoint)
         toolbox.register("mutate", tools.mutFlipBit, indpb = 0.05)
         toolbox.register("select", tools.selTournament, tournsize=3)
+        
+        # Multiprocessing
+        toolbox.register("map", pool.map)
         
         # Do algorithm
         pop = toolbox.population(n = 50)
@@ -196,8 +201,14 @@ class GeneticAlgorithm:
         # Get cost
         cost = dijkstra_search_multiple(graph, orig_nodes, dest_nodes)
         return cost
-    
-# Let's do genetics
-GA = GeneticAlgorithm()
 
-print(GA.GeneticAlgorithm())
+def main():
+    multiprocessing.freeze_support()
+    # Let's do genetics
+    GA = GeneticAlgorithm()
+    
+    print('Best solution:', GA.GeneticAlgorithm())
+    return
+
+if __name__ == "__main__":
+    main()
