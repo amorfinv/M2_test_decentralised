@@ -6,10 +6,9 @@ Created on Wed May  5 12:19:13 2021
 """
 import matplotlib.pyplot as plt
 import heapq
-import pandas as pd
 import numpy as np
-import os
 import osmnx
+import os
 
 class Node:
     av_speed_horizontal=0.005#10.0
@@ -257,13 +256,13 @@ def get_path(path,graph, G):
         
 class PathPlanning:
     
-    def __init__(self,G ,edges,start_x,start_y,goal_x,goal_y):
+    def __init__(self,G,start_x,start_y,goal_x,goal_y):
         self.s_x=start_x
         self.s_y=start_y
         self.g_x=goal_x
         self.g_y=goal_y
         self.G = G
-        self.edge_gdf=edges
+        self.edge_gdf=osmnx.graph_to_gdfs(G)[1]
 
         
 ## that information should be provided by the edge graph and belongs to preprocessing
@@ -377,6 +376,7 @@ class PathPlanning:
 
         start_index=osmnx.distance.nearest_nodes(self.G,self.s_x,self.s_y, return_dist=False)
         goal_index=osmnx.distance.nearest_nodes(self.G,self.g_x,self.g_y, return_dist=False)
+        print(start_index, goal_index)
         
         for i in self.graph.values():
             if i.key_index==start_index:
@@ -412,29 +412,35 @@ class PathPlanning:
         return route,turns
 
 
-# =======
-# ########################
-# G = osmnx.io.load_graphml(filepath='C:/Users/nipat/Downloads/M2_test_scenario-main/M2_test_scenario-main/graph_definition/gis/data/street_graph/processed_graph1.graphml')
-# #provide the start and destination coordinates 
-# start_x=16.3281
-# start_y=48.223
-# goal_x=16.34
-# goal_y=48.225
-# plan1=PathPlanning(start_x,start_y,goal_x,goal_y)
-# =======
-# x_list=[]
-# y_list=[]
-# x_list_up=[]
-# y_list_up=[]
-# for r in route:
-#     if(r[2]==10):
-#         x_list.append(r[0])
-#         y_list.append(r[1])
-#     else:
-#         x_list_up.append(r[0])
-#         y_list_up.append(r[1])
-# ax.scatter(x_list,y_list, color='g')
-# ax.scatter(x_list_up,y_list_up, color='y')
-# ax.scatter(start_x,start_y, color='b')
-# ax.scatter(goal_x,goal_y, color='r')
-# plt.show()
+
+########################
+dir_path = os.path.dirname(os.path.realpath(__file__))
+graph_path = dir_path.replace('graph_definition', 
+          'graph_definition/gis/data/street_graph/processed_graph.graphml')
+G = osmnx.io.load_graphml(graph_path)
+#G = osmnx.io.load_graphml(filepath='C:/Users/nipat/Downloads/M2_test_scenario-main/M2_test_scenario-main/graph_definition/gis/data/street_graph/processed_graph1.graphml')
+#provide the start and destination coordinates 
+start_x=16.3281
+start_y=48.223
+goal_x=16.34
+goal_y=48.225
+plan1=PathPlanning(G, start_x,start_y,goal_x,goal_y)
+route = plan1.plan()
+
+x_list=[]
+y_list=[]
+x_list_up=[]
+y_list_up=[]
+for r in route:
+    if(r[2]==10):
+        x_list.append(r[0])
+        y_list.append(r[1])
+    else:
+        x_list_up.append(r[0])
+        y_list_up.append(r[1])
+
+plt.scatter(x_list,y_list, color='g')
+plt.scatter(x_list_up,y_list_up, color='y')
+plt.scatter(start_x,start_y, color='b')
+plt.scatter(goal_x,goal_y, color='r')
+plt.show()
