@@ -12,3 +12,7 @@ graph_definition/Layer_Concepts.xlsx
 
 #ignore cpython randomness
 **/*cpython*.pyc
+
+#cache
+**/cache/
+**/__pycache__/
