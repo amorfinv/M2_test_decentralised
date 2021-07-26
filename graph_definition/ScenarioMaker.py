@@ -18,6 +18,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 graph_path = dir_path.replace('graph_definition', 
           'graph_definition/gis/data/street_graph/processed_graph.graphml')
 G = ox.io.load_graphml(graph_path)
+edges = ox.graph_to_gdfs(G)[1]
 print('Graph loaded!')
 
 # Step 2: Generate traffic from it
@@ -45,7 +46,7 @@ for flight in generated_traffic:
     # First get the route and turns
     origin = flight[2]
     destination = flight[3]
-    plan = PathPlanning(G, origin[1], origin[0], destination[1], destination[0])
+    plan = PathPlanning(G,edges, origin[1], origin[0], destination[1], destination[0])
     route=[]
     turns=[]
     route,turns=plan.plan()

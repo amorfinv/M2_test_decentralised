@@ -94,6 +94,7 @@ def dijkstra_search(graph, start, goal, printPaths=False):
         return costs, paths
     return costs
 
+#def create_node_network(graph):
 
 # ##Load the street map
 # dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -162,4 +163,3 @@ def dijkstra_search(graph, start, goal, printPaths=False):
 # ax.scatter(x_list,y_list, color='g')
 # ax.scatter(x_start,y_start, color='b')
 # plt.show()
-

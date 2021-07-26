@@ -53,8 +53,8 @@ class BlueskySCNTools():
         # Speeds
         turn_speed = 10 # [kts]
         cruise_speed = 30 # [kts]
-        speed_dist = 30 # [m]
-        turn_dist = 15 # [m]
+        speed_dist = 10 # [m]
+        turn_dist = 10 # [m]
         speeds, turnbool = self.TurnSpeedBuffer(lats, lons, turnbool, alts, 
                             turn_speed, cruise_speed, speed_dist, turn_dist)
         
@@ -481,7 +481,7 @@ def main():
     concurrent_ac = 10
     aircraft_vel = 13
     max_time = 400
-    dt = 20
+    dt = 10
     min_dist = 1000
     
     trafgen = bst.Graph2Traf(G, concurrent_ac, aircraft_vel, max_time, dt, min_dist)

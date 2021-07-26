@@ -8,7 +8,6 @@ Created on Wed Jun 30 21:14:52 2021
 import osmnx as ox
 import networkx as nx
 from deap import algorithms
-import multiprocessing
 from deap import base
 from deap import creator
 from deap import tools
@@ -24,8 +23,6 @@ import copy
 creator.create("FitnessMin", base.Fitness, weights = (-1.0,))
 creator.create("Individual", list, fitness = creator.FitnessMin)
 
-pool = multiprocessing.Pool()
-
 class Node:
     def __init__(self,key,x,y):
         self.key=key
@@ -34,7 +31,8 @@ class Node:
         self.children={}# each element of neigh is like [ox_key,edge_cost] 
 
 class GeneticAlgorithm:
-    def GeneticAlgorithm(self):
+    def __init__(self):
+        self.first = True
         self.orig_nodes_numbers = [30696015, 3155094143, 33345321,  25280685, 1119870220, 33302019,
                   33144416, 378696, 33143911, 264055537, 33144706, 33144712, 
                   33144719, 92739749]
@@ -91,7 +89,8 @@ class GeneticAlgorithm:
                         (33345321, 33345291, 0),    # group 44
                         (64975131, 60957703, 0)     # group 45 
                         ]
-        
+    
+    def GeneticAlgorithm(self):
         toolbox = base.Toolbox()
         
         toolbox.register("boollist", self.boollist)
@@ -99,15 +98,12 @@ class GeneticAlgorithm:
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
         
         toolbox.register("evaluate", self.CostFunction)
+        toolbox.register("select", tools.selTournament, tournsize=3)
         toolbox.register("mate", tools.cxTwoPoint)
         toolbox.register("mutate", tools.mutFlipBit, indpb = 0.05)
-        toolbox.register("select", tools.selTournament, tournsize=3)
-        
-        # Multiprocessing
-        toolbox.register("map", pool.map)
         
         # Do algorithm
-        pop = toolbox.population(n = 50)
+        pop = toolbox.population(n = 100)
         fitnesses = list(map(toolbox.evaluate, pop))
         print(fitnesses)
         for ind, fit in zip(pop, fitnesses):
@@ -117,15 +113,22 @@ class GeneticAlgorithm:
         
         fits = [ind.fitness.values[0] for ind in pop]
         
-        g = 0
+        generation = 0
+        prevmin = float('inf')
+        globalmin = [float('inf'), None]
+        combo = 0
+        max_combo = 50
         
-        while g<300:
-            g = g + 1
+        while combo <= max_combo:
+            print(f'-------------- Generation {generation} --------------')
+            print(f'######## Current combo is {combo}/{max_combo} ########')
+            generation = generation + 1
             offspring = toolbox.select(pop, len(pop))
             offspring = list(map(toolbox.clone, offspring))
             
             for child1, child2 in zip(offspring[::2], offspring[1::2]):
                 if random.random() < CXPB:
+                    toolbox.mate(child1[0], child2[0])
                     del child1.fitness.values
                     del child2.fitness.values
                     
@@ -140,15 +143,29 @@ class GeneticAlgorithm:
                 ind.fitness.values = fit
                 
             pop[:] = offspring
-            
             fits = [ind.fitness.values[0] for ind in pop]
+            
+            # Get minimum of this generation
+            thismin_val = min(fits)
+            thismin_genome = pop[fits.index(thismin_val)]
+            if thismin_val <= prevmin:
+                combo += 1
+                if thismin_val < globalmin[0]:
+                    globalmin = [thismin_val, thismin_genome]
+            else:
+                combo = 0
+            
+            prevmin = thismin_val
         
         best = pop[np.argmin([toolbox.evaluate(x) for x in pop])]
-        return best
+        return best, globalmin
             
         
         
     def boollist(self):
+        if self.first == True:
+            self.first = False
+            return [0]*46
         return [random.randint(0,1) for i in range(46)]
         
     def CostFunction(self, bool_list):
@@ -172,9 +189,7 @@ class GeneticAlgorithm:
                 
         # reoroder edge geodatframe
         edges_new = graph_funcs.set_direction(edges, directions)
-        
         print(bool_list)
-        
         G = ox.graph_from_gdfs(nodes, edges_new)
         
         # Process nodes to put em in the right form
@@ -203,9 +218,9 @@ class GeneticAlgorithm:
         return cost
 
 def main():
-    multiprocessing.freeze_support()
     # Let's do genetics
     GA = GeneticAlgorithm()
+    #print(GA.CostFunction([[0]*45]))
     
     print('Best solution:', GA.GeneticAlgorithm())
     return

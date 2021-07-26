@@ -549,21 +549,12 @@ def set_direction(edges, edge_directions):
 
             # add line_string data to list (make this dynamic)
             osmid = edge_in_group.loc[curr_index, 'osmid']
-            lanes = edge_in_group.loc[curr_index, 'lanes']
-            name = edge_in_group.loc[curr_index, 'name']
-            highway = edge_in_group.loc[curr_index, 'highway']
-            maxspeed = edge_in_group.loc[curr_index, 'maxspeed']
-            oneway = edge_in_group.loc[curr_index, 'oneway']
             length = edge_in_group.loc[curr_index, 'length']
             geom = edge_line_direct
-            bearing = edge_in_group.loc[curr_index, 'bearing']
-            ref = edge_in_group.loc[curr_index, 'ref']
-            layer_height = edge_in_group.loc[curr_index, 'layer_height']
-            edge_interior_angle = edge_in_group.loc[curr_index, 'edge_interior_angle']
             stroke_group_label = edge_in_group.loc[curr_index, 'stroke_group']
 
-            my_geodata.append([new_index[0], new_index[1], new_index[2], osmid, lanes, name, highway, maxspeed, oneway, length, 
-                               geom, bearing, ref, layer_height, edge_interior_angle, stroke_group_label])
+            my_geodata.append([new_index[0], new_index[1], new_index[2], osmid, length, 
+                               geom, stroke_group_label])
 
             # set new jdx based on current edge (only if not last edge)
             if not idx == numb_edges_stroke - 1:
@@ -605,8 +596,7 @@ def set_direction(edges, edge_directions):
             idx = idx + 1
 
     # create edge geodataframe
-    column_names = ['u', 'v', 'key', 'osmid', 'lanes', 'name', 'highway', 'maxspeed', 'oneway', 'length', 'geometry', 
-                    'bearing', 'ref', 'layer_height', 'edge_interior_angle', 'stroke_group']
+    column_names = ['u', 'v', 'key', 'osmid','length', 'geometry','stroke_group']
     edge_gdf = gpd.GeoDataFrame(my_geodata, columns=column_names, crs=edges.crs)
 
     edge_gdf.set_index(['u', 'v', 'key'], inplace=True)

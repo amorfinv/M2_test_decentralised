@@ -298,9 +298,9 @@ class PathPlanning:
                    if p in self.edge_gdf.index and key in self.edge_gdf.loc[p].index: 
                        group=self.edge_gdf.loc[p].loc[key].loc[0]['stroke_group']
                        if int(group) in north_south_list:
-                           z=25 #ft
+                           z=50 #ft
                        elif (int(group) in east_west_list):
-                           z=75 #ft
+                           z=50 #ft
                        node=Node(key,x,y,z,i+new_nodes_counter,group)
                        my_group.update({i+new_nodes_counter:group})
                        self.graph.append(node)
@@ -311,9 +311,9 @@ class PathPlanning:
                         new_nodes_counter=new_nodes_counter+1
                         group=self.edge_gdf.loc[p].loc[key].loc[0]['stroke_group']
                         if int(group) in north_south_list:
-                           z=25 #ft
+                           z=50 #ft
                         elif int(group) in east_west_list:
-                           z=75 #ft
+                           z=50 #ft
                         node=Node(key,x,y,z,i+new_nodes_counter,group)
                         my_group.update({i+new_nodes_counter:group})
                        
@@ -327,9 +327,9 @@ class PathPlanning:
                 if not group in tmp:
                     if not ii:
                         if int(group) in north_south_list:
-                               z=25
+                               z=50
                         elif int(group) in east_west_list:
-                               z=75
+                               z=50
                         node=Node(key,x,y,z,i+new_nodes_counter,group)
                         my_group.update({i+new_nodes_counter:group})
                         
@@ -339,9 +339,9 @@ class PathPlanning:
                     else:
                         new_nodes_counter=new_nodes_counter+1
                         if int(group) in north_south_list:
-                            z=25
+                            z=50
                         elif int(group) in east_west_list:
-                            z=75
+                            z=50
                         node=Node(key,x,y,z,i+new_nodes_counter,group)
                         my_group.update({i+new_nodes_counter:group})
                             
@@ -427,65 +427,32 @@ class PathPlanning:
         return route,turns
 
 
-# =======
-# ########################
-#G = osmnx.io.load_graphml(filepath='C:/Users/nipat/Downloads/M2_test_scenario-main/M2_test_scenario-main/graph_definition/gis/data/street_graph/processed_graph1.graphml')
-# #provide the start and destination coordinates 
-#g = osmnx.graph_to_gdfs(G)
-#edges = g[1]
-#start_x=16.3281
-#start_y=48.223
-#goal_x=16.34
-#goal_y=48.225
-#plan1=PathPlanning(G,edges,start_x,start_y,goal_x,goal_y)
-#route=plan1.plan()
-# =======
-#x_list=[]
-#y_list=[]
-#x_list_up=[]
-#y_list_up=[]
-#for r in route[0]:
-#    if(r[2]==10):
-#        x_list.append(r[0])
-#        y_list.append(r[1])
-#    else:
-#        x_list_up.append(r[0])
-#        y_list_up.append(r[1])
-#fig, ax = osmnx.plot_graph(G,node_color="w",show=False,close=False)
-#ax.scatter(x_list,y_list, color='g')
-#ax.scatter(x_list_up,y_list_up, color='y')
+# dir_path = os.path.dirname(os.path.realpath(__file__))
+# graph_path = dir_path.replace('graph_definition',
+#           'graph_definition/gis/data/street_graph/processed_graph.graphml')
+# G = osmnx.io.load_graphml(graph_path)
+# fig, ax = osmnx.plot_graph(G,node_color="w",show=False,close=False)
+# edges = osmnx.graph_to_gdfs(G)[1]
+# start_x=16.3281
+# start_y=48.223
+# goal_x=16.34
+# goal_y=48.225
+# plan1=PathPlanning(G,edges, start_x,start_y,goal_x,goal_y)
+# route = plan1.plan()
+# x_list=[]
+# y_list=[]
+# x_list_up=[]
+# y_list_up=[]
+# for r in route[0]:
+#     if(r[2]==10):
+#         x_list.append(r[0])
+#         y_list.append(r[1])
+#     else:
+#         x_list_up.append(r[0])
+#         y_list_up.append(r[1])
 
-#ax.scatter(start_x,start_y, color='b')
-#ax.scatter(goal_x,goal_y, color='r')
-#plt.show()
-
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-graph_path = dir_path.replace('graph_definition',
-          'graph_definition/gis/data/street_graph/processed_graph.graphml')
-G = osmnx.io.load_graphml(graph_path)
-fig, ax = osmnx.plot_graph(G,node_color="w",show=False,close=False)
-edges = osmnx.graph_to_gdfs(G)[1]
-start_x=16.3281
-start_y=48.223
-goal_x=16.34
-goal_y=48.225
-plan1=PathPlanning(G,edges, start_x,start_y,goal_x,goal_y)
-route = plan1.plan()
-x_list=[]
-y_list=[]
-x_list_up=[]
-y_list_up=[]
-for r in route[0]:
-    if(r[2]==10):
-        x_list.append(r[0])
-        y_list.append(r[1])
-    else:
-        x_list_up.append(r[0])
-        y_list_up.append(r[1])
-
-plt.scatter(x_list,y_list, color='g')
-plt.scatter(x_list_up,y_list_up, color='y')
-plt.scatter(start_x,start_y, color='b')
-plt.scatter(goal_x,goal_y, color='r')
-plt.show()
+# plt.scatter(x_list,y_list, color='g')
+# plt.scatter(x_list_up,y_list_up, color='y')
+# plt.scatter(start_x,start_y, color='b')
+# plt.scatter(goal_x,goal_y, color='r')
+# plt.show()
