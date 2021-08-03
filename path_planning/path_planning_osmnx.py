@@ -19,6 +19,7 @@ class osmnx_graph:
         self.edges=[]
 
 G = osmnx.io.load_graphml(filepath='C:/Users/nipat/Downloads/M2_test_scenario-main/M2_test_scenario-main/graph_definition/gis/data/street_graph/processed_graph1.graphml')
+#G = osmnx.io.load_graphml(filepath='processed_graph.graphml')
 edges_geometry=osmnx.graph_to_gdfs(G, nodes=False)["geometry"]
 
 

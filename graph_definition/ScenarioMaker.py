@@ -7,7 +7,8 @@ Created on Thu Jun  3 11:47:30 2021
 import osmnx as ox
 import numpy as np
 import BlueskySCNTools
-from path_planning import PathPlanning
+from flow_control import street_graph,bbox
+from agent_path_planning import PathPlanning
 import os
 
 # Initialize stuff
@@ -15,11 +16,15 @@ bst = BlueskySCNTools.BlueskySCNTools()
 
 # Step 1: Import the graph we will be using
 dir_path = os.path.dirname(os.path.realpath(__file__))
-graph_path = dir_path.replace('graph_definition', 
-          'graph_definition/gis/data/street_graph/processed_graph.graphml')
-G = ox.io.load_graphml(graph_path)
+#graph_path = dir_path.replace('graph_definition', 
+#          'graph_definition/gis/data/street_graph/processed_graph.graphml')
+#G = ox.io.load_graphml(graph_path)
+G = ox.io.load_graphml('processed_graph.graphml')
 edges = ox.graph_to_gdfs(G)[1]
 print('Graph loaded!')
+
+##Initialise the flow control entity
+graph=street_graph(G,edges) 
 
 # Step 2: Generate traffic from it
 concurrent_ac = 10
@@ -42,27 +47,30 @@ print('Traffic generated!')
 
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
-for flight in generated_traffic:
+if 1:
+    flight = generated_traffic[0]
+#for flight in generated_traffic:
     # First get the route and turns
     origin = flight[2]
     destination = flight[3]
-    plan = PathPlanning(G,edges, origin[1], origin[0], destination[1], destination[0])
+    plan = PathPlanning(graph, origin[1], origin[0], destination[1], destination[0])
     route=[]
     turns=[]
-    route,turns=plan.plan()
-    route = np.array(route)
-    # Create dictionary
-    scenario_dict[flight[0]] = dict()
-    # Add start time
-    scenario_dict[flight[0]]['start_time'] = flight[1]
-    #Add lats
-    scenario_dict[flight[0]]['lats'] = route[:,1]
-    #Add lons
-    scenario_dict[flight[0]]['lons'] = route[:,0]
-    #Add turnbool
-    scenario_dict[flight[0]]['turnbool'] = turns
-    #Add alts
-    scenario_dict[flight[0]]['alts'] = route[:,2]
+    route,turns,edges,next_turn=plan.plan()
+    if route!=[]:
+        route = np.array(route)
+        # Create dictionary
+        scenario_dict[flight[0]] = dict()
+        # Add start time
+        scenario_dict[flight[0]]['start_time'] = flight[1]
+        #Add lats
+        scenario_dict[flight[0]]['lats'] = route[:,1]
+        #Add lons
+        scenario_dict[flight[0]]['lons'] = route[:,0]
+        #Add turnbool
+        scenario_dict[flight[0]]['turnbool'] = turns
+        #Add alts
+        scenario_dict[flight[0]]['alts'] = route[:,2]
     
 print('All paths created!')
     
