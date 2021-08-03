@@ -47,9 +47,7 @@ print('Traffic generated!')
 
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
-if 1:
-    flight = generated_traffic[0]
-#for flight in generated_traffic:
+for flight in generated_traffic:
     # First get the route and turns
     origin = flight[2]
     destination = flight[3]
@@ -71,6 +69,10 @@ if 1:
         scenario_dict[flight[0]]['turnbool'] = turns
         #Add alts
         scenario_dict[flight[0]]['alts'] = route[:,2]
+        #Add active edges
+        scenario_dict[flight[0]]['edges'] = edges
+        #Add next turn
+        scenario_dict[flight[0]]['next_turn'] = next_turn
     
 print('All paths created!')
     
