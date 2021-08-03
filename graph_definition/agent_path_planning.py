@@ -340,7 +340,7 @@ class PathPlanning:
         self.flow_control_graph=flow_control_graph
 
 
-        exp_const=0.005 ## we need to think about the value of that constant
+        exp_const=0.05##0.005 ## we need to think about the value of that constant
         box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
         
         self.G,edges=self.flow_control_graph.extract_subgraph(box)
