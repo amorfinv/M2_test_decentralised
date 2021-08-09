@@ -16,7 +16,8 @@ class BlueskySCNTools():
     def __init__(self):
         return
 
-    def Drone2Scn(self, drone_id, start_time, lats, lons, turnbool, alts = None, edges = None, next_turn = None):
+    def Drone2Scn(self, drone_id, start_time, lats, lons, turnbool, 
+                  alts = None, edges = None, next_turn = None, priority = 0):
         """Converts arrays to Bluesky scenario files. The first
         and last waypoints will be taken as the origin and 
         destination of the drone.
@@ -44,6 +45,15 @@ class BlueskySCNTools():
             
         alts : float array/list, optional [ft]
             Defines the required altitude at waypoints.
+            
+        edges : str
+            Gives the edge IDs for the path.
+            
+        next_turn : int
+            Gives when the next turn is going to be.
+            
+        priority : int
+            Gives the priority of the drone.
     
         """
 
@@ -78,7 +88,7 @@ class BlueskySCNTools():
         # First, we need to create the drone, Matrice 600 going 30 kts for now.
         # Let's calculate its required heading.
         qdr = self.qdrdist(lats[0], lons[0], lats[1], lons[1], 'qdr')
-        cre_text = f'CRE {drone_id} M600 {lats[0]} {lons[0]} {qdr} 25 {turn_speed}\n'
+        cre_text = f'CREM2 {drone_id} M600 {lats[0]} {lons[0]} {qdr} 25 {turn_speed} {priority}\n'
         lines.append(start_time_txt + cre_text)
         
         # Then we need to for loop through all the lats
