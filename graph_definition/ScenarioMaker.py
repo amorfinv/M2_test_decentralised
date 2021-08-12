@@ -68,7 +68,7 @@ for flight in generated_traffic:
         #Add turnbool
         scenario_dict[flight[0]]['turnbool'] = turns
         #Add alts
-        scenario_dict[flight[0]]['alts'] = route[:,2]
+        scenario_dict[flight[0]]['alts'] = None
         #Add active edges
         scenario_dict[flight[0]]['edges'] = edges
         #Add next turn
