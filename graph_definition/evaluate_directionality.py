@@ -37,8 +37,7 @@ def dijkstra_search_multiple(graph, starts, goals, printPaths = False):
     for start in starts:
         costs = dijkstra_search(graph, start, goals, printPaths)
         totalcost += sum(costs.values())
-    print(totalcost)
-    return totalcost, 
+    return totalcost,
 
 
 def dijkstra_search(graph, start, goal, printPaths=False):
