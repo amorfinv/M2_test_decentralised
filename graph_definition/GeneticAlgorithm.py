@@ -6,14 +6,11 @@ Created on Wed Jun 30 21:14:52 2021
 """
 
 import osmnx as ox
-import networkx as nx
-from deap import algorithms
 from deap import base
 from deap import creator
 from deap import tools
-from os import path
 import numpy as np
-from funcs import coins, graph_funcs
+from funcs import graph_funcs
 from evaluate_directionality import dijkstra_search_multiple
 import random
 import os

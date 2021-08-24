@@ -5,12 +5,8 @@ Created on Tue Jun 29 13:55:27 2021
 @author: nipat
 ## code bassed on : https://www.redblobgames.com/pathfinding/a-star/implementation.html"""
 
-import osmnx as ox
-import matplotlib.pyplot as plt
-import numpy as np
 import heapq
-from typing import Protocol, Dict, List, Iterator, Tuple, TypeVar, Optional
-import os
+from typing import  Dict, List, Tuple, Optional
 import copy
 
 #create a node class for each osmnx node
@@ -93,73 +89,3 @@ def dijkstra_search(graph, start, goal, printPaths=False):
                 paths[g]=route
         return costs, paths
     return costs
-
-#def create_node_network(graph):
-
-# ##Load the street map
-# dir_path = os.path.dirname(os.path.realpath(__file__))
-# graph_path = dir_path.replace('graph_definition','graph_definition/gis/data/street_graph/processed_graph.graphml')
-# G = ox.io.load_graphml(graph_path)
-# omsnx_keys_list=list(G._node.keys())
-# G_list=list(G._node)
-
-# ###Initialise the graph for the search
-# graph={}
-# for i in range(len(omsnx_keys_list)):
-#     key=omsnx_keys_list[i]
-#     x=G._node[key]['x']
-#     y=G._node[key]['y']
-#     node=Node(key,x,y)
-#     children=list(G._succ[key].keys())
-#     for ch in children:
-#         cost=G[key][ch][0]['length']
-#         node.children[ch]=cost
-    
-#     graph[key]=node
-
-##Define the start node
-# starts = []
-# for start_id in [56, 84]:
-    # start_id=23
-    # key=G_list[start_id]
-    # starts.append(graph[key]) 
-    # x_start=G._node[key]['x']
-    # y_start=G._node[key]['y']
-
-##Define the goals, it is a lost of osmnx keys 
-# goals=[]
-# goal_id=6
-# key=G_list[goal_id]
-# goals.append(key)
-# goal_id=80
-# key=G_list[goal_id]
-# goals.append(key)
-
-# for goal in [1,2,3,4,5,6,7,8,9,10, 11, 12,13,14,15,16,45,67,34,87,54,27]:
-#     goals.append(G_list[goal])
-
-#here call the path planning algortihm, it needs defined a s a dictionary as shown above, 
-##the start node and a list of the osmnx keys of the desired goal nodes
-#the function returns a dictionary with the keys being the keys of the goal nodes 
-##and the values of each key is the length of the path from the start to that node expressed in meters
-##If you want the function to also return the paths you need to put True as the forth input, that will increase the memory and time consumption of the function
-# costs,paths= dijkstra_search(graph,start_node,goals.copy(),True)
-# i = 0
-# while i < 100:
-#     dijkstra_search_multiple(graph, starts, goals, printPaths = False)
-#     i += 1
-# print(start_node.key)
-# print(costs)
-
-# ##Print paths
-# fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
-# x_list=[]
-# y_list=[]
-# for g in paths.keys():
-#     for r in paths[g]:
-#         x_list.append(r[0])
-#         y_list.append(r[1])
-
-# ax.scatter(x_list,y_list, color='g')
-# ax.scatter(x_start,y_start, color='b')
-# plt.show()
