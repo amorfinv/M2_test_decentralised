@@ -8,6 +8,22 @@ import geopandas as gpd
 from pyproj import CRS
 import ast
 
+def node_degree_attrib(nodes, edges):
+
+    # build graph
+    G = ox.graph_from_gdfs(nodes, edges)
+    
+    # get degree of nodes
+    node_degree = [G.degree[osmid] for osmid in nodes.index.values]
+    
+    for osmid in nodes.index.values:
+        degree = G.degree[osmid]
+        if degree == 1:
+            print(osmid)
+
+    return node_degree
+
+
 def get_first_group_edges(G, edges):
     """[summary]
 

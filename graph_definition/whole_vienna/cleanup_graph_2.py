@@ -164,6 +164,9 @@ def main():
     coins_obj = COINS(edges)
     edges['stroke_group'] = coins_obj.stroke_attribute()
     
+    # get degree of nodes
+    nodes['degree'] = graph_funcs.node_degree_attrib(nodes, edges)
+
     print('------------ 4 -------------')
 
     # create graph and save edited
