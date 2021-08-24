@@ -11,7 +11,7 @@ class GraphBuilder():
     def __init__(self):
 
         # gis data path
-        gis_data_path = 'gis'
+        gis_data_path = 'whole_vienna/gis'
 
         # load graph direction 0
         self.G_0 = ox.load_graphml(filepath=path.join(gis_data_path, 'streets', 'graph_dir_0.graphml'))

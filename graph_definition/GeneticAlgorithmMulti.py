@@ -28,6 +28,7 @@ import networkx as nx
 from os import path
 from funcs import coins, graph_funcs
 from evaluate_directionality import dijkstra_search_multiple
+from whole_vienna.graph_builder import GraphBuilder
 import random
 import os
 import copy
@@ -44,82 +45,18 @@ class Node:
         self.y=y
         self.children={}# each element of neigh is like [ox_key,edge_cost] 
 
-first = True
-
 def attr_bool():
-    global first
-    if first == True:
-        first = False
-        return [0]*46
-    return array.array([random.randint(0,1) for i in range(46)])
+    return array.array([random.randint(0,1) for i in range(len(GB.stroke_groups))])
 
+GB = GraphBuilder()
 
 orig_nodes_numbers = [30696015, 3155094143, 33345321,  25280685, 1119870220, 33302019,
           33144416, 378696, 33143911, 264055537, 33144706, 33144712, 
           33144719, 92739749]
 
-dest_nodes_global = [291088171,  60957703, 30696019, 392251, 33301346, 26405238, 
+dest_nodes_numbers = [291088171,  60957703, 30696019, 392251, 33301346, 26405238, 
               3963787755, 33345333, 378699, 33144821, 264061926, 33144695,
               33174086, 33345331]
-
-# set directionality of groups with one edge
-edge_directions = [(33302019, 378727, 0),   # group 0
-                (33144416, 33144414, 0),    # group 1
-                (30696015, 64975746, 0),    # group 2
-                (378728, 33345331, 0),      # group 3
-                (60631071, 401838, 0),      # group 4
-                (264055540, 33144941, 0),   # group 5
-                (33345285, 33345298, 0),    # group 6
-                (251523470, 33345297, 0),   # group 7
-                (33144366, 33143888, 0),    # group 8
-                (1119870220, 394751, 0),    # group 9
-                (378696, 3312560802, 0),    # group 10
-                (64975949, 33345310, 0),    # group 11
-                (3155094143, 64971266, 0),  # group 12
-                (33144706, 33144601, 0),    # group 13
-                (33344824, 33344825, 0),    # group 14
-                (33344807, 33144550, 0),    # group 15
-                (655012, 33144500, 0),      # group 16
-                (33345286, 33345303, 0),    # group 17
-                (283324403, 358517297, 0),  # group 18
-                (33344802, 33344805, 0),    # group 19
-                (264055537, 264055538, 0),  # group 20
-                (29048460, 33345320, 0),    # group 21
-                (33144712, 33144605, 0),    # group 22
-                (33143911, 33143898, 0),    # group 23
-                (29048469, 64972028, 0),    # group 24
-                (64975551, 33345319, 0),    # group 25
-                (92739749, 33144621, 0),    # group 26
-                (33144633, 33144941, 0),    # group 27
-                (33144560, 283324407, 0),   # group 28
-                (25280685, 33344817, 0),    # group 29
-                (33144566, 33144555, 0),    # group 30
-                (33345332, 33345333, 0),    # group 31
-                (33144471, 33144422, 0),    # group 32
-                (33144659, 33144655, 0),    # group 33
-                (33144719, 33144616, 0),    # group 34
-                (33344808, 33144550, 0),    # group 35
-                (33344812, 33344811, 0),    # group 36
-                (245498401, 245498398, 0),  # group 37 
-                (33144637, 320192043, 0),   # group 38 
-                (33144755, 33144759, 0),    # group 39 
-                (33344809, 2423479559, 0),  # group 40 
-                (33344816, 392251, 0),      # group 41 
-                (33345310, 33345289, 0),    # group 42 
-                (33345299, 33344825, 0),    # group 43 
-                (33345321, 33345291, 0),    # group 44
-                (64975131, 60957703, 0)     # group 45 
-                ]
-
-################################## LOAD #####################################
-dir_path = os.path.dirname(os.path.realpath(__file__))
-graph_path = dir_path.replace('graph_definition',
-'graph_definition/processed_graph.graphml')
-G_init = ox.io.load_graphml(graph_path)
-
-g = ox.graph_to_gdfs(G_init)
-edges = g[1]
-nodes = g[0]
 
 ray.shutdown()
 #ray.init(num_cpus=1) # will use default python map on current process, useful for debugging?
@@ -152,23 +89,17 @@ toolbox = base.Toolbox()
 toolbox.register("attr_bool", random.randint, 0, 1)
 
 # Structure initializers
-toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 46)
+toolbox.register("individual", tools.initRepeat, creator.Individual, 
+                 toolbox.attr_bool, len(GB.stroke_groups))
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
 def evalOneMax(individual):
-    # Make a copy of edge directions
-    directions = copy.copy(edge_directions)
-    dest_nodes = copy.copy(dest_nodes_global)
-    # Change direction in function of bool_list
-    for i in range(len(individual)):
-        if individual[i] == 1 or individual[i] == True:
-            direction = copy.copy(directions[i])
-            directions[i] = (direction[1], direction[0], direction[2])
+    # Make a copy
+    dest_nodes = copy.copy(dest_nodes_numbers)
             
     # reoroder edge geodatframe
-    edges_new = graph_funcs.set_direction(edges, directions)
     print(individual)
-    G = ox.graph_from_gdfs(nodes, edges_new)
+    G = GB.build_graph(individual)
     
     # Process nodes to put em in the right form
     omsnx_keys_list=list(G._node.keys())
