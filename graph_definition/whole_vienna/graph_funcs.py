@@ -16,10 +16,10 @@ def node_degree_attrib(nodes, edges):
     # get degree of nodes
     node_degree = [G.degree[osmid] for osmid in nodes.index.values]
     
-    for osmid in nodes.index.values:
-        degree = G.degree[osmid]
-        if degree == 1:
-            print(osmid)
+    # for osmid in nodes.index.values:
+    #     degree = G.degree[osmid]
+    #     if degree == 1:
+    #         print(osmid)
 
     return node_degree
 
@@ -1831,6 +1831,28 @@ def new_edge_straight(new_edge, nodes, edges):
     row_new.set_index(['u', 'v', 'key'], inplace=True)
 
     return row_new
+
+def merge_groups(edges, edge_a, edge_b, node_split):
+    """Code does merging and splitting in a smart way. combines split_group_at_node and merge_to_group
+
+    Args:
+        edges (gdf): [description]
+        edge_a (tuple): tuple of edges
+        edge_b (tuple): tuple of edges
+
+    Return
+    edge GeoDataFrame
+    """    
+
+    # first make copy of edges
+    edges_gdf = edges.copy()
+
+    # now decide which edge to regroup
+    group_a = edges_gdf.loc[edge_a, 'stroke_group'].values
+    group_b = edges_gdf.loc[edge_b, 'stroke_group'].values
+
+    print(group_a, group_b)
+    return edges_gdf
 
 def merge_to_group(edges, groups_to_merge):
     
