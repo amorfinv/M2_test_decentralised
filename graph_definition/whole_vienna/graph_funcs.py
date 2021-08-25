@@ -1878,11 +1878,11 @@ def merge_groups(edges, edge_a, edge_b, merge_type = 'edges'):
         print(f'Group to keep: {group_to_keep}')
 
         # now check that node_split at group_to_split is not first or last node of group
-        split_group_uv = list(edges_gdf[edges_gdf['stroke_group']==group_to_split].index)
+        split_group_uv_split = list(edges_gdf[edges_gdf['stroke_group']==group_to_split].index)
 
         # get all nodes (even repeated into a list)
         count_nodes = []
-        for uv in split_group_uv:
+        for uv in split_group_uv_split:
             count_nodes.append(uv[0])
             count_nodes.append(uv[1])
         
@@ -1898,6 +1898,8 @@ def merge_groups(edges, edge_a, edge_b, merge_type = 'edges'):
 
         # split the selected group at the split node.
         edges_gdf = split_group_at_node(edges, node_split, group_to_split)
+
+        # In some cases both edges need a split
 
         # check if split edge has a new group number
         edge_to_split = edge_a if group_to_split == group_a else edge_b
