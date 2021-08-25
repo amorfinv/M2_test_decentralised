@@ -1835,7 +1835,7 @@ def new_edge_straight(new_edge, nodes, edges):
 
     return row_new
 
-def merge_groups(edges, edge_a, edge_b, merge_type = 'edges'):
+def merge_groups(edges, edge_a, edge_b):
     """Code does merging and splitting in a smart way. combines split_group_at_node and merge_to_group
     code is more dynamic. Two types of inputs. If arg_a and arg_b are edges then merge_type should be edges.
     These two edges should be connected at a node but have different group numbers.
@@ -1856,19 +1856,57 @@ def merge_groups(edges, edge_a, edge_b, merge_type = 'edges'):
     # first make copy of edges
     edges_gdf = edges.copy()
 
-    if merge_type == 'edges':
+    # get node in common between both edges
+    node_split = tuple(set(edge_a[:-1]) & set(edge_b[:-1]))[0]
 
-        # get node at split (this is the common node between edges)
-        node_split = tuple(set(edge_a[:-1]) & set(edge_b[:-1]))[0]
-
-        # get group numbers of both edges
+    # get group numbers of both edges
+    try:
         group_a = edges_gdf.loc[edge_a].stroke_group
-        group_b = edges_gdf.loc[edge_b].stroke_group
+    except KeyError:
+        edge_a = (edge_a[1], edge_a[0], 0)
+        group_a = edges_gdf.loc[edge_a].stroke_group
 
-        # ensure that group numbers are different
-        if group_a == group_b:
-            print('Merge groups not needed. Groups are already part of same group')
-            return edges_gdf
+    try:
+        group_b = edges_gdf.loc[edge_b].stroke_group
+    except KeyError:
+        edge_b = (edge_b[1], edge_b[0], 0)
+        group_b = edges_gdf.loc[edge_b].stroke_group        
+
+    # ensure that group numbers are different
+    if group_a == group_b:
+        print('Merge groups not needed. Groups are already part of same group')
+        return edges_gdf
+
+    # get indices of both groups    
+    group_a_uv = list(edges_gdf[edges_gdf['stroke_group']==group_a].index)
+    group_b_uv = list(edges_gdf[edges_gdf['stroke_group']==group_b].index)
+
+    # get all nodes (even repeated into a list)
+    count_nodes_a = []
+    for uv in group_a_uv:
+        count_nodes_a.append(uv[0])
+        count_nodes_a.append(uv[1])
+
+    count_nodes_b = []
+    for uv in group_b_uv:
+        count_nodes_b.append(uv[0])
+        count_nodes_b.append(uv[1])
+
+    # make countes
+    node_count_a = dict(Counter(count_nodes_a))
+    node_count_b = dict(Counter(count_nodes_b))
+
+    # if both have a count of 1 they just need to be merged
+    if node_count_a[node_split] == 1 and node_count_b[node_split] == 1:
+
+        # groups to_merge
+        groups_to_merge = [group_a, group_b]
+
+        # merge_groups
+        edges_gdf = merge_to_group(edges_gdf, groups_to_merge)
+    
+    # only go into loop if any of the node_counts are 1.
+    elif node_count_a[node_split] == 1 or node_count_b[node_split] == 1:
 
         # inital division of group_to_keep and group_to_split. This is just based on which is smaller
         group_to_keep = str(min(int(group_a), int(group_b)))
@@ -1878,11 +1916,11 @@ def merge_groups(edges, edge_a, edge_b, merge_type = 'edges'):
         print(f'Group to keep: {group_to_keep}')
 
         # now check that node_split at group_to_split is not first or last node of group
-        split_group_uv_split = list(edges_gdf[edges_gdf['stroke_group']==group_to_split].index)
+        split_group_uv = list(edges_gdf[edges_gdf['stroke_group']==group_to_split].index)
 
         # get all nodes (even repeated into a list)
         count_nodes = []
-        for uv in split_group_uv_split:
+        for uv in split_group_uv:
             count_nodes.append(uv[0])
             count_nodes.append(uv[1])
         
@@ -1897,20 +1935,31 @@ def merge_groups(edges, edge_a, edge_b, merge_type = 'edges'):
             print(f'Group to keep changed to: {group_to_keep}')
 
         # split the selected group at the split node.
-        edges_gdf = split_group_at_node(edges, node_split, group_to_split)
-
-        # In some cases both edges need a split
+        edges_gdf = split_group_at_node(edges_gdf, node_split, group_to_split)
 
         # check if split edge has a new group number
         edge_to_split = edge_a if group_to_split == group_a else edge_b
-        potential_new_group = edges_gdf.loc[edge_to_split].stroke_group
+        potential_new_splt_group = edges_gdf.loc[edge_to_split].stroke_group
 
-        groups_to_merge = [group_to_keep, potential_new_group]
+        groups_to_merge = [group_to_keep, potential_new_splt_group]
 
         print(f'These are the groups to merge {groups_to_merge}')
         # merge_groups
         edges_gdf = merge_to_group(edges_gdf, groups_to_merge)
+    
+    else:
+        print('there is a double double!!')
+        print(f'Node at split: {node_split}')
+        print(f'group a: {group_a}')
+        print(f'group b: {group_b}')
 
+        # both groups should be split
+        edges_gdf = split_group_at_node(edges_gdf, node_split, group_a)
+        edges_gdf = split_group_at_node(edges_gdf, node_split, group_b)
+
+        # call itself with new group splits
+        edges_gdf = merge_groups(edges_gdf, edge_a, edge_b)
+        print('inside recursive')
 
     return edges_gdf
 
