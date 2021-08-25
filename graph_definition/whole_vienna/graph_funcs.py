@@ -1,4 +1,5 @@
 from enum import unique
+from platform import node
 import osmnx as ox
 import numpy as np
 from shapely.geometry import LineString, MultiLineString, Point, Polygon
@@ -7,6 +8,8 @@ import math
 import geopandas as gpd
 from pyproj import CRS
 import ast
+from collections import Counter
+
 
 def node_degree_attrib(nodes, edges):
 
@@ -1832,13 +1835,19 @@ def new_edge_straight(new_edge, nodes, edges):
 
     return row_new
 
-def merge_groups(edges, edge_a, edge_b, node_split):
+def merge_groups(edges, edge_a, edge_b, merge_type = 'edges'):
     """Code does merging and splitting in a smart way. combines split_group_at_node and merge_to_group
+    code is more dynamic. Two types of inputs. If arg_a and arg_b are edges then merge_type should be edges.
+    These two edges should be connected at a node but have different group numbers.
+
+    if merge_type = 'strokes' then it uses strokes (TODO) maybe not necessary.
+
+    TODO: make it work with only group inputs
 
     Args:
         edges (gdf): [description]
-        edge_a (tuple): tuple of edges
-        edge_b (tuple): tuple of edges
+        edge_a (tuple/string): tuple of edges or groups to join
+        edge_b (tuple/string): tuple of edges or groups to join
 
     Return
     edge GeoDataFrame
@@ -1847,11 +1856,60 @@ def merge_groups(edges, edge_a, edge_b, node_split):
     # first make copy of edges
     edges_gdf = edges.copy()
 
-    # now decide which edge to regroup
-    group_a = edges_gdf.loc[edge_a, 'stroke_group'].values
-    group_b = edges_gdf.loc[edge_b, 'stroke_group'].values
+    if merge_type == 'edges':
 
-    print(group_a, group_b)
+        # get node at split (this is the common node between edges)
+        node_split = tuple(set(edge_a[:-1]) & set(edge_b[:-1]))[0]
+
+        # get group numbers of both edges
+        group_a = edges_gdf.loc[edge_a].stroke_group
+        group_b = edges_gdf.loc[edge_b].stroke_group
+
+        # ensure that group numbers are different
+        if group_a == group_b:
+            print('Merge groups not needed. Groups are already part of same group')
+            return edges_gdf
+
+        # inital division of group_to_keep and group_to_split. This is just based on which is smaller
+        group_to_keep = str(min(int(group_a), int(group_b)))
+        group_to_split = str(max(int(group_a), int(group_b)))
+        print(f'Node at split: {node_split}')
+        print(f'Group to split: {group_to_split}')
+        print(f'Group to keep: {group_to_keep}')
+
+        # now check that node_split at group_to_split is not first or last node of group
+        split_group_uv = list(edges_gdf[edges_gdf['stroke_group']==group_to_split].index)
+
+        # get all nodes (even repeated into a list)
+        count_nodes = []
+        for uv in split_group_uv:
+            count_nodes.append(uv[0])
+            count_nodes.append(uv[1])
+        
+        # make a counter
+        node_count = dict(Counter(count_nodes))
+
+        # now check if the count of node_split is 1
+        if node_count[node_split] == 1:
+            print(f'node {node_split} is at start/end of group {group_to_split}')
+            group_to_split, group_to_keep = group_to_keep, group_to_split
+            print(f'Group to split changed to: {group_to_split}')
+            print(f'Group to keep changed to: {group_to_keep}')
+
+        # split the selected group at the split node.
+        edges_gdf = split_group_at_node(edges, node_split, group_to_split)
+
+        # check if split edge has a new group number
+        edge_to_split = edge_a if group_to_split == group_a else edge_b
+        potential_new_group = edges_gdf.loc[edge_to_split].stroke_group
+
+        groups_to_merge = [group_to_keep, potential_new_group]
+
+        print(f'These are the groups to merge {groups_to_merge}')
+        # merge_groups
+        edges_gdf = merge_to_group(edges_gdf, groups_to_merge)
+
+
     return edges_gdf
 
 def merge_to_group(edges, groups_to_merge):
@@ -1860,10 +1918,14 @@ def merge_to_group(edges, groups_to_merge):
     edges_gdf = edges.copy()
 
     # select the first group of list as the group for all
-    merged_group_num = groups_to_merge[0]
+    groups_to_merge_ints = [int(group_num) for group_num in groups_to_merge]
+    merged_group_num = str(min(groups_to_merge_ints))
+
+    # remove merge group number for loop
+    groups_to_merge.remove(merged_group_num)
 
     # loop through all groups except first one
-    for group in groups_to_merge[1:]:
+    for group in groups_to_merge:
         group_gdf = edges_gdf[edges_gdf['stroke_group']== group]
         edges_replace = group_gdf.index.values
         

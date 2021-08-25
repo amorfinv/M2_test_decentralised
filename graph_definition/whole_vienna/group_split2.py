@@ -43,56 +43,50 @@ def main():
     # convert to gdgs
     nodes, edges = ox.graph_to_gdfs(G)
 
-    ##### regrouping starts here
-    # regroup 1: split groups at (big highway) starting (48.23460146649045, 16.354987971444462)
-    edge_a = (307865329, 199683)
-    edge_b = (307865329, 33344230)
-    node_split = 307865329
+    ##### regrouping # 1
+    # regroup 1a: split groups at (big highway) starting (48.23460146649045, 16.354987971444462)
+    edge_a = (307865329, 199683, 0)
+    edge_b = (307865329, 33344230, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    # merge_group
-    edges = graph_funcs.merge_groups(edges, edge_a, edge_b, node_split)
+    # regroup 1a at node 451666739
+    edge_a = (378462, 451666739, 0)
+    edge_b = (451666739, 378464, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    # curr_group = '161'
-    # edges = graph_funcs.split_group_at_node(edges, node_split, curr_group)
+    ##### regrouping # 2
+    # regroup 2a: split groups at (big highway starting at 48.246105506044714, 16.381461118852457) node 24950487
+    edge_a = (24950487, 199684, 0)
+    edge_b = (24950483, 24950487, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    # node_split = 451666739
-    # curr_group = '308'
-    # edges = graph_funcs.split_group_at_node(edges, node_split, curr_group)
+    # regroup 2b at node 24950483
+    edge_a = (24950483, 1371105029, 0)
+    edge_b = (24950483, 24950487, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    # # join groups 138 1559 and 1560
-    # groups_to_merge = ['139', '1559', '1560']
-    # edges = graph_funcs.merge_to_group(edges, groups_to_merge)
+    # regroup 2c at node 281224229
+    edge_a = (27379233, 281224229, 0)
+    edge_b = (281224229, 34767011, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    # # regroup 2: split groups at (big highway starting at 48.246105506044714, 16.381461118852457)
-    # node_split = 24950487
-    # curr_group = '136'
-    # edges = graph_funcs.split_group_at_node(edges, node_split, curr_group)
+    # regroup 2d at node 34767011
+    edge_a = (281224229, 34767011, 0)
+    edge_b = (34767011, 34767150, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    # node_split = 281224229
-    # curr_group = '85'
-    # edges = graph_funcs.split_group_at_node(edges, node_split, curr_group)
+    # regroup 2e at node 78208644
+    edge_a = (27375731, 78208644, 0)
+    edge_b = (78208644, 27375728, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    # node_split = 34767011
-    # curr_group = '1560'
-    # edges = graph_funcs.split_group_at_node(edges, node_split, curr_group)
+    # regroup 2f at node 319836124
+    edge_a = (935742456, 319836124, 0)
+    edge_b = (27026891, 319836124, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    # node_split = 78208644
-    # curr_group = '330'
-    # edges = graph_funcs.split_group_at_node(edges, node_split, curr_group)
-
-    # node_split = 319836124
-    # curr_group = '1562'
-    # edges = graph_funcs.split_group_at_node(edges, node_split, curr_group)
-
-    # node_split = 24950483
-    # curr_group = '115'
-    # edges = graph_funcs.split_group_at_node(edges, node_split, curr_group)
-
-    # # join groups
-    # groups_to_merge = ['136', '167', '332', '1069', '1560', '1562', '1564']
-    # edges = graph_funcs.merge_to_group(edges, groups_to_merge)
-
-    # # regroup 3
+    ##### regrouping #3
+    
     # edges = graph_funcs.split_group_at_node(edges, 685291, '359')
     # edges = graph_funcs.split_group_at_node(edges, 685291, '336')
     # edges = graph_funcs.split_group_at_node(edges, 34765365, '336')
@@ -145,8 +139,8 @@ def main():
     # edges = graph_funcs.split_group_at_node(edges, 1519387433, '950')
 
     # reset directions
-    init_edge_directions = graph_funcs.get_first_group_edges(G, edges)
-    edges = graph_funcs.set_direction(nodes, edges, init_edge_directions)
+    # init_edge_directions = graph_funcs.get_first_group_edges(G, edges)
+    # edges = graph_funcs.set_direction(nodes, edges, init_edge_directions)
 
     # create graph and save edited
     G = ox.graph_from_gdfs(nodes, edges)
