@@ -1911,9 +1911,6 @@ def merge_groups(edges, edge_a, edge_b):
         # inital division of group_to_keep and group_to_split. This is just based on which is smaller
         group_to_keep = str(min(int(group_a), int(group_b)))
         group_to_split = str(max(int(group_a), int(group_b)))
-        print(f'Node at split: {node_split}')
-        print(f'Group to split: {group_to_split}')
-        print(f'Group to keep: {group_to_keep}')
 
         # now check that node_split at group_to_split is not first or last node of group
         split_group_uv = list(edges_gdf[edges_gdf['stroke_group']==group_to_split].index)
@@ -1929,10 +1926,7 @@ def merge_groups(edges, edge_a, edge_b):
 
         # now check if the count of node_split is 1
         if node_count[node_split] == 1:
-            print(f'node {node_split} is at start/end of group {group_to_split}')
             group_to_split, group_to_keep = group_to_keep, group_to_split
-            print(f'Group to split changed to: {group_to_split}')
-            print(f'Group to keep changed to: {group_to_keep}')
 
         # split the selected group at the split node.
         edges_gdf = split_group_at_node(edges_gdf, node_split, group_to_split)
@@ -1943,23 +1937,17 @@ def merge_groups(edges, edge_a, edge_b):
 
         groups_to_merge = [group_to_keep, potential_new_splt_group]
 
-        print(f'These are the groups to merge {groups_to_merge}')
         # merge_groups
         edges_gdf = merge_to_group(edges_gdf, groups_to_merge)
     
     else:
-        print('there is a double double!!')
-        print(f'Node at split: {node_split}')
-        print(f'group a: {group_a}')
-        print(f'group b: {group_b}')
 
         # both groups should be split
         edges_gdf = split_group_at_node(edges_gdf, node_split, group_a)
         edges_gdf = split_group_at_node(edges_gdf, node_split, group_b)
 
-        # call itself with new group splits
+        # call itself with new group splits (recursive)
         edges_gdf = merge_groups(edges_gdf, edge_a, edge_b)
-        print('inside recursive')
 
     return edges_gdf
 

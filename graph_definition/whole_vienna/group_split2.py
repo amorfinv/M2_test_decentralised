@@ -49,14 +49,10 @@ def main():
     edge_b = (307865329, 33344230, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    print('------1a------')
-
     # regroup 1b at node 451666739
     edge_a = (378462, 451666739, 0)
     edge_b = (451666739, 378464, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
-
-    print('------1b------')
 
     ##### regrouping # 2
     # regroup 2a: split groups at (big highway starting at 48.246105506044714, 16.381461118852457) node 24950487
@@ -64,42 +60,30 @@ def main():
     edge_b = (24950483, 24950487, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    print('------2a------')
-
     # regroup 2b at node 24950483
     edge_a = (24950483, 1371105029, 0)
     edge_b = (24950483, 24950487, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
     
-    print('------2b------')
-
     # regroup 2c at node 281224229
     edge_a = (27379233, 281224229, 0)
     edge_b = (281224229, 34767011, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
     
-    print('------2c------')
-
     # regroup 2d at node 34767011
     edge_a = (281224229, 34767011, 0)
     edge_b = (34767011, 34767150, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
     
-    print('------2d------')
-
     # regroup 2e at node 78208644
     edge_a = (27375731, 78208644, 0)
     edge_b = (78208644, 27375728, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    print('------2e------')
-
     # regroup 2f at node 319836124
     edge_a = (935742456, 319836124, 0)
     edge_b = (27026891, 319836124, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
-
-    print('------2f------')
 
     ##### regrouping #3
     # regrouping #3a node 685101
@@ -107,21 +91,15 @@ def main():
     edge_b = (685101, 48071474, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    print('------3a------')
-
     # regrouping #3b node 685101
     edge_a = (685101, 48071474, 0)
     edge_b = (685101, 685102, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
     
-    print('------3b------')
-
     # regrouping #3c 685102
     edge_a = (685101, 685102, 0)
     edge_b = (685102, 296412367, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
-
-    print('------3c------')
 
     ##### regrouping #4
     # regrouping #4a node 685291
@@ -129,21 +107,15 @@ def main():
     edge_b = (34765365, 685291, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
-    print('------4a------')
-
     # # regrouping 4b node 34765365
     edge_a = (34765365, 685291, 0)
     edge_b = (48097197, 34765365, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
     
-    print('------4b------')
-
     # # regrouping 4c node 123543687
     edge_a = (685102, 123543687, 0)
     edge_b = (123543687, 123431334, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
-
-    print('------4c------')
 
     ##### regrouping #5
     # regrouping #5a node 311045196
@@ -169,7 +141,6 @@ def main():
     edge_a = (2389831852, 1188875861, 0)
     edge_b = (330372031, 1188875861, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
-    print('------7b------')
 
     # regrouping #7c node 2388913465
     init_edge_directions = graph_funcs.get_first_group_edges(G, edges) #TODO: dynamic reset direction
@@ -202,9 +173,26 @@ def main():
     edges = graph_funcs.split_group_at_node(edges, 3904409040, '950')
     edges = graph_funcs.split_group_at_node(edges, 1684901654, '950')
 
+    ### regrouiping # 12
+    # regrouping #12a node 78184537
+    edge_a = (78188179, 78184537, 0)
+    edge_b = (61841435, 78184537, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+
+    # regrouping #12b node 294134554, 286480598
+    edges = graph_funcs.split_group_at_node(edges, 25280877, '823')
+    init_edge_directions = graph_funcs.get_first_group_edges(G, edges)
+    edges = graph_funcs.set_direction(nodes, edges, init_edge_directions)
+    edges = graph_funcs.split_group_at_node(edges, 286480598, '330')
+
+    # # regrouping #12c node 294134554
+    edge_a = (294134554, 2293870432, 0)
+    edge_b = (1523533172, 294134554, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+
     # reset directions
-    # init_edge_directions = graph_funcs.get_first_group_edges(G, edges)
-    # edges = graph_funcs.set_direction(nodes, edges, init_edge_directions)
+    init_edge_directions = graph_funcs.get_first_group_edges(G, edges)
+    edges = graph_funcs.set_direction(nodes, edges, init_edge_directions)
 
     # create graph and save edited
     G = ox.graph_from_gdfs(nodes, edges)
@@ -214,15 +202,6 @@ def main():
 
     # Save geopackage for import to QGIS a
     ox.save_graph_geopackage(G, filepath=path.join(gis_data_path, 'streets', 'regrouping_smart.gpkg'), directed=True)
-
-    # # run coins to reorder edges and direct them
-    # coins_obj = COINS(edges)
-    # stroke_gdf = coins_obj.stroke_gdf()
-
-    # # get stroke lengths
-    # stroke_gdf['length'] = stroke_gdf.to_crs('epsg:32633').length
-
-    # stroke_gdf.to_file(path.join(gis_data_path, 'streets', 'strokes.gpkg'), driver="GPKG")
 
     
 class COINS:
