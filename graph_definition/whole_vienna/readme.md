@@ -8,15 +8,13 @@ Sixth step is to run "cleanup_graph_2.py"
 
 TODO: fix edge (199626, 33301552)!!!
 
-Do group_split2.py
-separating groups
-"stroke_group" = 136 or "stroke_group" = 139 or
-"stroke_group" = 85 or "stroke_group" = 117 or
-"stroke_group" = 1561 or "stroke_group" = 1562 or
-"stroke_group" = 1 or "stroke_group" = 32 or
-"stroke_group" = 19 or "stroke_group" = 20 or
-"stroke_group" = 1003 or
-"stroke_group" = 0 or "stroke_group" = 1017 or
-"stroke_group" = 1571 or "stroke_group" = 127 or
-"stroke_group" = 8 or
-"stroke_group" = 1573
+Now do a first separating group where you merge/split groups
+group_split1.py separator groups:
+136,139,85,117,1561,1562,1,32,19,20,1003,1017,1571,127,8,1573,0
+
+using group_split1 regrouping_smart.gpkg you can divide the airspace into zones.
+
+Now do a refined group_split that consideres group_split1.py and the new airspace zones 
+-group_split2.py separator groups:
+136,139,85,1,18,0
+
