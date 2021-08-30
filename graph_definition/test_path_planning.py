@@ -8,14 +8,18 @@ import pickle
 from flow_control import street_graph,bbox
 from agent_path_planning import PathPlanning
 import time
+import osmnx as ox
 
 start = time.time()
-G= pickle.load(open("G-multigraph.pickle", "rb"))#load G
-edge=pickle.load(open("edge_gdf.pickle", "rb"))#load edge_geometry
+#G= pickle.load(open("G-multigraph.pickle", "rb"))#load G
+#edge=pickle.load(open("edge_gdf.pickle", "rb"))#load edge_geometry
+G = ox.io.load_graphml('processed_graph.graphml')
+edge = ox.graph_to_gdfs(G)[1]
+fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
 
 now = time.time()
-#print("Loaded pickle")
-#print(now - start)
+print("Loaded pickle")
+print(now - start)
 #Create the graph of Vienna
 graph=street_graph(G,edge) 
 
@@ -23,16 +27,16 @@ graph=street_graph(G,edge)
 y_start=48.225 #latitude
 x_start=16.34 #longitude
 y_dest=48.22
-x_dest=16.333
+x_dest=16.335
 
 ##In the bbox aconstant value should be added to expand it
-exp_const=0.005 ## we need to think about the value of that constant
+exp_const=0.05 ## we need to think about the value of that constant
 box=bbox(min(y_start,y_dest)-exp_const,min(x_start,x_dest)-exp_const,max(y_start,y_dest)+exp_const,max(x_start,x_dest)+exp_const) 
 subgraph,edges=graph.extract_subgraph(box)
 
 now = time.time()
-#print("Get subgraph")
-#print(now - start)
+print("Get subgraph")
+print(now - start)
 
 d_start,start_index=graph.get_nearest_node(x_start,y_start)
 d_dest,dest_index=graph.get_nearest_node(x_dest,y_dest)
@@ -40,19 +44,17 @@ d_dest,dest_index=graph.get_nearest_node(x_dest,y_dest)
 
 curr_index1=33143834
 curr_index2=33144555
-edges[33143834][33144555].max_speed=0
+#edges[33143834][33144555].max_speed=0
 
 plan1=PathPlanning(graph, x_start,y_start,x_dest,y_dest)
 route,turns,edge_list,next_turn= plan1.plan()
 #print(route)
-print("turns")
-print(turns)
-print("edge_list")
-print(edge_list)
-print("next trun")
-print(next_turn)
 
-if 0:
+now = time.time()
+print("Planned")
+print(now - start)
+
+if 1:
     now = time.time()
     print("Planned")
     print(now - start)
