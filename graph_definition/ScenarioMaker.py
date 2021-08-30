@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jun  3 11:47:30 2021
-
 @author: andub
 """
 import osmnx as ox
@@ -18,7 +17,7 @@ bst = BlueskySCNTools.BlueskySCNTools()
 # Step 1: Import the graph we will be using
 dir_path = os.path.dirname(os.path.realpath(__file__))
 graph_path = dir_path.replace('graph_definition', 
-         'graph_definition/gis/data/street_graph/processed_graph.graphml')
+          'graph_definition/gis/data/street_graph/processed_graph.graphml')
 G = ox.io.load_graphml(graph_path)
 #G = ox.io.load_graphml('processed_graph.graphml')
 edges = ox.graph_to_gdfs(G)[1]
@@ -84,7 +83,6 @@ bst.Dict2Scn(r'Test_Scenario.scn',
              scenario_dict)
 
 print('Scenario file created!')
-
 
 ##Dill the flight_plans_dict
 output_file=open("Path_Planning.dill", 'wb')
