@@ -10,6 +10,7 @@ import BlueskySCNTools
 from flow_control import street_graph,bbox
 from agent_path_planning import PathPlanning
 import os
+import dill
 
 # Initialize stuff
 bst = BlueskySCNTools.BlueskySCNTools()
@@ -47,6 +48,7 @@ print('Traffic generated!')
 
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
+flight_plans_dict={}
 for flight in generated_traffic:
     # First get the route and turns
     origin = flight[2]
@@ -55,6 +57,7 @@ for flight in generated_traffic:
     route=[]
     turns=[]
     route,turns,edges,next_turn=plan.plan()
+    flight_plans_dict[flight[0]]=plan
     if route!=[]:
         route = np.array(route)
         # Create dictionary
@@ -81,4 +84,9 @@ bst.Dict2Scn(r'Test_Scenario.scn',
              scenario_dict)
 
 print('Scenario file created!')
+
+
+##Dill the flight_plans_dict
+dill.dump(flight_plans_dict,"Path_Planning.dill")
+print("Flight plans and search graphs saved!")
     
