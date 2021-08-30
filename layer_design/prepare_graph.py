@@ -15,8 +15,12 @@ edge_gdf = g[1]
 edge_gdf.reset_index(level=2, drop=True, inplace=True)
 
 # also remove some columns from dataframe
+edge_stoke = edge_gdf.copy()
 edge_gdf.drop(['osmid', 'lanes', 'name', 'highway', 'maxspeed', 'oneway', 'length', 'geometry', 
                'bearing', 'ref', 'edge_interior_angle'], axis=1, inplace=True)
+
+edge_stoke.drop(['osmid', 'lanes', 'name', 'highway', 'maxspeed', 'oneway', 'length', 'geometry', 
+               'bearing', 'ref', 'edge_interior_angle', 'layer_height'], axis=1, inplace=True)
 
 node_gdf.drop(['street_count', 'highway', 'geometry'], axis=1, inplace=True)
 
@@ -41,6 +45,7 @@ with open('nodes.json', 'w') as fp:
 # convert edges into a dictionary with the directionality as the key. 
 # and with the values as another sub dictionary, with stroke_group and layer_height
 edge_dict = edge_gdf.to_dict(orient='index')
+stroke_dict = edge_stoke.to_dict(orient='index')
 
 # correct some layer heights. TODO smart way to do this based on groups
 edge_dict[(283324403, 655012)]['layer_height'] = 'height 2'
@@ -56,6 +61,23 @@ for key, value in edge_dict.items():
 # save edge dictionary as json
 with open('edges.json', 'w') as fp:
     json.dump(edge_dict_new, fp)
+
+# simplify edge_dict keys into a string rather than tuple
+stroke_dict_new = {}
+for key, value in stroke_dict.items():
+    new_key = value['stroke_group']
+    new_value = f'{key[0]}-{key[1]}'
+
+    if new_key in stroke_dict_new.keys():
+        stroke_dict_new[new_key].append(new_value)
+    else:
+        stroke_dict_new[new_key] = []
+        stroke_dict_new[new_key].append(new_value)
+
+
+# save edge dictionary as json
+with open('strokes.json', 'w') as fp:
+    json.dump(stroke_dict_new, fp)
 
 # Opening edges.JSON as a dictionary
 with open('edges.json', 'r') as filename:
