@@ -17,10 +17,10 @@ bst = BlueskySCNTools.BlueskySCNTools()
 
 # Step 1: Import the graph we will be using
 dir_path = os.path.dirname(os.path.realpath(__file__))
-#graph_path = dir_path.replace('graph_definition', 
-#          'graph_definition/gis/data/street_graph/processed_graph.graphml')
-#G = ox.io.load_graphml(graph_path)
-G = ox.io.load_graphml('processed_graph.graphml')
+graph_path = dir_path.replace('graph_definition', 
+         'graph_definition/gis/data/street_graph/processed_graph.graphml')
+G = ox.io.load_graphml(graph_path)
+#G = ox.io.load_graphml('processed_graph.graphml')
 edges = ox.graph_to_gdfs(G)[1]
 print('Graph loaded!')
 
@@ -71,7 +71,7 @@ for flight in generated_traffic:
         #Add turnbool
         scenario_dict[flight[0]]['turnbool'] = turns
         #Add alts
-        scenario_dict[flight[0]]['alts'] = None
+        scenario_dict[flight[0]]['alts'] = route[:,2]
         #Add active edges
         scenario_dict[flight[0]]['edges'] = edges
         #Add next turn
@@ -87,6 +87,13 @@ print('Scenario file created!')
 
 
 ##Dill the flight_plans_dict
-dill.dump(flight_plans_dict,"Path_Planning.dill")
+output_file=open("Path_Planning.dill", 'wb')
+dill.dump(flight_plans_dict,output_file)
+output_file.close()
+
+
 print("Flight plans and search graphs saved!")
     
+##example of loading the flight plans
+input_file=open("Path_Planning.dill", 'rb')
+p=dill.load(input_file)
