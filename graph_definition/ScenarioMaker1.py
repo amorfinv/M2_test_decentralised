@@ -12,6 +12,7 @@ from agent_path_planning import PathPlanning
 import os
 import dill
 
+
 # Initialize stuff
 bst = BlueskySCNTools.BlueskySCNTools()
 
