@@ -31,6 +31,7 @@ def main():
 
     # Load MultiDigraph from create_graph.py
     G = ox.load_graphml(filepath=path.join(gis_data_path, 'streets', 'cleaning_process_2.graphml'))
+    ox.distance.add_edge_lengths(G)
 
     # delete some dead ends
     nodes_to_remove = [2107289289, 111166066, 297732617, 319898633, 117385463, 293431182, 2273750271,
@@ -46,6 +47,9 @@ def main():
     # reset directions
     init_edge_directions = graph_funcs.get_first_group_edges(G, edges)
     edges = graph_funcs.set_direction(nodes, edges, init_edge_directions)
+
+    # delete edges smaller than 60 meters
+    edges = edges.loc[edges['length'] > 60]
 
     # get midpoint of edges
     center_points = edges['geometry'].apply(lambda line_geom: line_geom.interpolate(0.5, normalized=True))
