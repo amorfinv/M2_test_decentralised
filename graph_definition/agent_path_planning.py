@@ -14,6 +14,7 @@ import numpy as np
 import math
 import copy
 from flow_control import street_graph,bbox
+from shapely.geometry import Point
 
 class Node:
     av_speed_horizontal= 10.0
@@ -234,101 +235,83 @@ def compute_shortest_path(path,graph, G,edges):
             path.start.key=calculateKey(path.start, path.start, path.k_m)
     
     return 'Path found!'
-            
-            
-def get_path(path,graph, G,edges,edges_old=None,change=False,change_list=[]):
-
-    route=[]
-    group_numbers=[]
-    nodes_indices=[]
-    turn_indices=[]
-    tmp=(path.start.x,path.start.y,path.start.z)
-    route.append(tmp)
-    group=path.start.group
-    nodes_indices.append(path.start.key_index)
-    while path.start.key_index!=path.goal.key_index :
-
-        current_node=path.start
-        minim=float('inf')
-        for ch in path.start.children:
-            n=graph[ch]
-           
-            if compute_c(path.start, n,edges)+n.g<minim:
-                minim=compute_c(path.start, n,edges)+n.g
-                current_node=n
-                
-        if change: #Scan for changes
-
-            path.k_m=path.k_m+heuristic(current_node, path.start)
-            #path.start=current_node ###############not sure for that
-            
-            for c in change_list:
-                c_old=compute_c(c[0], c[1],edges_old)
-
-                #update cost and obstacles here
-                if c_old>compute_c(c[0], c[1],edges): #if cost is decreased
-                    if(c[0]!=path.goal):
-
-                        c[0].rhs=min(c[0].rhs,compute_c(c[0], c[1], edges)+c[1].g)
-                        
-                elif c[0].rhs== c_old+c[1].g: #if cost is increased
-                    if c[0]!=path.goal:
-
- 
-                        tt=[]
-                        for ch in c[0].children:
-                            child=graph[ch]
-                            tt.append(child.g+compute_c( c[0],child, edges))
-                        c[0].rhs=min(tt)
-                update_vertex(path, c[0])
-                path.start.g=float('inf')## not sure for that
-                path.start.rhs=float('inf')## not sure for that
-                path_found=compute_shortest_path(path,graph,G,edges)
-                
-                print(path_found)
-                if not path_found:
-                    break
-                change=False    
-                
-        if current_node.key_index!=path.start.key_index:
-            #find the intermediate points
-            pp=1
-            linestring=edges[path.start.key_index][current_node.key_index].geometry #if the start index should go first need to get checked
-            coords = list(linestring.coords)
-            for c in range(len(coords)-1):
-                if not c==0:
-                    tmp=(coords[c][0],coords[c][1],current_node.z) #the intermediate point
-                    route.append(tmp) 
-                    group_numbers.append(current_node.group)
-                    nodes_indices.append(-1)
-                
-
-            nodes_indices.append(current_node.key_index)
-            tmp=(current_node.x,current_node.y,current_node.z) #the next node
-            group_numbers.append(current_node.group)
-            route.append(tmp) 
-            
-
-        path.start=current_node
+    
+def distance_point(A,B):
+    R = 6372800  # Earth radius in meters
+    lat1=A[1]
+    lon1=A[0]
+    lat2=B[1]
+    lon2=B[0]
         
+    phi1, phi2 = math.radians(lat1), math.radians(lat2) 
+    dphi       = math.radians(lat2 - lat1)
+    dlambda    = math.radians(lon2 - lon1)
         
-    turns=[0]
-    for i in range(len(group_numbers)-1):
-        if group_numbers[i]==group_numbers[i+1]:
-            turns.append(0)
-        else:
-            turns.append(1)
-            turn_indices.append(nodes_indices[i+1])
-    turns.append(0)
-    turn_indices.append(-1)
+    a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
+        
+    return 2*R*math.atan2(math.sqrt(a), math.sqrt(1 - a))       
+        
+def lies_between(A,B,C):
+    #https://stackoverflow.com/questions/33155240/how-to-check-if-a-point-is-between-two-other-points-but-not-limited-to-be-align?rq=1
+    a = distance_point(B,C)
+    b = distance_point(C,A)
+    c = distance_point(A,B)
+    return a**2 + b**2 >= c**2 and a**2 + c**2 >= b**2
+            
 
-    return route,turns,nodes_indices,turn_indices
+
+def get_nearest_edge(gdf, point):
+    """
+    Return the nearest edge to a pair of coordinates. Pass in a graph and a tuple
+    with the coordinates. We first get all the edges in the graph. Secondly we compute
+    the euclidean distance from the coordinates to the segments determined by each edge.
+    The last step is to sort the edge segments in ascending order based on the distance
+    from the coordinates to the edge. In the end, the first element in the list of edges
+    will be the closest edge that we will return as a tuple containing the shapely
+    geometry and the u, v nodes.
+    Parameters
+    ----------
+    G : networkx multidigraph
+    point : tuple
+        The (lat, lng) or (y, x) point for which we will find the nearest edge
+        in the graph
+    Returns
+    -------
+    closest_edge_to_point : tuple (shapely.geometry, u, v)
+        A geometry object representing the segment and the coordinates of the two
+        nodes that determine the edge section, u and v, the OSM ids of the nodes.
+    """
+
+    graph_edges = gdf[["geometry"]].values.tolist()
+    graph_edges_indexes=gdf.index.tolist()
+    for i in range(len(graph_edges)):# maybe do that faster?
+        graph_edges[i].append(graph_edges_indexes[i][0])
+        graph_edges[i].append(graph_edges_indexes[i][1])
+
+
+    edges_with_distances = [
+        (
+            graph_edge,
+            Point(tuple(reversed(point))).distance(graph_edge[0])
+        )
+        for graph_edge in graph_edges
+    ]
+
+    edges_with_distances = sorted(edges_with_distances, key=lambda x: x[1])
+    closest_edge_to_point = edges_with_distances[0][0]
+
+    geometry, u, v = closest_edge_to_point
+
+
+    return geometry, u, v
         
 class PathPlanning:
     
-    def __init__(self,flow_control_graph,lon_start,lat_start,lon_dest,lat_dest):
+    def __init__(self,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest):
         self.start_index=None
+        self.start_index_previous=None
         self.goal_index=None
+        self.goal_index_next=None
         self.G = None#G
         self.edge_gdf=None#copy.deepcopy(edges)
         self.path=None
@@ -338,6 +321,9 @@ class PathPlanning:
         self.route=[]
         self.turns=[]
         self.flow_control_graph=flow_control_graph
+        self.gdf=gdf
+        self.start_point=Point(tuple((lon_start,lat_start)))
+        self.goal_point=Point(tuple((lon_dest,lat_dest)))
 
 
         exp_const=0.05##0.005 ## we need to think about the value of that constant
@@ -346,8 +332,22 @@ class PathPlanning:
         self.G,edges=self.flow_control_graph.extract_subgraph(box)
         self.edge_gdf=copy.deepcopy(edges)
 
-        d_start,self.start_index=self.flow_control_graph.get_nearest_node(lon_start,lat_start)
-        d_dest,self.goal_index=self.flow_control_graph.get_nearest_node(lon_dest,lat_dest)
+
+        #find start and destination nodes
+        point=(lat_start,lon_start)
+        geometry, u, v=get_nearest_edge(self.gdf, point)
+        print(geometry)
+        self.start_index=v
+        self.start_index_previous=u
+        
+        point=(lat_dest,lon_dest)
+        geometry, u, v=get_nearest_edge(self.gdf, point)
+        print(geometry)
+        self.goal_index=u
+        self.goal_index_next=v
+
+       # d_start,self.start_index=self.flow_control_graph.get_nearest_node(lon_start,lat_start)
+        #d_dest,self.goal_index=self.flow_control_graph.get_nearest_node(lon_dest,lat_dest)
         
         
         #Create the graph
@@ -362,7 +362,7 @@ class PathPlanning:
 
            parents=self.G[key].parents
            children=self.G[key].children
-           my_group={}
+           my_group={} 
         
            ii=0
            tmp=[]#list if the groups that the node has been added
@@ -522,7 +522,7 @@ class PathPlanning:
         indices_nodes=[]
         turn_indices=[]
         if path_found:
-            route,turns,indices_nodes,turn_indices=get_path(self.path,self.graph, self.G,self.edge_gdf)
+            route,turns,indices_nodes,turn_indices=self.get_path(self.path,self.graph, self.G,self.edge_gdf)
             
             edges_list.append(-1)#that is the edge to go to the first point, so no edge exists
             os_id1=indices_nodes[0]
@@ -548,6 +548,127 @@ class PathPlanning:
         self.turns=turns 
         
         return route,turns,edges_list,next_turn_point
+    
+    
+    def get_path(self,path,graph, G,edges,edges_old=None,change=False,change_list=[]):
+
+        route=[]
+        group_numbers=[]
+        nodes_indices=[]
+        turn_indices=[]
+        
+        linestring=edges[self.start_index_previous][self.start_index].geometry
+        coords = list(linestring.coords)
+        for c in range(len(coords)-1):
+            if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((self.start_point.x,self.start_point.y)),tuple((path.start.x,path.start.y)))):
+                tmp=(coords[c][0],coords[c][1],path.start.z) #the points before the first node
+                route.append(tmp) 
+                group_numbers.append(path.start.group)
+                nodes_indices.append(-1)
+                
+        nodes_indices.append(self.start_index)
+        tmp=(path.start.x,path.start.y,path.start.z)
+        route.append(tmp)
+        
+        group=path.start.group
+        nodes_indices.append(path.start.key_index)
+        
+        while path.start.key_index!=path.goal.key_index :
+    
+            current_node=path.start
+            minim=float('inf')
+            for ch in path.start.children:
+                n=graph[ch]
+               
+                if compute_c(path.start, n,edges)+n.g<minim:
+                    minim=compute_c(path.start, n,edges)+n.g
+                    current_node=n
+                    
+            if change: #Scan for changes
+    
+                path.k_m=path.k_m+heuristic(current_node, path.start)
+                #path.start=current_node ###############not sure for that
+                
+                for c in change_list:
+                    c_old=compute_c(c[0], c[1],edges_old)
+    
+                    #update cost and obstacles here
+                    if c_old>compute_c(c[0], c[1],edges): #if cost is decreased
+                        if(c[0]!=path.goal):
+    
+                            c[0].rhs=min(c[0].rhs,compute_c(c[0], c[1], edges)+c[1].g)
+                            
+                    elif c[0].rhs== c_old+c[1].g: #if cost is increased
+                        if c[0]!=path.goal:
+    
+     
+                            tt=[]
+                            for ch in c[0].children:
+                                child=graph[ch]
+                                tt.append(child.g+compute_c( c[0],child, edges))
+                            c[0].rhs=min(tt)
+                    update_vertex(path, c[0])
+                    path.start.g=float('inf')## not sure for that
+                    path.start.rhs=float('inf')## not sure for that
+                    path_found=compute_shortest_path(path,graph,G,edges)
+                    
+                    print(path_found)
+                    if not path_found:
+                        break
+                    change=False    
+                    
+            if current_node.key_index!=path.start.key_index:
+                #find the intermediate points
+                pp=1
+                linestring=edges[path.start.key_index][current_node.key_index].geometry #if the start index should go first need to get checked
+                coords = list(linestring.coords)
+                for c in range(len(coords)-1):
+                    if not c==0:
+                        tmp=(coords[c][0],coords[c][1],current_node.z) #the intermediate point
+                        route.append(tmp) 
+                        group_numbers.append(current_node.group)
+                        nodes_indices.append(-1)
+                    
+    
+                nodes_indices.append(current_node.key_index)
+                tmp=(current_node.x,current_node.y,current_node.z) #the next node
+                group_numbers.append(current_node.group)
+                route.append(tmp) 
+                
+    
+            path.start=current_node
+       
+        tmp=(path.goal.x,path.goal.y,path.goal.z)
+        route.append(tmp)
+        nodes_indices.append(path.goal.key_index) 
+        group_numbers.append(-1)
+        
+        linestring=edges[self.goal_index][self.goal_index_next].geometry
+        coords = list(linestring.coords)
+        for c in range(len(coords)-1):
+            if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((self.goal_point.x,self.goal_point.y)),tuple((path.goal.x,path.goal.y)))):
+                tmp=(coords[c][0],coords[c][1],path.start.z) #the points before the first node
+                route.append(tmp) 
+                group_numbers.append(-1)
+                nodes_indices.append(-1)
+                
+        tmp=(self.goal_point.x,self.goal_point.y,path.goal.z)
+        route.append(tmp)
+        nodes_indices.append(self.goal_index_next) 
+        group_numbers.append(-1)
+ 
+            
+        turns=[0]
+        for i in range(len(group_numbers)-1):
+            if group_numbers[i]==group_numbers[i+1]:
+                turns.append(0)
+            else:
+                turns.append(1)
+                turn_indices.append(nodes_indices[i+1])
+        turns.append(0)
+        turn_indices.append(-1)
+    
+        return route,turns,nodes_indices,turn_indices
     
     def replan(self,edges_g,current_point_index,index_change_list):
         start_id=-1

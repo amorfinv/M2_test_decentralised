@@ -294,12 +294,13 @@ class BlueskySCNTools():
                 # Let's see how close they are
                 orig_node = ox.distance.nearest_nodes(G, origin[1], origin[0])
                 target_node = ox.distance.nearest_nodes(G, destination[1], destination[0])
-                try:
+                #try:
+                if 1:
                     length = nx.shortest_path_length(G=G, source=orig_node, target=target_node, weight='length')
-                except:
+                #except:
                     # There is no solution to get from one node to the other
-                    print('No path found for these two waypoints. Trying again.')
-                    continue
+                    #print('No path found for these two waypoints. Trying again.')
+                    #continue
                 
                 if length < min_dist:
                     # Distance is too short, try again
