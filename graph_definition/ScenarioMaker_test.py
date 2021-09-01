@@ -6,8 +6,8 @@ Created on Thu Jun  3 11:47:30 2021
 import osmnx as ox
 import numpy as np
 import BlueskySCNTools
-from flow_control import street_graph,bbox
-from agent_path_planning import PathPlanning
+from plugins.streets.flow_control import street_graph,bbox
+from plugins.streets.agent_path_planning import PathPlanning
 import os
 import dill
 import matplotlib.pyplot as plt
@@ -148,3 +148,4 @@ print("Flight plans and search graphs saved!")
 ##example of loading the flight plans
 input_file=open("Path_Planning.dill", 'rb')
 p=dill.load(input_file)
+print(p)
