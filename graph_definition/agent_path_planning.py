@@ -252,6 +252,7 @@ def distance_point(A,B):
     return 2*R*math.atan2(math.sqrt(a), math.sqrt(1 - a))       
         
 def lies_between(A,B,C):
+    #https://stackoverflow.com/questions/33155240/how-to-check-if-a-point-is-between-two-other-points-but-not-limited-to-be-align?rq=1
     a = distance_point(B,C)
     b = distance_point(C,A)
     c = distance_point(A,B)
