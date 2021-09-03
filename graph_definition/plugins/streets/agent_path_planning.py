@@ -304,7 +304,106 @@ def get_nearest_edge(gdf, point):
 
 
     return geometry, u, v
+
+
+"""
+The below function calculates the joining angle between
+two line segments. FROM COINS
+"""
+def angleBetweenTwoLines(line1, line2):
+    l1p1, l1p2 = line1
+    l2p1, l2p2 = line2
+    l1orien = computeOrientation(line1)
+    l2orien = computeOrientation(line2)
+    """
+    If both lines have same orientation, return 180
+    If one of the lines is zero, exception for that
+    If both the lines are on same side of the horizontal plane, calculate 180-(sumOfOrientation)
+    If both the lines are on same side of the vertical plane, calculate pointSetAngle
+    """
+    if (l1orien==l2orien): 
+        angle = 180
+    elif (l1orien==0) or (l2orien==0): 
+        angle = pointsSetAngle(line1, line2)
         
+    elif l1p1 == l2p1:
+        if ((l1p1[1] > l1p2[1]) and (l1p1[1] > l2p2[1])) or ((l1p1[1] < l1p2[1]) and (l1p1[1] < l2p2[1])):
+            angle = 180 - (abs(l1orien) + abs(l2orien))
+        else:
+            angle = pointsSetAngle([l1p1, l1p2], [l2p1,l2p2])
+    elif l1p1 == l2p2:
+        if ((l1p1[1] > l2p1[1]) and (l1p1[1] > l1p2[1])) or ((l1p1[1] < l2p1[1]) and (l1p1[1] < l1p2[1])):
+            angle = 180 - (abs(l1orien) + abs(l2orien))
+        else:
+            angle = pointsSetAngle([l1p1, l1p2], [l2p2,l2p1])
+    elif l1p2 == l2p1:
+        if ((l1p2[1] > l1p1[1]) and (l1p2[1] > l2p2[1])) or ((l1p2[1] < l1p1[1]) and (l1p2[1] < l2p2[1])):
+            angle = 180 - (abs(l1orien) + abs(l2orien))
+        else:
+            angle = pointsSetAngle([l1p2, l1p1], [l2p1,l2p2])
+    elif l1p2 == l2p2:
+        if ((l1p2[1] > l1p1[1]) and (l1p2[1] > l2p1[1])) or ((l1p2[1] < l1p1[1]) and (l1p2[1] < l2p1[1])):
+            angle = 180 - (abs(l1orien) + abs(l2orien))
+        else:
+            angle = pointsSetAngle([l1p2, l1p1], [l2p2,l2p1])
+    return(angle)
+
+"""
+This below function calculates the acute joining angle between
+two given set of points. FROM COINS
+"""
+def pointsSetAngle(line1, line2):
+    l1orien = computeOrientation(line1)
+    l2orien = computeOrientation(line2)
+    if ((l1orien>0) and (l2orien<0)) or ((l1orien<0) and (l2orien>0)):
+        return(abs(l1orien)+abs(l2orien))
+    elif ((l1orien>0) and (l2orien>0)) or ((l1orien<0) and (l2orien<0)):
+        theta1 = abs(l1orien) + 180 - abs(l2orien)
+        theta2 = abs(l2orien) + 180 - abs(l1orien)
+        if theta1 < theta2:
+            return(theta1)
+        else:
+            return(theta2)
+    elif (l1orien==0) or (l2orien==0):
+        if l1orien<0:
+            return(180-abs(l1orien))
+        elif l2orien<0:
+            return(180-abs(l2orien))
+        else:
+            return(180 - (abs(computeOrientation(line1)) + abs(computeOrientation(line2))))
+    elif (l1orien==l2orien):
+        return(180)
+
+# FROM COINS
+
+def computeOrientation(line):
+    point1 = line[1]
+    point2 = line[0]
+    """
+    If the latutide of a point is less and the longitude is more, or
+    If the latitude of a point is more and the longitude is less, then
+    the point is oriented leftward and wil have negative orientation.
+    """
+    if ((point2[0] > point1[0]) and (point2[1] < point1[1])) or ((point2[0] < point1[0]) and (point2[1] > point1[1])):
+        return(-computeAngle(point1, point2))
+    #If the latitudes are same, the line is horizontal
+    elif point2[1] == point1[1]:
+        return(0)
+    #If the longitudes are same, the line is vertical
+    elif point2[0] == point1[0]:
+        return(90)
+    else:
+        return(computeAngle(point1, point2))
+
+"""
+The function below calculates the angle between two points in space. FROM COINS
+"""
+def computeAngle(point1, point2):
+    height = abs(point2[1] - point1[1])
+    base = abs(point2[0] - point1[0])
+    angle = round(math.degrees(math.atan(height/base)), 3)
+    return(angle)
+
 class PathPlanning:
     
     def __init__(self,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest):
@@ -324,6 +423,7 @@ class PathPlanning:
         self.gdf=gdf
         self.start_point=Point(tuple((lon_start,lat_start)))
         self.goal_point=Point(tuple((lon_dest,lat_dest)))
+        self.cutoff_angle=20
 
 
         exp_const=0.05##0.005 ## we need to think about the value of that constant
@@ -336,13 +436,11 @@ class PathPlanning:
         #find start and destination nodes
         point=(lat_start,lon_start)
         geometry, u, v=get_nearest_edge(self.gdf, point)
-        print(geometry)
         self.start_index=v
         self.start_index_previous=u
         
         point=(lat_dest,lon_dest)
         geometry, u, v=get_nearest_edge(self.gdf, point)
-        print(geometry)
         self.goal_index=u
         self.goal_index_next=v
 
@@ -481,22 +579,21 @@ class PathPlanning:
                                 self.os_keys_dict_succ[i.key_index]=dict                        
                         
                         break
-        
-        
-                    
-    def plan(self):
-                
-        start_id=-1
-        goal_id=-1
 
-        for i in self.graph:
-            if i.key_index==self.start_index:
-                start_id=i.index
-            if i.key_index==self.goal_index:
-                goal_id=i.index
-            if start_id!=-1 and goal_id!=-1:
-                break
-        print(start_id)
+        
+        
+    ##Function handling teh path planning process
+    ##Retruns: route,turns,edges_list,indices_nodes,next_turn_point
+    ##route is the list of waypoints (lat,lon,alittude)
+    ##turns is the list of booleans indicating for every waypoint if it is a turn
+    ##edges_list is the list of the edge in which is every waypoint, each edge is defined as a tuple (u,v) where u,v are the osmnx indices of the nodes defineing the edge
+    ##indices_nodes is the list of the next osmnx node for every waypoint
+    ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint             
+    def plan(self):
+        
+        start_id=self.os_keys_dict_pred[self.start_index][self.start_index_previous]
+        goal_id=self.os_keys_dict_succ[self.goal_index][self.goal_index_next]
+        
         start_node=self.graph[start_id] 
         x_start=start_node.x
         y_start=start_node.y
@@ -522,56 +619,73 @@ class PathPlanning:
         indices_nodes=[]
         turn_indices=[]
         if path_found:
-            route,turns,indices_nodes,turn_indices=self.get_path(self.path,self.graph, self.G,self.edge_gdf)
+            route,turns,indices_nodes,turn_coord=self.get_path(self.path,self.graph, self.G,self.edge_gdf)
             
-            edges_list.append(-1)#that is the edge to go to the first point, so no edge exists
+            
             os_id1=indices_nodes[0]
+            os_id2=indices_nodes[1]
             cnt=0
             for i in range(1,len(indices_nodes)):
-                if indices_nodes[i]==-1 or indices_nodes[i]==os_id1:
+                if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
                     cnt=cnt+1
                 else:
                     for j in range(cnt):
-                        edges_list.append((os_id1,indices_nodes[i]))
-                    edges_list.append((os_id1,indices_nodes[i]))
-                    cnt=0
-                    os_id1=indices_nodes[i]
+                        edges_list.append((os_id1,os_id2))
+                    #edges_list.append((os_id1,indices_nodes[i]))
+                    cnt=1
+                    os_id1=os_id2
+                    os_id2=indices_nodes[i]
+            for j in range(cnt):
+                edges_list.append((os_id1,os_id2))
+                
             cnt=0
             for i in turns:
                 if i:
-                    next_turn_point.append(turn_indices[cnt])
+                    next_turn_point.append(turn_coord[cnt])
                     cnt=cnt+1
                 else:
-                    next_turn_point.append(turn_indices[cnt])
+                    next_turn_point.append(turn_coord[cnt])
+                    
+        del indices_nodes[0]
                     
         self.route=route
         self.turns=turns 
         
-        return route,turns,edges_list,next_turn_point
+        return route,turns,edges_list,indices_nodes,next_turn_point
     
-    
+    ##Function to export the route based on the D* search graph
+    ##Retruns: route,turns,next_node_index,turn_coord
+    ##route is the list of waypoints (lat,lon,alittude)
+    ##turns is the list of booleans indicating for every waypoint if it is a turn
+    ##next_node_index is the list of the next osmnx node for every waypoint
+    ##turn_coord is a list containing the coord of every point that is a turn point
     def get_path(self,path,graph, G,edges,edges_old=None,change=False,change_list=[]):
 
         route=[]
         group_numbers=[]
-        nodes_indices=[]
-        turn_indices=[]
+        turn_coords=[]
+        next_node_index=[]
+        turns=[]
         
         linestring=edges[self.start_index_previous][self.start_index].geometry
+        next_node_index.append(self.start_index_previous)
         coords = list(linestring.coords)
         for c in range(len(coords)-1):
             if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((self.start_point.x,self.start_point.y)),tuple((path.start.x,path.start.y)))):
                 tmp=(coords[c][0],coords[c][1],path.start.z) #the points before the first node
                 route.append(tmp) 
                 group_numbers.append(path.start.group)
-                nodes_indices.append(-1)
+                next_node_index.append(self.start_index)
+                turns.append(0)
                 
-        nodes_indices.append(self.start_index)
+
+        next_node_index.append(self.start_index)
         tmp=(path.start.x,path.start.y,path.start.z)
         route.append(tmp)
+        turns.append(0)
         
         group=path.start.group
-        nodes_indices.append(path.start.key_index)
+
         
         while path.start.key_index!=path.goal.key_index :
     
@@ -627,22 +741,27 @@ class PathPlanning:
                         tmp=(coords[c][0],coords[c][1],current_node.z) #the intermediate point
                         route.append(tmp) 
                         group_numbers.append(current_node.group)
-                        nodes_indices.append(-1)
-                    
-    
-                nodes_indices.append(current_node.key_index)
+                        next_node_index.append(current_node.key_index)
+                        turns.append(0)
+
+                next_node_index.append(current_node.key_index)
                 tmp=(current_node.x,current_node.y,current_node.z) #the next node
                 group_numbers.append(current_node.group)
-                route.append(tmp) 
+                route.append(tmp)
+                turns.append(0)
                 
     
             path.start=current_node
        
+        
+
         tmp=(path.goal.x,path.goal.y,path.goal.z)
         route.append(tmp)
-        nodes_indices.append(path.goal.key_index) 
+        next_node_index.append(path.goal.key_index)
         group_numbers.append(-1)
-        
+        turns.append(0)
+         
+
         linestring=edges[self.goal_index][self.goal_index_next].geometry
         coords = list(linestring.coords)
         for c in range(len(coords)-1):
@@ -650,25 +769,45 @@ class PathPlanning:
                 tmp=(coords[c][0],coords[c][1],path.start.z) #the points before the first node
                 route.append(tmp) 
                 group_numbers.append(-1)
-                nodes_indices.append(-1)
-                
+                next_node_index.append(self.goal_index_next)
+                turns.append(0)
+
         tmp=(self.goal_point.x,self.goal_point.y,path.goal.z)
         route.append(tmp)
-        nodes_indices.append(self.goal_index_next) 
         group_numbers.append(-1)
- 
-            
-        turns=[0]
-        for i in range(len(group_numbers)-1):
-            if group_numbers[i]==group_numbers[i+1]:
-                turns.append(0)
-            else:
-                turns.append(1)
-                turn_indices.append(nodes_indices[i+1])
+        next_node_index.append(self.goal_index_next)
         turns.append(0)
-        turn_indices.append(-1)
-    
-        return route,turns,nodes_indices,turn_indices
+
+        
+        ##Check for turn points
+        lat_prev=self.start_point.x
+        lon_prev=self.start_point.y
+        
+        for i in range(len(group_numbers)-1):
+            lat_cur=route[i-1][0]
+            lon_cur=route[i-1][1]
+            lat_next=route[i][0]
+            lon_next=route[i][1]
+            ##Check the angle between the prev point- current point and the current point- next point  
+            line_string_1 = [(lat_prev,lon_prev), (lat_cur,lon_cur)]
+            line_string_2 = [(lat_cur,lon_cur), (lat_next,lon_next)]
+            angle = 180 - angleBetweenTwoLines(line_string_1,line_string_2)
+
+            if angle>self.cutoff_angle and turns[i-1]!=1:
+                turns[i-1]=1
+                tmp=(route[i-1][0],route[i-1][1])
+                turn_coords.append(tmp)
+            lat_prev=lat_cur
+            lon_prev=lon_cur
+            if group_numbers[i]==group_numbers[i+1]:
+                continue
+            elif turns[i+1]!=1:
+                turns[i+1]=1
+                tmp=(route[i+1][0],route[i+1][1])
+                turn_coords.append(tmp)
+        turn_coords.append(-1)
+
+        return route,turns,next_node_index,turn_coords
     
     def replan(self,edges_g,current_point_index,index_change_list):
         start_id=-1

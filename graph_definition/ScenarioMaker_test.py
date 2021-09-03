@@ -60,11 +60,8 @@ if 1:
     #start x 16.3388424
     #start y 48.2279167
     #origin=(48.2279167,16.3388424)
-     #alternative origins for testing
-    #origin=(48.2275,16.3386)
-    #origin=(48.2275,16.3389)
-    #origin=(48.2274,16.3391)
     
+     #alternative origins for testing
     origin=(48.2273,16.3393)
     
     #dest key 33345333
@@ -73,15 +70,16 @@ if 1:
     #destination=(48.222884,16.3497525)
     
     #alternative dest for testing
-    #destination=(48.2234,16.3493)
-    #destination=(48.2236,16.3494)
-    
     destination=(48.2238,16.3495)
 
     plan = PathPlanning(graph,gdf, origin[1], origin[0], destination[1], destination[0])
     route=[]
     turns=[]
-    route,turns,edges,next_turn=plan.plan()
+    route,turns,edges,nodes,next_turn=plan.plan()
+    #the nodes might not be needed since taht information is in the edges
+    print(next_turn)
+
+
     fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
     x_list=[]
     y_list=[]
@@ -94,12 +92,18 @@ if 1:
         else:
             x_list_up.append(r[0])
             y_list_up.append(r[1])
+    for i in range(len(turns)):
+        if turns[i]:
+            r=route[i]
+            x_list.append(r[0])
+            y_list.append(r[1])
     start_x=origin[1]
     start_y=origin[0]
     goal_x=destination[1]
     goal_y=destination[0]
-    plt.scatter(x_list,y_list, color='g')
+
     plt.scatter(x_list_up,y_list_up, color='y')
+    plt.scatter(x_list,y_list, color='g')
     plt.scatter(start_x,start_y, color='b')
     plt.scatter(goal_x,goal_y, color='r')
     plt.show()
@@ -123,7 +127,6 @@ if 1:
         scenario_dict[flight[0]]['edges'] = edges
         #Add next turn
         scenario_dict[flight[0]]['next_turn'] = next_turn
-    
     
     
 
