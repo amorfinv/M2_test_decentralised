@@ -6,8 +6,8 @@ Created on Thu Jun  3 11:47:30 2021
 import osmnx as ox
 import numpy as np
 import BlueskySCNTools
-from flow_control import street_graph,bbox
-from agent_path_planning import PathPlanning
+from plugins.streets.flow_control import street_graph,bbox
+from plugins.streets.agent_path_planning import PathPlanning
 import os
 import dill
 
@@ -57,7 +57,7 @@ for flight in generated_traffic:
     plan = PathPlanning(graph,gdf, origin[1], origin[0], destination[1], destination[0])
     route=[]
     turns=[]
-    route,turns,edges,next_turn=plan.plan()
+    route,turns,edges,next_turn,groups=plan.plan()
 
     flight_plans_dict[flight[0]]=plan
     if route!=[]:
@@ -76,6 +76,8 @@ for flight in generated_traffic:
         scenario_dict[flight[0]]['alts'] = route[:,2]
         #Add active edges
         scenario_dict[flight[0]]['edges'] = edges
+        #Add stroke group
+        scenario_dict[flight[0]]['stroke_group'] = groups
         #Add next turn
         scenario_dict[flight[0]]['next_turn'] = next_turn
     

@@ -583,12 +583,12 @@ class PathPlanning:
         
         
     ##Function handling teh path planning process
-    ##Retruns: route,turns,edges_list,indices_nodes,next_turn_point
+    ##Retruns: route,turns,edges_list,next_turn_point,groups
     ##route is the list of waypoints (lat,lon,alittude)
     ##turns is the list of booleans indicating for every waypoint if it is a turn
     ##edges_list is the list of the edge in which is every waypoint, each edge is defined as a tuple (u,v) where u,v are the osmnx indices of the nodes defineing the edge
-    ##indices_nodes is the list of the next osmnx node for every waypoint
-    ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint             
+    ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint     
+    ##groups is the list of the group in which each waypoint belongs to        
     def plan(self):
         
         start_id=self.os_keys_dict_pred[self.start_index][self.start_index_previous]
@@ -619,7 +619,7 @@ class PathPlanning:
         indices_nodes=[]
         turn_indices=[]
         if path_found:
-            route,turns,indices_nodes,turn_coord=self.get_path(self.path,self.graph, self.G,self.edge_gdf)
+            route,turns,indices_nodes,turn_coord,groups=self.get_path(self.path,self.graph, self.G,self.edge_gdf)
             
             
             os_id1=indices_nodes[0]
@@ -651,14 +651,15 @@ class PathPlanning:
         self.route=route
         self.turns=turns 
         
-        return route,turns,edges_list,indices_nodes,next_turn_point
+        return route,turns,edges_list,next_turn_point,groups
     
     ##Function to export the route based on the D* search graph
-    ##Retruns: route,turns,next_node_index,turn_coord
+    ##Retruns: route,turns,next_node_index,turn_coord,groups
     ##route is the list of waypoints (lat,lon,alittude)
     ##turns is the list of booleans indicating for every waypoint if it is a turn
     ##next_node_index is the list of the next osmnx node for every waypoint
     ##turn_coord is a list containing the coord of every point that is a turn point
+    ##groups is the list of the group in which each waypoint belongs to
     def get_path(self,path,graph, G,edges,edges_old=None,change=False,change_list=[]):
 
         route=[]
@@ -681,6 +682,7 @@ class PathPlanning:
 
         next_node_index.append(self.start_index)
         tmp=(path.start.x,path.start.y,path.start.z)
+        group_numbers.append(path.start.group)
         route.append(tmp)
         turns.append(0)
         
@@ -807,7 +809,7 @@ class PathPlanning:
                 turn_coords.append(tmp)
         turn_coords.append(-1)
 
-        return route,turns,next_node_index,turn_coords
+        return route,turns,next_node_index,turn_coords,group_numbers
     
     def replan(self,edges_g,current_point_index,index_change_list):
         start_id=-1

@@ -75,9 +75,12 @@ if 1:
     plan = PathPlanning(graph,gdf, origin[1], origin[0], destination[1], destination[0])
     route=[]
     turns=[]
-    route,turns,edges,nodes,next_turn=plan.plan()
-    #the nodes might not be needed since taht information is in the edges
-    print(next_turn)
+    route,turns,edges,next_turn,groups=plan.plan()
+
+    print(turns)
+    print(len(route))
+    print(len(groups))
+    print(groups)
 
 
     fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
@@ -125,6 +128,8 @@ if 1:
         scenario_dict[flight[0]]['alts'] = route[:,2]
         #Add active edges
         scenario_dict[flight[0]]['edges'] = edges
+        #Add stroke group
+        scenario_dict[flight[0]]['stroke_group'] = groups
         #Add next turn
         scenario_dict[flight[0]]['next_turn'] = next_turn
     
