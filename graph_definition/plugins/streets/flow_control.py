@@ -277,9 +277,11 @@ class street_graph:
     def __init__(self,G,edges_gdf):
         self.nodes_graph={}
         self.edges_graph={}
+        self.modified={}
         self.create_graph(G,edges_gdf)
         self.create_tree(G)
         self.G=G
+
         
         
     def create_tree(self,G):
@@ -311,8 +313,12 @@ class street_graph:
                 tmp[ch]=edge
                 if key in self.edges_graph.keys():
                     self.edges_graph[key][ch]=edge
+                    self.modified[key][ch]=0
                 else:
                     self.edges_graph[key]=tmp
+                    tt={}
+                    tt[ch]=0
+                    self.modified[key]=tt
             parents=list(G._pred[key].keys())
             for p in parents:
                 node.parents.append(p)#node.parents.append(G_list.index(p))
@@ -324,8 +330,12 @@ class street_graph:
                 tmp[key]=edge
                 if p in self.edges_graph.keys():
                     self.edges_graph[p][key]=edge
+                    self.modified[p][key]=0
                 else:
                     self.edges_graph[p]=tmp
+                    tt={}
+                    tt[key]=0
+                    self.modified[p]=tt
             self.nodes_graph[key]=node
         
 
