@@ -201,11 +201,12 @@ class KdTree(object):
         ##self.query_recur(node._l,area)
         ##self.query_recur(node._r,area)
 
-
+    ##Compute the eucledean distance between two points
     def distance_eucledian(self,p1,p2):
         d=math.sqrt((p1.x-p2.x)*(p1.x-p2.x)+(p1.y-p2.y)*(p1.y-p2.y)) 
         return d
     
+    ##Compute the distance between two geodetic points
     def distance(self,p1,p2): ##harvestine distance
         R = 6372800  # Earth radius in meters
         lat1=p1.y
@@ -283,7 +284,7 @@ class street_graph:
         self.G=G
 
         
-        
+    ##Create a kd tree with the flow control nodes
     def create_tree(self,G):
         tree_nodes = []
         self.kdtree= KdTree()
@@ -293,7 +294,7 @@ class street_graph:
             tree_nodes.append(tmp)
         self.kdtree.build(tree_nodes)
         
-        
+    ##Create the flow control graph 
     def create_graph(self,G,edges_gdf):
         #edges_gdf=pickle.load(open("edge_gdf.pickle", "rb"))#load edge_geometry
         omsnx_keys_list=list(G._node.keys())
@@ -339,20 +340,22 @@ class street_graph:
             self.nodes_graph[key]=node
         
 
-       
+    ##Get the nearest node of a point (x,y) 
     def get_nearest_node(self,x,y):
         
         point=Tree_node(x,y,-1)
         distance, index = self.kdtree.get_nearest(self.kdtree._root,point)
         return distance,index
     
+    ##Get the nodes that lie in an area box
     def get_nodes_in_area(self,box):
         
         area=(box.y1,box.y2,box.x1,box.x2)
         keys =self.kdtree.query(area)
 
         return keys
-        
+     
+    #Get the graph of nodes and edges that lie in an area box
     def extract_subgraph(self,box):
         graph={}
         edges={}

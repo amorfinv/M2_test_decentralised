@@ -16,6 +16,7 @@ import copy
 from plugins.streets.flow_control import street_graph,bbox
 from shapely.geometry import Point
 
+
 class Node:
     av_speed_horizontal= 10.0
     av_speed_vertical=1.0
@@ -56,7 +57,7 @@ class Path:
         self.k_m=0
         self.queue=[]
         
-        
+##Initialise the path planning      
 def initialise(path):
     path.queue=[]
     path.k_m=0
@@ -66,17 +67,19 @@ def initialise(path):
     heapq.heappush(path.queue, (path.goal.h,0,path.goal.x,path.goal.y,path.goal.z,path.goal.index, path.goal))
  
 
-
+##Compare the keys of two nodes
 def compare_keys(node1,node2):
     if node1[0]<node2[0]:
         return True
     elif node1[0]==node2[0] and node1[1]<node2[1]:
         return True
     return False
-        
+    
+##Calculate the keys of a node    
 def calculateKey(node,start, k_m):
     return (min(node.g, node.rhs) + heuristic(node,start) + k_m, min(node.g, node.rhs))
 
+##Calculate the distance of two points in geodetic coordinates
 def distance(p1,p2): ##harvestine distance
     R = 6372800  # Earth radius in meters
     lat1=p1.y
@@ -92,7 +95,7 @@ def distance(p1,p2): ##harvestine distance
             math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
         
     return 2*R*math.atan2(math.sqrt(a), math.sqrt(1 - a)) 
-    
+##Compuute the heuristic of a node
 def heuristic(current, goal):
     n1=Node(current.key_index,current.x,current.y,current.z,current.index,current.group)
     n2=Node(goal.key_index,goal.x,goal.y,goal.z,goal.index,goal.group)
@@ -110,6 +113,7 @@ def heuristic(current, goal):
         h=h+5 #set a standard cost for going to the turn layer # g=5/current.av_speed_vertical
     return h
 
+##Compute the cost of moving from a node to its neighborh node
 def compute_c(current,neigh, edges):
     g=1
     if(current.z!=neigh.z):
@@ -128,6 +132,7 @@ def compute_c(current,neigh, edges):
             g=5 #set a standard cost for going to the turn layer # g=5/current.av_speed_vertical
     return g
 
+##Return the top key of the queue 
 def top_key(q):
     if len(q) > 0:
         return [q[0][0],q[0][1]]
@@ -135,6 +140,7 @@ def top_key(q):
         # print('empty queue!')
         return [float('inf'), float('inf')]
     
+##Update the vertex of a node
 def update_vertex(path,node):
     if node.g!=node.rhs and node.inQueue:
         #Update
@@ -159,7 +165,9 @@ def update_vertex(path,node):
             if len(id_in_queue) != 1:
                 raise ValueError('more than one ' + id + ' in the queue!')
             path.queue.remove(id_in_queue[0])
-            
+          
+##Compute the shortest path using D* Lite
+##returns flase if no path was found
 def compute_shortest_path(path,graph, G,edges):
     path.start.key=calculateKey(path.start, path.start, path.k_m)
     k_old=top_key(path.queue)
@@ -250,7 +258,8 @@ def distance_point(A,B):
     a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
         
     return 2*R*math.atan2(math.sqrt(a), math.sqrt(1 - a))       
-        
+  
+##Check if point A lies between points B and C      
 def lies_between(A,B,C):
     #https://stackoverflow.com/questions/33155240/how-to-check-if-a-point-is-between-two-other-points-but-not-limited-to-be-align?rq=1
     a = distance_point(B,C)
@@ -259,7 +268,7 @@ def lies_between(A,B,C):
     return a**2 + b**2 >= c**2 and a**2 + c**2 >= b**2
             
 
-
+##Returns the nearest edge of a point
 def get_nearest_edge(gdf, point):
     """
     Return the nearest edge to a pair of coordinates. Pass in a graph and a tuple
@@ -404,6 +413,7 @@ def computeAngle(point1, point2):
     angle = round(math.degrees(math.atan(height/base)), 3)
     return(angle)
 
+##Class handling the path planning process
 class PathPlanning:
     
     def __init__(self,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest):
@@ -582,7 +592,7 @@ class PathPlanning:
 
         
         
-    ##Function handling teh path planning process
+    ##Function handling the path planning process
     ##Retruns: route,turns,edges_list,next_turn_point,groups
     ##route is the list of waypoints (lat,lon,alittude)
     ##turns is the list of booleans indicating for every waypoint if it is a turn
@@ -811,7 +821,13 @@ class PathPlanning:
 
         return route,turns,next_node_index,turn_coords,group_numbers
         
-        
+    ##Function handling the replanning process, called when flow control is updated
+    ##Retruns: route,turns,edges_list,next_turn_point,groups
+    ##route is the list of waypoints (lat,lon,alittude)
+    ##turns is the list of booleans indicating for every waypoint if it is a turn
+    ##edges_list is the list of the edge in which is every waypoint, each edge is defined as a tuple (u,v) where u,v are the osmnx indices of the nodes defineing the edge
+    ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint     
+    ##groups is the list of the group in which each waypoint belongs to         
     def replan(self,changes_list,flow_control_graph,next_node_index,lat,lon):
         route=None
         turns=None
@@ -890,7 +906,14 @@ class PathPlanning:
             
 
         return route,turns,edges,next_turn,groups    
-        
+      
+    ##Function handling the replanning process, called when aircraft is spawned
+    ##Retruns: route,turns,edges_list,next_turn_point,groups
+    ##route is the list of waypoints (lat,lon,alittude)
+    ##turns is the list of booleans indicating for every waypoint if it is a turn
+    ##edges_list is the list of the edge in which is every waypoint, each edge is defined as a tuple (u,v) where u,v are the osmnx indices of the nodes defineing the edge
+    ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint     
+    ##groups is the list of the group in which each waypoint belongs to 
     def replan_spawned(self,flow_control_graph):
 
         route=None
