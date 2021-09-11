@@ -94,14 +94,21 @@ bst.Dict2Scn(r'Test_Scenario.scn',
 
 print('Scenario file created!')
 
+list2dill=[]
+list2dill.append(flight_plans_dict)
+list2dill.append(graph)
+
 ##Dill the flight_plans_dict
 output_file=open("Path_Planning.dill", 'wb')
-dill.dump(flight_plans_dict,output_file)
+dill.dump(list2dill,output_file)
 output_file.close()
 
+#output_file=open("G-multigraph.dill", 'wb')
+#dill.dump(G,output_file)
+#output_file.close()
 
 print("Flight plans and search graphs saved!")
     
 ##example of loading the flight plans
-input_file=open("Path_Planning.dill", 'rb')
-p=dill.load(input_file)
+#input_file=open("Path_Planning.dill", 'rb')
+#p=dill.load(input_file)

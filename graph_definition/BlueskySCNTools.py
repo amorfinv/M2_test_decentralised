@@ -16,8 +16,7 @@ class BlueskySCNTools():
     def __init__(self):
         return
 
-    def Drone2Scn(self, drone_id, start_time, lats, lons, turnbool, 
-                  alts = None, edges = None, next_turn = None, priority = 0):
+    def Drone2Scn(self, drone_id, start_time, lats, lons, turnbool,alts = None, edges = None, group_num=None, next_turn = None, priority = 0):
         """Converts arrays to Bluesky scenario files. The first
         and last waypoints will be taken as the origin and 
         destination of the drone.
@@ -109,9 +108,9 @@ class BlueskySCNTools():
                     
             # Add the waypoint
             if any(alts):
-                wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} {speeds[i]} {active_edge[i]} {active_turns[i]}\n'
+                wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} {speeds[i]} {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
             else:
-                wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,, {speeds[i]} {active_edge[i]} {active_turns[i]}\n'
+                wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,, {speeds[i]} {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
             lines.append(start_time_txt + wpt_txt)
             
             # Set prev waypoint type value
@@ -165,12 +164,13 @@ class BlueskySCNTools():
                     turnbool = dictionary[drone_id]['turnbool']
                     alts = dictionary[drone_id]['alts']
                     edges = dictionary[drone_id]['edges']
+                    group_num = dictionary[drone_id]['stroke_group']
                     next_turn = dictionary[drone_id]['next_turn']
                 except:
                     print('Key error. Make sure the dictionary is formatted correctly.')
                     return
                 
-                lines = self.Drone2Scn(drone_id, start_time, lats, lons, turnbool, alts, edges, next_turn)
+                lines = self.Drone2Scn(drone_id, start_time, lats, lons, turnbool, alts, edges, group_num, next_turn)
                 f.write(''.join(lines))
                 
     def Graph2Traf(self, G, concurrent_ac, aircraft_vel, max_time, dt, min_dist, 
