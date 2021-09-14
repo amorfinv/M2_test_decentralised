@@ -3,13 +3,7 @@ from platform import node
 from networkx.classes.function import degree
 import osmnx as ox
 import geopandas as gpd
-import networkx as nx
-from osmnx.projection import project_gdf
-from osmnx.utils_graph import graph_from_gdfs
-from shapely.geometry.point import Point
-import graph_funcs
 from os import path
-import math
 import numpy as np
 from shapely.geometry import LineString, MultiLineString
 from shapely import ops
@@ -58,6 +52,8 @@ def main():
         nearest = []
         geom_merge = []
         geom_merge.append(geom)
+        lats1, lons1 = geom.xy
+        l1 = [[lats1[0], lons1[0]], [lats1[-1], lons1[-1]]]
 
         j = 1
         while True:
@@ -71,6 +67,14 @@ def main():
 
             # check intersection
             if temp_geom.intersects(geom):
+                continue
+            
+            # check bearing
+            lats2, lons2 = temp_geom.xy
+            l2 = [[lats2[0], lons2[0]], [lats2[-1], lons2[-1]]]
+            between_angle = angle(l1, l2)
+            
+            if between_angle > 20:
                 continue
             
             # get nearest points into geometry and get distance in meters
@@ -183,6 +187,15 @@ def rwgs84(latd):
     r = np.sqrt((an * an + bn * bn) / (ad * ad + bd * bd))
 
     return r
+
+def angle(l1,l2):
+    l1 = np.array(l1)
+    l2 = np.array(l2)
+    m1 = (l1[1,1]-l1[0,1])/(l1[1,0]-l1[0,0])
+    m2 = (l2[1,1]-l2[0,1])/(l2[1,0]-l2[0,0])
+    angle_rad = abs(np.arctan(m1) - np.arctan(m2))
+    angle_deg = angle_rad*180/np.pi
+    return angle_deg
 
 if __name__ == '__main__':
     main()
