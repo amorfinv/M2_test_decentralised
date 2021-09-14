@@ -49,6 +49,7 @@ def main():
     closest_dict = dict()
     for index_edge, row in edges.iterrows():
         geom = row.loc['geometry']
+        group1 = row.loc['stroke_group']
         nearest = []
         geom_merge = []
         geom_merge.append(geom)
@@ -61,7 +62,7 @@ def main():
             nearest_trial = list(idx_tree.nearest(geom.bounds, j))
             temp_edge_id = edge_dict[nearest_trial[-1]]
             temp_geom = edges.loc[temp_edge_id, 'geometry']
-
+            group2 = edges.loc[temp_edge_id, 'stroke_group']
 
             j += 1
 
@@ -75,6 +76,9 @@ def main():
             between_angle = angle(l1, l2)
             
             if between_angle > 20:
+                continue
+            
+            if group1 == group2:
                 continue
             
             # get nearest points into geometry and get distance in meters
