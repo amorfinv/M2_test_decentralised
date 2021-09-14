@@ -37,13 +37,133 @@ def main():
     edges = graph_funcs.edge_gdf_format_from_gpkg(edges)
     nodes = graph_funcs.node_gdf_format_from_gpkg(nodes)
 
-    ##### regrouping # 1
+    ##### edit 1
     edge_a = (60216504, 60216511, 0)
     edge_b = (60216542, 60216511, 0)
     edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
 
     edge_direction = (60216507, 2600415942, 0)
     edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 2
+    edge_direction = (2397500105, 2397733665, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 3
+    edge_a = (2605251576, 2424032524, 0)
+    edge_b = (2424032524, 33079197, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+    
+    edge_direction = (9697721, 9697673, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 4
+    edge_direction = (25280889, 398002, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 5
+    edge_direction = (27375757, 93279698, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 6
+    edge_direction = ( 30685749, 30685743, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 7
+    edge_direction = ( 1476901999, 395907, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 8
+    edge_a = (813850447, 199678, 0)
+    edge_b = (27377268, 813850447, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+    
+    #### edit 9
+    edge_a = (48753805, 48753809, 0)
+    edge_b = (48753805, 48753788, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+    
+    edge_direction = (48753809, 48753805, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 10
+    edge_direction = (123430807, 123610502, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 11
+    edge_a = (2389850711, 35675056, 0)
+    edge_b = (2389850711, 2389850721, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+    
+    edge_direction = (59988314, 2389850716, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 12
+    edge_direction = (353280664, 60637199, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 13
+    edge_a = (252621941, 546942312, 0)
+    edge_b = (252621941, 252622009, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+    
+    edge_direction = (254314477, 60637196, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 14
+    edge_direction = (684998, 685001, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 15
+    edge_a = (60211202, 2388913465, 0)
+    edge_b = (2388913465, 8173811392, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+    
+    #### edit 16
+    edge_a = (59987467, 60210198, 0)
+    edge_b = (60210198, 1912541339, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+    
+    #### edit 17
+    edge_a = (8296326836, 8300082985, 0)
+    edge_b = (8300082985, 4089671728, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+    
+    #### edit 18
+    edge_a = (8406077356, 60210120, 0)
+    edge_b = (60210120, 8296326836, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+    
+    #### edit 19 (big one)
+    edge_a = (2388183609, 60733317, 0)
+    edge_b = (33254354, 60733317, 0)
+    edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+    
+    edge_c = (60627223, 3672898099, 0)
+    edge_d = (3672898099, 33370280, 0)
+    edges = graph_funcs.merge_groups(edges, edge_c, edge_d)
+    
+    edge_direction = (199727, 33472242, 0)
+    edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    #### edit 20
+    # edge_a = (321552008, 549146754, 0)
+    # edge_b = (549146754, 684998, 0)
+    # edge_c = (685001, 684998, 0)
+    
+    # edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+    # edges = graph_funcs.merge_groups(edges, edge_c, edge_b)
+    
+    #### edit 21
+    # edge_a = (1188875861, 2389831852, 0)
+    # edge_b = (1188875861, 330372031, 0)
+    # edges = graph_funcs.merge_groups(edges, edge_a, edge_b)
+    
+    # edge_direction = (321552200, 321552008, 0)
+    # edges = graph_funcs.set_direction_group(nodes, edges, edge_direction)
+    
+    
+    
 
     # remove degree 2 edges with int angle greater than 120 degrees
     # nodes, edges = graph_funcs.simplify_graph(nodes, edges, angle_cut_off=120)
