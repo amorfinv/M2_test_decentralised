@@ -20,3 +20,4 @@ graph_definition/Layer_Concepts.xlsx
 *.gpkg-wal
 *.gpkg-shm
 *.gpkg-wal
+graph_definition/whole_vienna/min5.txt

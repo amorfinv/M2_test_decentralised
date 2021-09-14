@@ -1181,6 +1181,147 @@ def set_direction(nodes, edges, edge_directions):
 
     return edge_gdf
 
+def set_direction_group(nodes, edges, edge_direction):
+
+    # Create list of stroke groups
+    try:
+        stroke_group = edges.loc[edge_direction, 'stroke_group']
+    except:
+        stroke_group = edges.loc[(edge_direction[1], edge_direction[0], 0), 'stroke_group']
+
+    
+    edge_directions = edge_direction
+
+    # initialize correct index order list and line data list for new geo dataframe
+    index_order = []
+    my_geodata = []
+
+    # get edges in specific group
+    edge_in_group = edges.loc[edges['stroke_group']== stroke_group]
+
+    # get edge indices of stroke group in a list
+    edge_uv = list(edge_in_group.index.values)
+
+    # get desired group direction from edge_directions
+    group_direction = edge_directions
+
+    # Find index of direction setting edge
+    if group_direction in edge_uv:
+        jdx = edge_uv.index(group_direction)
+    else:
+        jdx = edge_uv.index((group_direction[1], group_direction[0], 0))
+
+    # create counter for while loop
+    idx = 0
+
+    # create a copy of edge_in_group for while loop. TODO: smarter way to do this
+    edges_removed = edge_in_group
+    numb_edges_stroke = len(edge_in_group)
+    search_direct_front = True  # true if searching from front
+    search_direct_back = True
+    while len(edges_removed):
+        curr_edge = edge_in_group.iloc[jdx]
+        curr_index = edge_uv[jdx]
+
+        if curr_index[0] == group_direction[0]:
+            #print(f'{curr_index} edge going correct direction')
+            new_index = (curr_index[0], curr_index[1], 0)
+            edge_line_direct = edge_in_group.loc[curr_index, 'geometry']
+
+        else:
+            #print(f'{curr_index} edge going incorrect direction')
+            new_index = (curr_index[1], curr_index[0], 0)
+            
+            # reverse linestring from edge
+            wrong_line_direct = list(edge_in_group.loc[curr_index, 'geometry'].coords)
+            wrong_line_direct.reverse()
+            edge_line_direct = LineString(wrong_line_direct)
+            
+        # see what columns to add in new gdf
+        dummy_edge_dict = edges_removed.loc[curr_index].to_dict()
+
+        column_names = []
+        for key in dummy_edge_dict:
+            column_names.append(key)
+
+        # drop edge from dataframe for while loop (TODO: smarter way to do this)
+        edges_removed = edges_removed.drop(index=curr_index)
+
+        # add new_index to index order
+        index_order.append(new_index)
+
+        # for loop to create sub geo data list
+        sub_geo_data_list = [new_index[0], new_index[1], new_index[2]]
+        for attr_key in column_names:
+            # add geometry to dictionary
+            if attr_key == 'geometry':
+                value = edge_line_direct
+            
+            # add length to dictionary if needed. TODO: not neccesary?
+            elif attr_key == 'length':
+                value = round(edge_line_direct.length * (111000), 2)
+
+            # add bearing if needed
+            elif attr_key == 'bearing':
+                u_geom = list(nodes.loc[new_index[0], 'geometry'].coords)
+                v_geom = list(nodes.loc[new_index[1], 'geometry'].coords)
+                value = round(get_bearing(u_geom[0][::-1], v_geom[0][::-1]), 2)
+            else:
+                value = edge_in_group.loc[curr_index, attr_key]
+            sub_geo_data_list.append(value)
+        
+        column_names = ['u', 'v', 'key'] + column_names
+        my_geodata.append(sub_geo_data_list)
+
+        # set new jdx based on current edge (only if not last edge)
+        if not idx == numb_edges_stroke - 1:
+            # front node
+            node_to_find_front = new_index[1]
+            edge_with_node_front = [item for item in edge_uv if node_to_find_front in item]
+
+            # back node
+            node_to_find_back = new_index[0]
+            edge_with_node_back = [item for item in edge_uv if node_to_find_back in item]
+
+            # either go forwards or backwards
+            edge_with_node_front.remove(curr_index)
+            edge_with_node_back.remove(curr_index)
+
+            if (edge_with_node_front and search_direct_front):
+                search_direct_back = False
+                next_edge = edge_with_node_front[0]
+                jdx = edge_uv.index(next_edge)
+
+                # set desired direction for next edge
+                if node_to_find_front == next_edge[0]:
+                    group_direction = next_edge
+                else:
+                    group_direction = (next_edge[1], next_edge[0], 0)
+            
+            elif (edge_with_node_back and search_direct_back):
+                search_direct_front = False
+                next_edge = edge_with_node_back[0]
+                jdx = edge_uv.index(next_edge)
+
+                # set desired direction for next edge
+                if node_to_find_back == next_edge[1]:
+                    group_direction = next_edge
+                else:
+                    group_direction = (next_edge[1], next_edge[0], 0)
+        
+        # advance counter
+        idx = idx + 1
+
+    # remove old edges
+    edges.drop(index=edge_in_group.index, inplace=True)
+    edge_gdf = gpd.GeoDataFrame(my_geodata, columns=column_names, crs=edges.crs)
+    edge_gdf.set_index(['u', 'v', 'key'], inplace=True)
+
+    edges_new = edges.append(edge_gdf)
+
+    return edges_new
+
+
 def edge_gdf_format_from_gpkg(edges):
     # edge_dict = {'u': edges['u'], 'v': edges['v'], 'key': edges['key'], 'length': edges['length'], \
     #             'geometry': edges['geometry']}
