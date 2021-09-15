@@ -19,13 +19,6 @@ import collections
 
 '''
 Do another clean of graph using hand edits from (hand_edtis_2.gpkg).
-
-Steps:
-    1) Load 'hand_edits_2.gpkg' as an omsnx style gdf.
-    2) Do some more cleaning up edits to clean up some intersections. Connect some nodes, remove edges ..etc
-    3) Run COINS and set initial direction of edges.
-    4) Simplify graph by removing degree-2 nodes with large interior angle and run COINS.
-    8) Save graph and gdf as 'cleaning_process_2.*'
 '''
 
 def main():
@@ -43,8 +36,21 @@ def main():
     edges_a = graph_funcs.edge_gdf_format_from_gpkg(edges)
     nodes_a = graph_funcs.node_gdf_format_from_gpkg(nodes)
 
+    # add layer allocation
+    edges_a['layer_allocation'] = graph_funcs.allocate_group_height(nodes_a, edges_a)
+
+    # calculate integral bearing difference
+    edges_geometry = edges_a['geometry'].to_numpy()
+    edges_a['integral_bearing_diff'] = graph_funcs.calculate_integral_bearing_difference(edges_geometry)
+
     # create graph and save edited
     G_a = ox.graph_from_gdfs(nodes_a, edges_a)
+
+    # save as graphml
+    ox.save_graphml(G_a, filepath=path.join(gis_data_path, 'streets', 'sub_groups','zone_a_gen.graphml'))
+    
+    # Save geopackage for import to QGIS and momepy
+    ox.save_graph_geopackage(G_a, filepath=path.join(gis_data_path, 'streets', 'sub_groups','zone_a_gen.gpkg'), directed=True)
 
     print('--------FINISHED ZONE A---------')
 
@@ -56,8 +62,21 @@ def main():
     edges_b = graph_funcs.edge_gdf_format_from_gpkg(edges)
     nodes_b = graph_funcs.node_gdf_format_from_gpkg(nodes)
 
+    # add layer allocation
+    edges_b['layer_allocation'] = graph_funcs.allocate_group_height(nodes_b, edges_b, rotation_val=20)
+
+    # calculate integral bearing difference
+    edges_geometry = edges_b['geometry'].to_numpy()
+    edges_b['integral_bearing_diff'] = graph_funcs.calculate_integral_bearing_difference(edges_geometry)
+
     # create graph and save edited
     G_b = ox.graph_from_gdfs(nodes_b, edges_b)
+
+    # save as graphml
+    ox.save_graphml(G_b, filepath=path.join(gis_data_path, 'streets', 'sub_groups','zone_b_gen.graphml'))
+    
+    # Save geopackage for import to QGIS and momepy
+    ox.save_graph_geopackage(G_b, filepath=path.join(gis_data_path, 'streets', 'sub_groups','zone_b_gen.gpkg'), directed=True)
 
     print('--------FINISHED ZONE B---------')
 
