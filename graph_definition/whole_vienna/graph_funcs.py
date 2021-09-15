@@ -10,6 +10,8 @@ from pyproj import CRS
 import ast
 from collections import Counter
 
+from shapely.geometry.multipoint import MultiPoint
+
 
 def node_degree_attrib(nodes, edges):
 
@@ -18,14 +20,8 @@ def node_degree_attrib(nodes, edges):
     
     # get degree of nodes
     node_degree = [G.degree[osmid] for osmid in nodes.index.values]
-    
-    # for osmid in nodes.index.values:
-    #     degree = G.degree[osmid]
-    #     if degree == 1:
-    #         print(osmid)
 
     return node_degree
-
 
 def get_first_group_edges(G, edges):
     """[summary]
@@ -1321,11 +1317,12 @@ def set_direction_group(nodes, edges, edge_direction):
 
     return edges_new
 
-
 def edge_gdf_format_from_gpkg(edges):
-    # edge_dict = {'u': edges['u'], 'v': edges['v'], 'key': edges['key'], 'length': edges['length'], \
-    #             'geometry': edges['geometry']}
-    
+
+    # check if geometry is a multilinestring and convert
+    if edges.geometry.type[0] == 'MultiLineString':
+        edges['geometry'] = edges['geometry'].apply(lambda multi_line: ops.linemerge(multi_line))
+
     edge_dict = edges.to_dict()
 
     edge_gdf = gpd.GeoDataFrame(edge_dict, crs=CRS.from_user_input(4326))
@@ -1334,6 +1331,10 @@ def edge_gdf_format_from_gpkg(edges):
     return edge_gdf
 
 def node_gdf_format_from_gpkg(nodes):
+
+    # check if geometry is a multipoint and convert
+    if nodes.geometry.type[0] == 'MultiPoint':
+        nodes['geometry'] = nodes['geometry'].apply(lambda multi_point: Point(multi_point[0]))
 
     node_dict = nodes.to_dict()
     node_gdf = gpd.GeoDataFrame(node_dict, crs=CRS.from_user_input(4326))
@@ -1554,75 +1555,7 @@ def new_groups_90(nodes, edges, angle_cut_off = 45):
 
     return nodes_gdf_new, edges_gdf_new
 
-def split_group_at_node_old(node_split, edges):
-
-    '''Split a group at a node'''
-    stroke_group_list = list(edges.loc[:,'stroke_group'].values)
-    unique_stroke = []
-
-    for stroke_group in stroke_group_list:
-        if not stroke_group in unique_stroke:
-            unique_stroke.append(stroke_group)
-    
-    new_group_num = len(unique_stroke)
-
-    # find relevant edges of node_split
-    edge_uv = list(edges.index.values)
-    edges_with_node = [item for item in edge_uv if node_split in item]
-
-    edge_back = edges_with_node[0]
-    edge_front = edges_with_node[1]
-
-    # edge front and subsequent edges get a new group
-    current_group = edges.loc[edge_front, 'stroke_group']        
-    
-    group_gdf = edges[edges['stroke_group']==current_group]
-    group_uv = list(group_gdf.index.values)
-
-    # organize group
-    # check if edge in front continues
-    end_node = edge_front[1]
-    end_edges_to_merge = [edge_front]
-
-    while end_node:
-        node_inspect = end_node
-
-        edges_in_merge1 = [item for item in group_uv if node_inspect in item]
-        try:
-            edge_1 = edges_in_merge1[0]
-            edge_2 = edges_in_merge1[1]
-
-            if node_inspect == edge_1[0]:
-                edge_front = edge_1
-            else:
-                edge_front = edge_2
-            end_node = edge_front[1]
-            end_edges_to_merge.append(edge_front)
-        except IndexError:
-            end_node = False  
-
-    # edges to merge
-    new_group_edges = end_edges_to_merge
-    my_geodata = []
-
-    for new_edge in new_group_edges:
-        length = group_gdf.loc[new_edge, 'length']
-        geom = group_gdf.loc[new_edge, 'geometry']
-        bearing = group_gdf.loc[new_edge, 'bearing']
-        edge_interior_angle = group_gdf.loc[new_edge, 'edge_interior_angle']
-        int_bearing_diff = group_gdf.loc[new_edge, 'int_bearing_diff']
-        stroke_group_label = str(new_group_num)
-
-        my_geodata.append([new_edge[0], new_edge[1], new_edge[2], geom, stroke_group_label, edge_interior_angle, int_bearing_diff, bearing, length])
-    
-    # create edge geodataframe
-    column_names = ['u', 'v', 'key', 'geometry', 'stroke_group', 'edge_interior_angle', 'int_bearing_diff', 'bearing', 'length']
-    new_group_gdf = gpd.GeoDataFrame(my_geodata, columns=column_names, crs=edges.crs)
-    new_group_gdf.set_index(['u', 'v', 'key'], inplace=True)
-
-    return new_group_gdf
-
-def connect_nodes(nodes, edges, nodes_to_connect):
+def connect_nodes(nodes, edges, nodes_to_connect, group=None):
     """
     Function takes a node and edge gdf and a list of edges to create in nodes_to_connect.
     All the edges in nodes_to_connect get added to the edges_gdf
@@ -1641,140 +1574,9 @@ def connect_nodes(nodes, edges, nodes_to_connect):
 
     # loop through new edges and connect the nodes
     for new_edge in nodes_to_connect:
-        edges_gdf = edges_gdf.append(new_edge_straight(new_edge, nodes_gdf, edges_gdf))
+        edges_gdf = edges_gdf.append(new_edge_straight(new_edge, nodes_gdf, edges_gdf, group))
 
     return edges_gdf
-
-def manual_edits(nodes, edges):
-    '''
-    Manual edits for edge gdf and node gdf
-    '''
-    # make copy of nodes edges
-    nodes_gdf_new = nodes.copy()
-    edges_gdf_new = edges.drop(['stroke_group'], axis=1).copy()
-
-    ##################### SPLITTING AN EDGE HERE ###############
-
-    # select edge to split, the new geometry and location along linestring
-    edge_to_split = (2457060680, 685158, 0)
-    new_node_osmid = 10
-    split_loc = 5
-
-    # split edge
-    node_new, row_new1, row_new2 = split_edge(edge_to_split, split_loc, new_node_osmid, nodes, edges)
-
-    # append nodes and edges and remove split edge
-    nodes_gdf_new = nodes_gdf_new.append(node_new)
-    edges_gdf_new = edges_gdf_new.append([row_new1, row_new2])
-    edges_gdf_new.drop(index=edge_to_split, inplace=True)
-
-    ##################### CREATE NEW EDGE #########################
-    # give u,v of new edge
-    u = 10
-    v = 68164549
-
-    # append edges
-    edges_gdf_new = edges_gdf_new.append(new_edge_straight(u, v, nodes_gdf_new, edges_gdf_new))
-
-    ################# SPLIT ANOTHER EDGE ##############
-    edge_to_split = (3704365814, 33182075, 0)
-    new_node_osmid = 11
-    split_loc = 4
-
-    # split edge
-    node_new, row_new1, row_new2 = split_edge(edge_to_split, split_loc, new_node_osmid, nodes, edges)
-
-    # append nodes and edges and remove split edge
-    nodes_gdf_new = nodes_gdf_new.append(node_new)
-    edges_gdf_new = edges_gdf_new.append([row_new1, row_new2])
-    edges_gdf_new.drop(index=edge_to_split, inplace=True)
-
-    ##################### CREATE ANOTHER NEW EDGE #########################
-    # give u,v of new edge
-    u = 1114680094
-    v = 11
-
-    # append edges
-    edges_gdf_new = edges_gdf_new.append(new_edge_straight(u, v, nodes_gdf_new, edges_gdf_new))
-
-    ################# SPLIT ANOTHER EDGE ##############
-    # TODO: create function that adds a new node when int_bearing_diff is near 90
-    edge_to_split = (33183652, 25267624, 0)
-    new_node_osmid = 12
-    split_loc = 4
-
-    # split edge
-    node_new, row_new1, row_new2 = split_edge(edge_to_split, split_loc, new_node_osmid, nodes, edges)
-
-    # append nodes and edges and remove split edge
-    nodes_gdf_new = nodes_gdf_new.append(node_new)
-    edges_gdf_new = edges_gdf_new.append([row_new1, row_new2])
-    edges_gdf_new.drop(index=edge_to_split, inplace=True)
-
-    return nodes_gdf_new, edges_gdf_new
-
-def manual_edits_after_genetic(nodes, edges):
-    '''
-    Manual edits after genetic algorithm is done for edge gdf and node gdf
-    '''
-    # make copy of nodes edges
-    nodes_gdf_new = nodes.copy()
-    edges_gdf_new = edges.copy()
-
-    ##################### SPLITTING AN EDGE HERE and add new group ###############
-
-    # select edge to split, the new geometry and location along linestring
-    edge_to_split = (60631071, 33345301, 0)
-    new_node_osmid = 13
-    split_loc = 1
-
-    # split edge
-    node_new, row_new1, row_new2 = split_edge(edge_to_split, split_loc, new_node_osmid, nodes, edges)
-
-    # append nodes and edges and remove split edge
-    curr_group = edges_gdf_new.loc[edge_to_split,'stroke_group']
-
-    row_new1['stroke_group'] = curr_group
-    row_new2['stroke_group'] = curr_group
-
-    nodes_gdf_new = nodes_gdf_new.append(node_new)
-    edges_gdf_new = edges_gdf_new.append([row_new1, row_new2])
-    edges_gdf_new.drop(index=edge_to_split, inplace=True)
-
-    ### split grpoup at new node
-    # new_group_gdf = split_group_at_node_do_not_use(new_node_osmid, edges_gdf_new, curr_group)
-    # new_group_edges = new_group_gdf.index.values
-
-    # # drop new_group dataframe new_group_gdf to edges_gdf
-    # edges_gdf_new.drop(index=new_group_edges, inplace=True)
-    # edges_gdf_new = edges_gdf_new.append(new_group_gdf)
-
-    ######## SPLIT GROUP AT NODE #################################################
-    node_split = 2383639011
-    # it actually splits the node before this one...need to fix split_group_at_node
-    
-    # ### split grpoup at node
-    # # new_group_gdf = split_group_at_node_do_not_use(node_split, edges_gdf_new, '18')
-    # new_group_edges = new_group_gdf.index.values
-
-    # # drop new_group dataframe new_group_gdf to edges_gdf
-    # edges_gdf_new.drop(index=new_group_edges, inplace=True)
-    # edges_gdf_new = edges_gdf_new.append(new_group_gdf)
-
-    ######## SPLIT GROUP AT NODE #################################################
-    node_split = 685161
-    # it actually splits the node before this one...need to fix split_group_at_node
-    
-    # ### split grpoup at node
-    # new_group_gdf = split_group_at_node_do_not_use(node_split, edges_gdf_new, '12')
-    # new_group_edges = new_group_gdf.index.values
-
-    # # drop new_group dataframe new_group_gdf to edges_gdf
-    # edges_gdf_new.drop(index=new_group_edges, inplace=True)
-    # edges_gdf_new = edges_gdf_new.append(new_group_gdf)
-
-    return nodes_gdf_new, edges_gdf_new
-
 
 def split_edge(edge_to_split, node_osmid, nodes, edges, split_loc=None, split_type='new'):
     '''
@@ -1936,7 +1738,7 @@ def split_edge(edge_to_split, node_osmid, nodes, edges, split_loc=None, split_ty
     if split_type == 'exist':
         return row_new1, row_new2
 
-def new_edge_straight(new_edge, nodes, edges):
+def new_edge_straight(new_edge, nodes, edges, group=None):
     """Function creates a new edge given 2 nodes and edge/node gdf
 
     Args:
@@ -1966,6 +1768,9 @@ def new_edge_straight(new_edge, nodes, edges):
     
     if 'bearing' in row_dict:
         row_dict['bearing'] = round(get_bearing(u_geom[0][::-1], v_geom[0][::-1]), 2)
+
+    if group:
+        row_dict['stroke_group'] = group
 
     row_dict['u'] = new_edge[0]
     row_dict['v'] = new_edge[1]
