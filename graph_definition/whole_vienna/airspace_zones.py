@@ -88,8 +88,21 @@ def main():
     edges_c = graph_funcs.edge_gdf_format_from_gpkg(edges)
     nodes_c = graph_funcs.node_gdf_format_from_gpkg(nodes)
 
+    # add layer allocation
+    edges_c['layer_allocation'] = graph_funcs.allocate_group_height(nodes_c, edges_c, rotation_val=45)
+
+    # calculate integral bearing difference
+    edges_geometry = edges_c['geometry'].to_numpy()
+    edges_c['integral_bearing_diff'] = graph_funcs.calculate_integral_bearing_difference(edges_geometry)
+
     # create graph and save edited
     G_c = ox.graph_from_gdfs(nodes_c, edges_c)
+
+    # save as graphml
+    ox.save_graphml(G_c, filepath=path.join(gis_data_path, 'streets', 'sub_groups','zone_c_gen.graphml'))
+    
+    # Save geopackage for import to QGIS and momepy
+    ox.save_graph_geopackage(G_c, filepath=path.join(gis_data_path, 'streets', 'sub_groups','zone_c_gen.gpkg'), directed=True)
 
     print('--------FINISHED ZONE C---------')
 
@@ -101,8 +114,21 @@ def main():
     edges_d = graph_funcs.edge_gdf_format_from_gpkg(edges)
     nodes_d = graph_funcs.node_gdf_format_from_gpkg(nodes)
 
+    # add layer allocation
+    edges_d['layer_allocation'] = graph_funcs.allocate_group_height(nodes_d, edges_d, rotation_val=-45)
+
+    # calculate integral bearing difference
+    edges_geometry = edges_d['geometry'].to_numpy()
+    edges_d['integral_bearing_diff'] = graph_funcs.calculate_integral_bearing_difference(edges_geometry)
+
     # create graph and save edited
     G_d = ox.graph_from_gdfs(nodes_d, edges_d)
+
+    # save as graphml
+    ox.save_graphml(G_d, filepath=path.join(gis_data_path, 'streets', 'sub_groups','zone_d_gen.graphml'))
+    
+    # Save geopackage for import to QGIS and momepy
+    ox.save_graph_geopackage(G_d, filepath=path.join(gis_data_path, 'streets', 'sub_groups','zone_d_gen.gpkg'), directed=True)
 
     print('--------FINISHED ZONE D---------')
 
@@ -114,8 +140,21 @@ def main():
     edges_e = graph_funcs.edge_gdf_format_from_gpkg(edges)
     nodes_e = graph_funcs.node_gdf_format_from_gpkg(nodes)
 
+    # add layer allocation
+    edges_e['layer_allocation'] = graph_funcs.allocate_group_height(nodes_e, edges_e, rotation_val=45)
+
+    # calculate integral bearing difference
+    edges_geometry = edges_e['geometry'].to_numpy()
+    edges_e['integral_bearing_diff'] = graph_funcs.calculate_integral_bearing_difference(edges_geometry)
+
     # create graph and save edited
     G_e = ox.graph_from_gdfs(nodes_e, edges_e)
+
+    # save as graphml
+    ox.save_graphml(G_e, filepath=path.join(gis_data_path, 'streets', 'sub_groups','zone_e_gen.graphml'))
+    
+    # Save geopackage for import to QGIS and momepy
+    ox.save_graph_geopackage(G_e, filepath=path.join(gis_data_path, 'streets', 'sub_groups','zone_e_gen.gpkg'), directed=True)
 
     print('--------FINISHED ZONE E---------')
 
@@ -127,16 +166,23 @@ def main():
     edges_f = graph_funcs.edge_gdf_format_from_gpkg(edges)
     nodes_f = graph_funcs.node_gdf_format_from_gpkg(nodes)
 
+    # add layer allocation
+    edges_f['layer_allocation'] = graph_funcs.allocate_group_height(nodes_f, edges_f, rotation_val=0)
+
+    # calculate integral bearing difference
+    edges_geometry = edges_f['geometry'].to_numpy()
+    edges_f['integral_bearing_diff'] = graph_funcs.calculate_integral_bearing_difference(edges_geometry)
+
     # create graph and save edited
-    G_f = ox.graph_from_gdfs(nodes_e, edges_e)
+    G_f = ox.graph_from_gdfs(nodes_f, edges_f)
+
+    # save as graphml
+    ox.save_graphml(G_f, filepath=path.join(gis_data_path, 'streets', 'sub_groups','zone_f_gen.graphml'))
+    
+    # Save geopackage for import to QGIS and momepy
+    ox.save_graph_geopackage(G_f, filepath=path.join(gis_data_path, 'streets', 'sub_groups','zone_f_gen.gpkg'), directed=True)
 
     print('--------FINISHED ZONE F---------')
-
-    # # save as osmnx graph
-    # ox.save_graphml(G, filepath=path.join(gis_data_path, 'streets', 'cleaning_process_2.graphml'))
-    
-    # # # # Save geopackage for import to QGIS and momepy
-    # ox.save_graph_geopackage(G, filepath=path.join(gis_data_path, 'streets', 'cleaning_process_2.gpkg'), directed=True)
 
 
 if __name__ == '__main__':
