@@ -18,7 +18,7 @@ from shapely.geometry import Point
 
 
 class Node:
-    av_speed_horizontal= 10.0
+    av_speed_horizontal= 15.0#10.0 ##TODO: that needs fine tunng
     av_speed_vertical=1.0
     def __init__(self,key_index,x,y,z,index,group):
         self.key_index=key_index # the index the osmnx graph
@@ -45,7 +45,7 @@ class Node:
         
         #the travelling speed
         #that will probably depend on the group
-        self.speed=13
+        self.speed=10
         #the stroke group
         self.group=group
 
@@ -95,18 +95,11 @@ def distance(p1,p2): ##harvestine distance
             math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
         
     return 2*R*math.atan2(math.sqrt(a), math.sqrt(1 - a)) 
+
 ##Compuute the heuristic of a node
 def heuristic(current, goal):
-    n1=Node(current.key_index,current.x,current.y,current.z,current.index,current.group)
-    n2=Node(goal.key_index,goal.x,goal.y,goal.z,goal.index,goal.group)
-    n1.y=0
-    n2.y=0
-    d1=distance(current,goal)
 
-    n1.y=current.y
-    n1.x=0
-    n2.y=goal.y
-    n2.x=0
+    d1=distance(current,goal)
     d2=distance(current,goal)
     h=(d1+d2)/current.av_speed_horizontal
     if current.z!=goal.z:
@@ -122,11 +115,11 @@ def compute_c(current,neigh, edges):
         #g=(abs(neigh.x-current.x)+abs(neigh.y-current.y))*2/(current.speed/current.density+neigh.speed/neigh.density)
         #here i need to check if the group is changing (the drone needs to turn)
         if current.group==neigh.group:
-            if not edges[current.key_index][neigh.key_index].max_speed:
+            if not edges[current.key_index][neigh.key_index].speed:
                 g=float('inf')
 
             else:
-                g=edges[current.key_index][neigh.key_index].length/edges[current.key_index][neigh.key_index].max_speed
+                g=edges[current.key_index][neigh.key_index].length/edges[current.key_index][neigh.key_index].speed
 
         else:
             g=5 #set a standard cost for going to the turn layer # g=5/current.av_speed_vertical
@@ -137,7 +130,7 @@ def top_key(q):
     if len(q) > 0:
         return [q[0][0],q[0][1]]
     else:
-        # print('empty queue!')
+        print('empty queue!')
         return [float('inf'), float('inf')]
     
 ##Update the vertex of a node
@@ -148,8 +141,12 @@ def update_vertex(path,node):
         id_in_queue = [item for item in path.queue if node in item]
         if id_in_queue != []:
             if len(id_in_queue) != 1:
-                raise ValueError('more than one ' + node + ' in the queue!')
-            path.queue.remove(id_in_queue[0])
+                raise ValueError('more than one ' + str(node.key_index) + ' in the queue!')
+            #path.queue.remove(id_in_queue[0])
+            
+            path.queue[path.queue.index(id_in_queue[0])]=path.queue[-1]
+            path.queue.pop()
+            heapq.heapify(path.queue)
             heapq.heappush(path.queue, (node.key[0],node.key[1],node.x,node.y,node.z,node.index,node))
     elif node.g!=node.rhs and not node.inQueue:
         #Insert
@@ -164,33 +161,41 @@ def update_vertex(path,node):
         if id_in_queue != []:
             if len(id_in_queue) != 1:
                 raise ValueError('more than one ' + id + ' in the queue!')
-            path.queue.remove(id_in_queue[0])
+            #path.queue.remove(id_in_queue[0])
+            path.queue[path.queue.index(id_in_queue[0])]=path.queue[-1]
+            path.queue.pop()
+            heapq.heapify(path.queue)
           
 ##Compute the shortest path using D* Lite
 ##returns flase if no path was found
 def compute_shortest_path(path,graph, G,edges):
+
     path.start.key=calculateKey(path.start, path.start, path.k_m)
     k_old=top_key(path.queue)
    
     while path.start.rhs>path.start.g or compare_keys(k_old,path.start.key):
+
+        
         if len(path.queue)==0:
             print("No path found!")
             return 0
 
         k_old=top_key(path.queue)
         current_node=path.queue[0][6]#get the node with the smallest priority
-        
+
         k_new=calculateKey(current_node, path.start, path.k_m)
         if compare_keys(k_old, k_new):
             current_node.key=k_new
 
             #id_in_queue = [item1 for item in path.queue if current_node.index==item[6].index]
-            #print(id_in_queue)
+
             if 1:#id_in_queue !=[] :
 
                 #if len(id_in_queue) != 1:
                 #    raise ValueError('more than one ' + current_node + ' in the queue!')
-                path.queue.remove(path.queue[0])
+                #path.queue.remove(path.queue[0])
+                heapq.heappop(path.queue)
+                current_node.inQueue=True
                 heapq.heappush(path.queue, (current_node.key[0],current_node.key[1],current_node.x,current_node.y,current_node.z,current_node.index,current_node))
         elif current_node.g>current_node.rhs:
             current_node.g=current_node.rhs
@@ -199,7 +204,8 @@ def compute_shortest_path(path,graph, G,edges):
             if 1:#id_in_queue != []:
                 #if len(id_in_queue) != 1:
                 #    raise ValueError('more than one ' + current_node + ' in the queue!')
-                path.queue.remove(path.queue[0])#id_in_queue[0])
+                #path.queue.remove(path.queue[0])#id_in_queue[0])
+                heapq.heappop(path.queue)
                 current_node.inQueue=False
 
                 for p in current_node.parents:
@@ -217,7 +223,7 @@ def compute_shortest_path(path,graph, G,edges):
                     tt=[]
                     for ch in pred_node.children:
                         child=graph[ch]
-                        tt.append(child.g+compute_c(child, pred_node,edges))
+                        tt.append(child.g+compute_c(pred_node,child, edges))
                     pred_node.rhs=min(tt)
             for p in current_node.parents:
                 parent=graph[p]
@@ -232,16 +238,17 @@ def compute_shortest_path(path,graph, G,edges):
             pred_node=current_node
             if pred_node.rhs==g_old:
                 if pred_node!= path.goal:
-                    tt=()
+                    tt=[]
                     for ch in pred_node.children:
                         child=graph[ch]
-                        tt.append(child.g+compute_c(child, pred_node,edges))
+                        tt.append(child.g+compute_c( pred_node,child,edges))
                     pred_node.rhs=min(tt)
             update_vertex(path, pred_node)
             
             k_old=top_key(path.queue)
             path.start.key=calculateKey(path.start, path.start, path.k_m)
-    
+            
+
     return 'Path found!'
     
 def distance_point(A,B):
@@ -436,10 +443,11 @@ class PathPlanning:
         self.cutoff_angle=20
 
 
-        exp_const=0.05##0.005 ## we need to think about the value of that constant
+        exp_const=00.5##0.005 ## we need to think about the value of that constant
         box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
-        
+
         self.G,edges=self.flow_control_graph.extract_subgraph(box)
+
         self.edge_gdf=copy.deepcopy(edges)
 
 
@@ -600,7 +608,7 @@ class PathPlanning:
     ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint     
     ##groups is the list of the group in which each waypoint belongs to        
     def plan(self):
-        
+
         start_id=self.os_keys_dict_pred[self.start_index][self.start_index_previous]
         goal_id=self.os_keys_dict_succ[self.goal_index][self.goal_index_next]
         
@@ -678,6 +686,9 @@ class PathPlanning:
         next_node_index=[]
         turns=[]
         
+        path_found=True
+        
+        
         linestring=edges[self.start_index_previous][self.start_index].geometry
         next_node_index.append(self.start_index_previous)
         coords = list(linestring.coords)
@@ -711,20 +722,24 @@ class PathPlanning:
                     current_node=n
                     
             if change: #Scan for changes
-    
+
+            
                 path.k_m=path.k_m+heuristic(current_node, path.start)
                 #path.start=current_node ###############not sure for that
                 
                 for c in change_list:
+
                     c_old=compute_c(c[0], c[1],edges_old)
-    
+
                     #update cost and obstacles here
                     if c_old>compute_c(c[0], c[1],edges): #if cost is decreased
+
                         if(c[0]!=path.goal):
     
                             c[0].rhs=min(c[0].rhs,compute_c(c[0], c[1], edges)+c[1].g)
                             
                     elif c[0].rhs== c_old+c[1].g: #if cost is increased
+
                         if c[0]!=path.goal:
     
      
@@ -734,15 +749,20 @@ class PathPlanning:
                                 tt.append(child.g+compute_c( c[0],child, edges))
                             c[0].rhs=min(tt)
                     update_vertex(path, c[0])
-                    path.start.g=float('inf')## not sure for that
-                    path.start.rhs=float('inf')## not sure for that
+                    #path.start.g=float('inf')## not sure for that
+                    #path.start.rhs=float('inf')## not sure for that
                     path_found=compute_shortest_path(path,graph,G,edges)
                     
                     print(path_found)
-                    if not path_found:
-                        break
+                    #if not path_found:
+                    #    break
                     change=False    
                     
+            if not path_found:
+                 break
+            
+            
+            
             if current_node.key_index!=path.start.key_index:
                 #find the intermediate points
                 pp=1
@@ -765,8 +785,6 @@ class PathPlanning:
     
             path.start=current_node
        
-        
-
         tmp=(path.goal.x,path.goal.y,path.goal.z)
         route.append(tmp)
         next_node_index.append(path.goal.key_index)
@@ -831,13 +849,13 @@ class PathPlanning:
     def replan(self,changes_list,flow_control_graph,next_node_index,lat,lon):
         route=None
         turns=None
-        edges=None
-        next_turn=None
         groups=None
+        edges_list=None
+        next_turn_point=None
         
         self.start_point=Point(tuple((lon,lat)))
         
-        edges_g=copy.deepcopy(self.edges_gdf)
+        edges_g=copy.deepcopy(self.edge_gdf)
         ## check for changes in the aircrafts subgraph if any
         cnt=0
         change_list=[]
@@ -851,17 +869,17 @@ class PathPlanning:
                     tmp=[]
                     ind=self.os_keys_dict_succ[k][kk]
                     tmp.append(self.graph[ind])
-                    ind=self.os_keys_dict_pred[k][kk]
+                    ind=self.os_keys_dict_pred[kk][k]
                     tmp.append(self.graph[ind])
                     change_list.append(tmp)
-                    
         if cnt>0:
             ## find next node
-            d,index=flow_control_graph.get_nearest_node(lat,lon)          
+            #d,index=flow_control_graph.get_nearest_node(lon,lat)  
+            index=next_node_index
             start_id=-1
     
             for i in self.graph:
-                if i.key_index==d:
+                if i.key_index==index:
                     start_id=i.index
                     break
     
@@ -870,12 +888,13 @@ class PathPlanning:
 
                 
             ##call get path
- 
             route,turns,indices_nodes,turn_coord,groups=self.get_path(self.path,self.graph, self.G,edges_g,self.edge_gdf,True,change_list)
                 
             os_id1=indices_nodes[0]
             os_id2=indices_nodes[1]
             cnt=0
+            edges_list=[]
+            next_turn_point=[]
             for i in range(1,len(indices_nodes)):
                 if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
                     cnt=cnt+1
@@ -905,7 +924,7 @@ class PathPlanning:
             self.turns=turns
             
 
-        return route,turns,edges,next_turn,groups    
+        return route,turns,edges_list,next_turn_point,groups    
       
     ##Function handling the replanning process, called when aircraft is spawned
     ##Retruns: route,turns,edges_list,next_turn_point,groups
@@ -918,11 +937,11 @@ class PathPlanning:
 
         route=None
         turns=None
-        edges=None
-        next_turn=None
+        edges_list=None
+        next_turn_point=None
         groups=None
         
-        edges_g=copy.deepcopy(self.edges_gdf)
+        edges_g=copy.deepcopy(self.edge_gdf)
 
         ## check for changes in the aircrafts subgraph if any
         change_list=[]
@@ -937,7 +956,7 @@ class PathPlanning:
                     tmp=[]
                     ind=self.os_keys_dict_succ[key][k]
                     tmp.append(self.graph[ind])
-                    ind=self.os_keys_dict_pred[key][k]
+                    ind=self.os_keys_dict_pred[k][key]
                     tmp.append(self.graph[ind])
                     change_list.append(tmp)
                     
@@ -949,6 +968,8 @@ class PathPlanning:
             os_id1=indices_nodes[0]
             os_id2=indices_nodes[1]
             cnt=0
+            edges_list=[]
+            next_turn_point=[]
             for i in range(1,len(indices_nodes)):
                 if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
                     cnt=cnt+1
@@ -978,6 +999,5 @@ class PathPlanning:
             self.turns=turns
             
 
-        return route,turns,edges,next_turn,groups    
-        
+        return route,turns,edges_list,next_turn_point,groups    
         

@@ -7,7 +7,7 @@ import osmnx as ox
 import numpy as np
 import BlueskySCNTools
 from plugins.streets.flow_control import street_graph,bbox
-from plugins.streets.agent_path_planning import PathPlanning
+from plugins.streets.agent_path_planning import PathPlanning,Path
 import os
 import dill
 
@@ -27,6 +27,8 @@ print('Graph loaded!')
 ##Initialise the flow control entity
 graph=street_graph(G,edges) 
 
+    
+
 # Step 2: Generate traffic from it
 concurrent_ac = 10
 aircraft_vel = 12 # [m/s]
@@ -43,7 +45,7 @@ dest_nodes = [291088171,  60957703, 30696019, 392251, 33301346, 26405238,
               33174086, 33345331]
 
 generated_traffic = bst.Graph2Traf(G, concurrent_ac, aircraft_vel, max_time, 
-                                   dt, min_dist, orig_nodes, dest_nodes)
+                                    dt, min_dist, orig_nodes, dest_nodes)
 print('Traffic generated!')
 
 # Step 3: Loop through traffic, find path, add to dictionary
@@ -82,15 +84,13 @@ for flight in generated_traffic:
         scenario_dict[flight[0]]['next_turn'] = next_turn
     
     
-    
-
 
 
 print('All paths created!')
     
 # Step 4: Create scenario file from dictionary
 bst.Dict2Scn(r'Test_Scenario.scn', 
-             scenario_dict)
+              scenario_dict)
 
 print('Scenario file created!')
 
@@ -112,3 +112,4 @@ print("Flight plans and search graphs saved!")
 ##example of loading the flight plans
 #input_file=open("Path_Planning.dill", 'rb')
 #p=dill.load(input_file)
+
