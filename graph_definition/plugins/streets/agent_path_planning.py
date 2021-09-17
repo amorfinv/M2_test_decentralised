@@ -175,7 +175,6 @@ def compute_shortest_path(path,graph, G,edges):
    
     while path.start.rhs>path.start.g or compare_keys(k_old,path.start.key):
 
-        
         if len(path.queue)==0:
             print("No path found!")
             return 0
@@ -688,6 +687,41 @@ class PathPlanning:
         
         path_found=True
         
+        if change: #Scan for changes
+            #path.k_m=path.k_m+heuristic(current_node, path.start) ###############not sure for that
+            #path.start=current_node ###############not sure for that
+                
+            for c in change_list:
+
+                c_old=compute_c(c[0], c[1],edges_old)
+
+                    #update cost and obstacles here
+                if c_old>compute_c(c[0], c[1],edges): #if cost is decreased
+
+                    if(c[0]!=path.goal):
+    
+                        c[0].rhs=min(c[0].rhs,compute_c(c[0], c[1], edges)+c[1].g)
+                            
+                elif c[0].rhs== c_old+c[1].g: #if cost is increased
+
+                    if c[0]!=path.goal:
+                        tt=[]
+                        for ch in c[0].children:
+                            child=graph[ch]
+                            tt.append(child.g+compute_c( c[0],child, edges))
+                        c[0].rhs=min(tt)
+                update_vertex(path, c[0])
+                path.start.g=float('inf')## not sure for that
+                path.start.rhs=float('inf')## not sure for that
+                path_found=compute_shortest_path(path,graph,G,edges)
+                    
+                print(path_found)
+                change=False    
+                    
+        if not path_found:
+            return []
+            
+            
         
         linestring=edges[self.start_index_previous][self.start_index].geometry
         next_node_index.append(self.start_index_previous)
@@ -721,47 +755,6 @@ class PathPlanning:
                     minim=compute_c(path.start, n,edges)+n.g
                     current_node=n
                     
-            if change: #Scan for changes
-
-            
-                path.k_m=path.k_m+heuristic(current_node, path.start)
-                #path.start=current_node ###############not sure for that
-                
-                for c in change_list:
-
-                    c_old=compute_c(c[0], c[1],edges_old)
-
-                    #update cost and obstacles here
-                    if c_old>compute_c(c[0], c[1],edges): #if cost is decreased
-
-                        if(c[0]!=path.goal):
-    
-                            c[0].rhs=min(c[0].rhs,compute_c(c[0], c[1], edges)+c[1].g)
-                            
-                    elif c[0].rhs== c_old+c[1].g: #if cost is increased
-
-                        if c[0]!=path.goal:
-    
-     
-                            tt=[]
-                            for ch in c[0].children:
-                                child=graph[ch]
-                                tt.append(child.g+compute_c( c[0],child, edges))
-                            c[0].rhs=min(tt)
-                    update_vertex(path, c[0])
-                    #path.start.g=float('inf')## not sure for that
-                    #path.start.rhs=float('inf')## not sure for that
-                    path_found=compute_shortest_path(path,graph,G,edges)
-                    
-                    print(path_found)
-                    #if not path_found:
-                    #    break
-                    change=False    
-                    
-            if not path_found:
-                 break
-            
-            
             
             if current_node.key_index!=path.start.key_index:
                 #find the intermediate points
@@ -999,5 +992,4 @@ class PathPlanning:
             self.turns=turns
             
 
-        return route,turns,edges_list,next_turn_point,groups    
-        
+        return route,turns,edges_list,next_turn_point,groups 
