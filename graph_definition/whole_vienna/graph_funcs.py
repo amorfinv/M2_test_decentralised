@@ -1,4 +1,5 @@
 from enum import unique
+from hashlib import new
 from platform import node
 import osmnx as ox
 import numpy as np
@@ -9,9 +10,143 @@ import geopandas as gpd
 from pyproj import CRS
 import ast
 from collections import Counter
-
 from shapely.geometry.multipoint import MultiPoint
+import rtree
+from shapely.strtree import STRtree
+from shapely.geometry import Point
+from shapely import affinity
 
+def extend_edges(nodes, edges, edge_list):
+
+    # create nodes
+    nodes_gdf = nodes.copy()
+    edges_gdf = edges.copy()
+
+    # create graph
+    G = ox.graph_from_gdfs(nodes_gdf, edges_gdf)
+
+    # get edge uvs
+    edges_uv = list(edges_gdf.index)
+    # edge_curr = edge_list[1]
+
+    for edge_curr in edge_list:
+
+        # print(edge_curr)
+
+        # get list of geometries and add edge attribute as its id and create tree (can be outside for loop probably)
+        geom_list = []
+        for index, row in edges_gdf.iterrows():
+            
+            geom = row.loc['geometry']
+            geom.id = index
+
+            geom_list.append(geom)
+
+        # add geometry to an RTREE
+        tree = STRtree(geom_list)
+
+        # get geometry
+        geom_line = edges_gdf.loc[edge_curr, 'geometry']
+
+        # Find which node needs to be extended. front (u) or back (v)
+        deg_node_u = G.degree[edge_curr[0]]
+        deg_node_v = G.degree[edge_curr[1]]
+
+        if deg_node_u == 1:
+            node_extend = edge_curr[0]
+            node_ignore = edge_curr[1]
+
+            idx_line = 'front'
+
+        elif deg_node_v == 1:
+            node_extend = edge_curr[1]
+            node_ignore = edge_curr[0]
+
+            idx_line = 'back'
+
+        # while loop should start here to extend line if necessary
+        while True:
+
+            # get potential intersections
+            potential_intersections = tree.query(geom_line)
+
+            actual_intersections = []
+            for intersection in potential_intersections:
+                # only check if current edge does not have node to ignore
+                if not node_ignore in intersection.id:
+                    
+                    # check if there is an actual intersection or not
+                    temp_geom = edges_gdf.loc[intersection.id, 'geometry']
+
+                    if temp_geom.intersects(geom_line):
+                        split_point = geom_line.intersection(temp_geom)
+                        actual_intersections.append((intersection.id, split_point))
+
+            # check if you need to extend the line. This is true if actual_intersections is empty
+            if not actual_intersections:
+
+                # get coordinates into a list
+                coords = list(geom_line.coords)
+
+                # extend line from front of edge geometry
+                if idx_line == 'front':
+                    extension_coords = coords[:2]
+                    line_to_extend = LineString(extension_coords)
+                    
+                    new_start = list(affinity.scale(line_to_extend, xfact=2, yfact=2, zfact=2, origin=extension_coords[1]).coords)[0]
+
+                    new_line = LineString([new_start, coords[1]])
+
+                # extend line from back of edge geometry
+                elif idx_line == 'back':
+                    extension_coords = coords[-2:]
+                    line_to_extend = LineString(extension_coords)
+
+                    new_end = list(affinity.scale(line_to_extend, xfact=2, yfact=2, zfact=2, origin=extension_coords[0]).coords)[-1]
+
+                    new_line = LineString([coords[0], new_end])
+
+                # assign new value to geom_line
+                geom_line = new_line
+
+            else:
+
+                # If there is an intersection ensure that there is just one. otherwise code it up
+                if len(actual_intersections) > 1:
+                    print(f'There is more than one intersection when extending {edge_curr}')
+                    print('Recode stuff!')
+                    break
+                
+                # Now edit the gdfs
+
+                # Split the intersected edge
+                edge_to_split = actual_intersections[0][0]
+                new_node_osmid = get_new_node_osmid(nodes_gdf)
+                split_loc = actual_intersections[0][1]
+
+                # split edge
+                node_new, row_new1, row_new2 = split_edge(edge_to_split, new_node_osmid, nodes_gdf, edges_gdf, split_loc)
+
+                # append nodes and edges and remove split edge
+                nodes_gdf = nodes_gdf.append(node_new)
+                edges_gdf = edges_gdf.append([row_new1, row_new2])
+                edges_gdf.drop(index=edge_to_split, inplace=True)
+
+                # Now add a new edge between the nodes
+                if idx_line == 'front':
+                    new_edge = (new_node_osmid, node_extend, 0)
+                elif idx_line == 'back':
+                    new_edge = (node_extend, new_node_osmid, 0)
+                
+                group = edges_gdf.loc[edge_curr, 'stroke_group']
+                edges_gdf = edges_gdf.append(new_edge_straight(new_edge, nodes_gdf, edges_gdf, group))
+
+                break
+
+
+
+    
+    return nodes_gdf, edges_gdf
 
 def node_degree_attrib(nodes, edges):
 
@@ -1344,7 +1479,7 @@ def node_gdf_format_from_gpkg(nodes):
 
 def simplify_graph(nodes, edges, angle_cut_off = 120):
     '''
-    Requires a COINS run before
+    Requires a COINS run before and a set_directions
     remove degree-2 edges with int angle greater than 120, does a fresh add_edge_interior angles
     Basically consolidates when deleting edges manually in qgis
     '''
@@ -1356,7 +1491,7 @@ def simplify_graph(nodes, edges, angle_cut_off = 120):
     edges_gdf_new = edges.drop(['edge_interior_angle'], axis=1).copy()
     nodes_gdf_new = nodes.copy()
 
-    # make a graph to check nodes of degrer 2
+    # make a graph to check nodes of degree 2
     G_check = ox.graph_from_gdfs(nodes, edges)
     
     # get list if node ids and edge ids
@@ -1399,6 +1534,11 @@ def simplify_graph(nodes, edges, angle_cut_off = 120):
         edges_in_merge = [item for item in edges_to_merge if node_inspect in item]
         edge_1 = edges_in_merge[0]
         edge_2 = edges_in_merge[1]
+
+        if edges_gdf_new.loc[edge_1, 'stroke_group'] != edges_gdf_new.loc[edge_2, 'stroke_group']:
+            print(f'Cannot merge {edge_1} and {edge_2} because they are in different groups')
+            nodes_to_delete.remove(node_inspect)
+            continue
 
         # find which edge is in front and which is in back
         if node_inspect == edge_1[0]:
@@ -1446,8 +1586,8 @@ def simplify_graph(nodes, edges, angle_cut_off = 120):
                 edge_front = edge_2
 
             end_node = edge_front[1]
-            end_edges_to_merge.append(edge_front)    
-        
+            end_edges_to_merge.append(edge_front)
+   
         # edges to merge
         merged_edges = start_edges_to_merge + end_edges_to_merge
 
@@ -1511,7 +1651,7 @@ def simplify_graph(nodes, edges, angle_cut_off = 120):
     nodes_gdf_new, edges_gdf_new = ox.graph_to_gdfs(ox.graph_from_gdfs(nodes_gdf_new, edges_gdf_new))
 
     # add edge interior angles
-    edges_gdf_new['edge_interior_angle'] = add_edge_interior_angles(edges_gdf_new)
+    # edges_gdf_new['edge_interior_angle'] = add_edge_interior_angles(edges_gdf_new)
 
     return nodes_gdf_new, edges_gdf_new
 
@@ -2032,8 +2172,6 @@ def get_new_node_osmid(nodes_gdf):
 
 def get_phantom_intersections(nodes, edges):
 
-    from shapely.strtree import STRtree
-    from shapely.geometry import Point 
 
     # get node, edge gdf
     nodes_gdf = nodes.copy()
@@ -2162,3 +2300,159 @@ def split_line_with_point(line, splitter):
                 LineString([splitter.coords[0]] + coords[i+1:])
             ]
     return [line]
+
+def id_parallel_streets(edges, dist_near=32, angle_cut=20):
+    
+    # get edge indices
+    edges_uv = list(edges.index)
+    edge_dict = dict()
+
+    # get list of geometries and add edge attribute as its id
+    idx_tree = rtree.index.Index()
+
+    # merged gdf
+    edges_gdf= gpd.GeoDataFrame(columns=['u', 'v', 'key', 'geometry'], crs=edges.crs)
+    edges_gdf.set_index(['u', 'v', 'key'], inplace=True)
+
+
+    i = 0
+    for index, row in edges.iterrows():
+        
+        geom = row.loc['geometry']
+        edge_dict[i] = index
+        idx_tree.insert(i, geom.bounds)
+
+        i += 1
+
+    closest_dict = dict()
+    for index_edge, row in edges.iterrows():
+        geom = row.loc['geometry']
+        group1 = row.loc['stroke_group']
+        nearest = []
+        geom_merge = []
+        geom_merge.append(geom)
+        lats1, lons1 = geom.xy
+        l1 = [[lats1[0], lons1[0]], [lats1[-1], lons1[-1]]]
+
+        j = 1
+        while True:
+
+            nearest_trial = list(idx_tree.nearest(geom.bounds, j))
+            temp_edge_id = edge_dict[nearest_trial[-1]]
+            temp_geom = edges.loc[temp_edge_id, 'geometry']
+            group2 = edges.loc[temp_edge_id, 'stroke_group']
+
+            j += 1
+
+            # check intersection
+            if temp_geom.intersects(geom):
+                continue
+            
+            # check bearing
+            lats2, lons2 = temp_geom.xy
+            l2 = [[lats2[0], lons2[0]], [lats2[-1], lons2[-1]]]
+            between_angle = btw_angle(l1, l2)
+            
+            if between_angle > angle_cut:
+                continue
+            
+            if group1 == group2:
+                continue
+            
+            # get nearest points into geometry and get distance in meters
+            p1, p2 = ops.nearest_points(geom, temp_geom)
+            dist = qdrdist(p1.y, p1.x, p2.y, p2.x)
+
+            if dist <= dist_near:
+                nearest.append(temp_edge_id)
+                geom_merge.append(temp_geom)
+            else:
+                break
+        
+        # only append if nearest exists 
+        if nearest:
+            closest_dict[index_edge] = nearest
+            collection_lines = MultiLineString(geom_merge)
+
+            # create geodatarame
+            row_dict = dict()
+            row_dict['u'] = index_edge[0]
+            row_dict['v'] = index_edge[1]
+            row_dict['key'] = index_edge[2]
+            row_dict['geometry'] = [collection_lines]
+
+            edge_gdf_new = gpd.GeoDataFrame(row_dict, crs=edges.crs)
+            edge_gdf_new.set_index(['u', 'v', 'key'], inplace=True)
+            edges_gdf = edges_gdf.append(edge_gdf_new)    
+    
+    return edges_gdf
+
+def qdrdist(latd1, lond1, latd2, lond2):
+    """ Calculate bearing and distance, using WGS'84
+        In:
+            latd1,lond1 en latd2, lond2 [deg] :positions 1 & 2
+        Out:
+            qdr [deg] = heading from 1 to 2
+            d [nm]    = distance from 1 to 2 in nm """
+
+    # Taken from bluesky
+
+    # res1 for same hemisphere
+    res1 = rwgs84(0.5 * (latd1 + latd2))
+
+    # res2 :different hemisphere
+    a    = 6378137.0       # [m] Major semi-axis WGS-84
+    r1   = rwgs84(latd1)
+    r2   = rwgs84(latd2)
+    res2 = 0.5 * (abs(latd1) * (r1 + a) + abs(latd2) * (r2 + a)) / \
+        (np.maximum(0.000001,abs(latd1) + abs(latd2)))
+
+    # Condition
+    sw   = (latd1 * latd2 >= 0.)
+
+    r    = sw * res1 + (1 - sw) * res2
+
+    # Convert to radians
+    lat1 = np.radians(latd1)
+    lon1 = np.radians(lond1)
+    lat2 = np.radians(latd2)
+    lon2 = np.radians(lond2)
+
+    # Corrected to avoid "nan" at westward direction
+    d = r*np.arccos(np.cos(lat1)*np.cos(lat2)*np.cos(lon2-lon1) + \
+                 np.sin(lat1)*np.sin(lat2))
+
+    return d
+
+def rwgs84(latd):
+    """ Calculate the earths radius with WGS'84 geoid definition
+        In:  lat [deg] (latitude)
+        Out: R   [m]   (earth radius) """
+
+    # Taken from bluesky
+
+    lat    = np.radians(latd)
+    a      = 6378137.0       # [m] Major semi-axis WGS-84
+    b      = 6356752.314245  # [m] Minor semi-axis WGS-84
+    coslat = np.cos(lat)
+    sinlat = np.sin(lat)
+
+    an     = a * a * coslat
+    bn     = b * b * sinlat
+    ad     = a * coslat
+    bd     = b * sinlat
+
+    # Calculate radius in meters
+    r = np.sqrt((an * an + bn * bn) / (ad * ad + bd * bd))
+
+    return r
+
+def btw_angle(l1,l2):
+    # andrei code
+    l1 = np.array(l1)
+    l2 = np.array(l2)
+    m1 = (l1[1,1]-l1[0,1])/(l1[1,0]-l1[0,0])
+    m2 = (l2[1,1]-l2[0,1])/(l2[1,0]-l2[0,0])
+    angle_rad = abs(np.arctan(m1) - np.arctan(m2))
+    angle_deg = angle_rad*180/np.pi
+    return angle_deg
