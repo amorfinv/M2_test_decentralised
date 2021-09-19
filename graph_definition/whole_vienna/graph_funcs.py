@@ -16,6 +16,59 @@ from shapely.strtree import STRtree
 from shapely.geometry import Point
 from shapely import affinity
 
+def new_edge_osmid_to_point(nodes, edges, osmid, point, group):
+    
+    # create copies
+    nodes_gdf = nodes.copy()
+    edges_gdf = edges.copy()
+
+    # get osmid geometry
+    osmid_geom = nodes_gdf.loc[osmid, 'geometry']
+
+    # create a linestring
+    line_new = LineString([osmid_geom, point])
+
+    # put edges in a tree
+    geom_list = []
+    for index, row in edges_gdf.iterrows():
+        
+        geom = row.loc['geometry']
+        geom.id = index
+
+        geom_list.append(geom)
+
+    # add geometry to an RTREE
+    tree = STRtree(geom_list)
+
+    # see where new line intersects
+    potential_intersections = tree.query(line_new)
+
+    for potential_intersection in potential_intersections:
+        
+        # remove ones that do not intersect new line
+        if potential_intersection.intersects(line_new) and osmid not in potential_intersection.id:
+        
+            intersecting_point = potential_intersection.intersection(line_new)
+
+            # Split the intersected edge
+            edge_to_split = potential_intersection.id
+            new_node_osmid = get_new_node_osmid(nodes_gdf)
+            split_loc = intersecting_point
+
+            node_new, row_new1, row_new2 = split_edge(edge_to_split, new_node_osmid, nodes_gdf, edges_gdf, split_loc)
+
+            # append nodes and edges and remove split edge
+            nodes_gdf = nodes_gdf.append(node_new)
+            edges_gdf = edges_gdf.append([row_new1, row_new2])
+            edges_gdf.drop(index=edge_to_split, inplace=True)
+
+            # Now add a new edge between the nodes
+            new_edge = (osmid, new_node_osmid, 0)
+            edges_gdf = edges_gdf.append(new_edge_straight(new_edge, nodes_gdf, edges_gdf, group))
+
+
+    return nodes_gdf, edges_gdf
+
 def extend_edges(nodes, edges, edge_list):
 
     # create nodes
@@ -30,8 +83,6 @@ def extend_edges(nodes, edges, edge_list):
     # edge_curr = edge_list[1]
 
     for edge_curr in edge_list:
-
-        # print(edge_curr)
 
         # get list of geometries and add edge attribute as its id and create tree (can be outside for loop probably)
         geom_list = []
