@@ -30,16 +30,16 @@ def main():
     gis_data_path = 'gis'
 
     # Load MultiDigraph from create_graph.py
-    G = ox.load_graphml(filepath=path.join(gis_data_path, 'streets', 'cleaning_process_2.graphml'))
+    G = ox.load_graphml(filepath=path.join(gis_data_path, 'streets', 'boundary_clean.graphml'))
     ox.distance.add_edge_lengths(G)
 
     # delete some dead ends
-    nodes_to_remove = [2107289289, 111166066, 297732617, 319898633, 117385463, 293431182, 2273750271,
-                      280697142, 309367640, 7867573020, 274610745, 1676206186, 3573081082, 2034593346,
-                      33301993, 8307089679, 283734344, 272446352, 5120275681, 2200458285, 199625, 252281626, 295431612,
-                      299084684, 3534479782, 1829890434, 130232679, 43511494, 130232678, 378477, 4032457020, 4032457019,
-                      4032457015]
-    G.remove_nodes_from(nodes_to_remove)
+    # nodes_to_remove = [2107289289, 111166066, 297732617, 319898633, 117385463, 293431182, 2273750271,
+    #                   280697142, 309367640, 7867573020, 274610745, 1676206186, 3573081082, 2034593346,
+    #                   33301993, 8307089679, 283734344, 272446352, 5120275681, 2200458285, 199625, 252281626, 295431612,
+    #                   299084684, 3534479782, 1829890434, 130232679, 43511494, 130232678, 378477, 4032457020, 4032457019,
+    #                   4032457015]
+    # G.remove_nodes_from(nodes_to_remove)
 
     # convert to gdgs
     nodes, edges = ox.graph_to_gdfs(G)

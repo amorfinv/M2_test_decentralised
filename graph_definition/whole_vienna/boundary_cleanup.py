@@ -83,6 +83,14 @@ def main():
     new_edge = (9697671,5866359, 0)
     edges = edges.append(graph_funcs.new_edge_straight(new_edge, nodes, edges, group='237')) 
 
+    # join existing nodes
+    new_edge = (600206222,3283142873, 0)
+    edges = edges.append(graph_funcs.new_edge_straight(new_edge, nodes, edges, group='237')) 
+
+    # join existing nodes
+    new_edge = (34166934,64976837, 0)
+    edges = edges.append(graph_funcs.new_edge_straight(new_edge, nodes, edges, group='237')) 
+
     # new edge with osmid
     osmid = 25280874
     new_point = Point(16.314412429461793, 48.1769369354651)
