@@ -21,7 +21,7 @@ def main():
 
     # drop some useless columns
     nodes.drop(columns=['street_count'], inplace=True)
-    edges.drop(columns=['oneway'], inplace=True)
+    edges.drop(columns=['oneway', 'stroke_group'], inplace=True)
 
     nodes['degree'] = graph_funcs.node_degree_attrib(nodes, edges)
     node_osmid_array = nodes.index.to_numpy()
