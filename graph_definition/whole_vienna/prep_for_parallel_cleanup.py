@@ -542,16 +542,20 @@ def main():
     new_point = Point(16.370057073009658, 48.22617059933408)
     nodes, edges = graph_funcs.new_edge_osmid_to_point(nodes, edges, osmid, new_point, '613')
 
-    # # join existing nodes
-    # new_edge = (199561, 254314477, 0)
-    # edges = edges.append(graph_funcs.new_edge_straight(new_edge, nodes, edges, group='564'))
-
     G = ox.graph_from_gdfs(nodes, edges)
 
     ###### cleanup 3
 
+    # edges to delete cleanup 3
+    del_edges = [(583284740, 583284741, 0), (199655, 199638, 0), (395073, 199655, 0),
+                (60822249, 395073, 0), (378968, 378953, 0), (60732594, 378968, 0),
+                (60732834, 60732594, 0), (378953, 60822249, 0), (4308522018, 60732834, 0),
+                (60822346, 25637884, 0), (25637884, 60225307, 0), (199685, 25637882, 0)]
+
+    G.remove_edges_from(del_edges)
+
     # # remove nodes
-    del_nodes = [254314477]
+    del_nodes = [254314477, 395058, 60732834]
     G.remove_nodes_from(del_nodes)
 
     # get_gdfs
@@ -560,6 +564,15 @@ def main():
     # join existing nodes
     new_edge = (199561, 199562, 0)
     edges = edges.append(graph_funcs.new_edge_straight(new_edge, nodes, edges, group='564'))
+
+    # extend edges
+    edges_to_extend = [(60822249, 2390756210, 0), (101049016, 378953, 0)]
+    nodes, edges = graph_funcs.extend_edges(nodes, edges, edges_to_extend)
+
+    # new edge with osmid
+    osmid = 4308522018
+    new_point = Point(16.379553722018073, 48.244863768181986)
+    nodes, edges = graph_funcs.new_edge_osmid_to_point(nodes, edges, osmid, new_point, '1054')
 
     G = ox.graph_from_gdfs(nodes, edges)
 
