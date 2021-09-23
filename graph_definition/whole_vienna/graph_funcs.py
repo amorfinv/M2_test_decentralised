@@ -15,8 +15,10 @@ import rtree
 from shapely.strtree import STRtree
 from shapely.geometry import Point
 from shapely import affinity
+import pandas as pd
 
 def new_edge_osmid_to_point(nodes, edges, osmid, point, group):
+    # intersect edge or at a specific point
     
     # create copies
     nodes_gdf = nodes.copy()
@@ -43,6 +45,9 @@ def new_edge_osmid_to_point(nodes, edges, osmid, point, group):
     # see where new line intersects
     potential_intersections = tree.query(line_new)
 
+    # no intersection
+    no_intersects = True
+
     for potential_intersection in potential_intersections:
         
         # remove ones that do not intersect new line
@@ -66,8 +71,56 @@ def new_edge_osmid_to_point(nodes, edges, osmid, point, group):
             new_edge = (osmid, new_node_osmid, 0)
             edges_gdf = edges_gdf.append(new_edge_straight(new_edge, nodes_gdf, edges_gdf, group))
 
+            no_intersects = False
+
+    
+    if no_intersects:
+        # if no intersections just create a new node and edge at location
+
+        # create a new osmid
+        new_node_osmid = get_new_node_osmid(nodes_gdf)
+
+        # create a new node and add to node_gdf
+        nodes_gdf = create_new_node(nodes_gdf, point, new_node_osmid)
+
+        # name the new edge
+        new_edge = (osmid, new_node_osmid, 0)
+
+        # add new edge to gdf
+        edges_gdf = edges_gdf.append(new_edge_straight(new_edge, nodes_gdf, edges_gdf, group))
 
     return nodes_gdf, edges_gdf
+
+def create_new_node(nodes, geom, node_osmid):
+
+    nodes_gdf = nodes.copy()
+
+    #round new point geometry
+    new_node_x = round(geom.x, 7)
+    new_node_y = round(geom.y, 7)
+
+    # recreate point
+    new_node_geom = Point([new_node_x, new_node_y])
+
+    # get dummy dictionary of node to keep same attributes in new node
+    node_dict = nodes.iloc[0].to_dict()
+
+    # update data of new node_id.
+    node_dict["x"] = new_node_geom.x
+    node_dict["y"] = new_node_geom.y
+    node_dict["geometry"] = [new_node_geom]
+    node_dict["osmid"] = node_osmid
+    
+    if 'street_count' in node_dict:
+        node_dict["street_count"] = 4
+
+    # get new node gdf
+    node_new = gpd.GeoDataFrame(node_dict, crs=nodes.crs)
+    node_new.set_index(['osmid'], inplace=True)
+
+    nodes_gdf = nodes_gdf.append(node_new)
+
+    return nodes_gdf
 
 def extend_edges(nodes, edges, edge_list):
 
@@ -1586,7 +1639,18 @@ def simplify_graph(nodes, edges, angle_cut_off = 120):
         edge_1 = edges_in_merge[0]
         edge_2 = edges_in_merge[1]
 
-        if edges_gdf_new.loc[edge_1, 'stroke_group'] != edges_gdf_new.loc[edge_2, 'stroke_group']:
+        # get group number
+        group_1 = edges_gdf_new.loc[edge_1, 'stroke_group']
+        group_2 = edges_gdf_new.loc[edge_2, 'stroke_group']
+
+        # ensure that it is an integer
+        if isinstance(group_1, pd.Series):
+            group_1 = group_1.values[0]
+        
+        if isinstance(group_2, pd.Series):
+            group_2 = group_2.values[0]
+
+        if group_1 != group_2:
             print(f'Cannot merge {edge_1} and {edge_2} because they are in different groups')
             nodes_to_delete.remove(node_inspect)
             continue
@@ -2127,8 +2191,10 @@ def split_group_at_node(edges, node_split, curr_group):
 
     # remove edges that are not part of group
     edges_group = []
+
     for edge in edges_with_node:
-        if edges_gdf.loc[edge, 'stroke_group'] == str(curr_group):
+        group_check = edges_gdf.loc[edge, 'stroke_group']
+        if str(group_check) == str(curr_group):
             edges_group.append(edge)
 
     # get only front edge. It will be the edge that has node to split in first value of edge_a or edge_b

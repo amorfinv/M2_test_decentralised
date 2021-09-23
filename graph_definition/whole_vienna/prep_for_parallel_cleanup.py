@@ -555,7 +555,7 @@ def main():
     G.remove_edges_from(del_edges)
 
     # # remove nodes
-    del_nodes = [254314477, 395058, 60732834]
+    del_nodes = [254314477, 395058, 60732834, 381046334]
     G.remove_nodes_from(del_nodes)
 
     # get_gdfs
@@ -564,6 +564,10 @@ def main():
     # join existing nodes
     new_edge = (199561, 199562, 0)
     edges = edges.append(graph_funcs.new_edge_straight(new_edge, nodes, edges, group='564'))
+
+    # join existing nodes
+    new_edge = (24950515, 60225307, 0)
+    edges = edges.append(graph_funcs.new_edge_straight(new_edge, nodes, edges, group='1097'))
 
     # extend edges
     edges_to_extend = [(60822249, 2390756210, 0), (101049016, 378953, 0)]
