@@ -343,9 +343,9 @@ orig_nodes_numbers = copy.copy(nodes)
 
 dest_nodes_numbers = copy.copy(nodes)
 
-ray.shutdown()
+#ray.shutdown()
 #ray.init(num_cpus=1) # will use default python map on current process, useful for debugging?
-ray.init(num_cpus=2) # will batch out via ActorPool, slower vs above for trivial loads because overhead
+#ray.init(num_cpus=1) # will batch out via ActorPool, slower vs above for trivial loads because overhead
 
 '''
 Eval is made arbitrarily more expensive to show difference. Tricky as DeltaPenalty skips evals sometimes.
@@ -409,7 +409,7 @@ def evalOneMax(individual):
     total_cost = dijkstra_search_multiple(graph, orig_nodes, dest_nodes)
     print('--------------------------------------')
     print(individual)
-    print(f'Cost for this individual: {cost}')
+    print(f'Cost for this individual: {total_cost}')
     return total_cost
 
 
@@ -421,7 +421,7 @@ toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
 toolbox.register("select", tools.selTournament, tournsize=3)
 
 ##This is different!#################################
-toolbox.register("map", ray_deap_map, creator_setup = creator_setup)
+#toolbox.register("map", ray_deap_map, creator_setup = creator_setup)
 ######################################################
 
 if __name__ == "__main__":

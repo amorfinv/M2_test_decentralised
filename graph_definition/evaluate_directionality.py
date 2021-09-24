@@ -35,7 +35,8 @@ class PriorityQueue:
 def dijkstra_search_multiple(graph, starts, goals, printPaths = False):
     totalcost = 0
     for start in starts:
-        costs = dijkstra_search(graph, start, goals, printPaths)
+        goals_disposable = copy.copy(goals)
+        costs = dijkstra_search(graph, start, goals_disposable, printPaths)
         totalcost += sum(costs.values())
     return totalcost,
 
