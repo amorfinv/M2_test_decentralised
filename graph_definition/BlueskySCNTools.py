@@ -67,9 +67,9 @@ class BlueskySCNTools():
         speeds, turnbool = self.TurnSpeedBuffer(lats, lons, turnbool, alts, 
                             turn_speed, cruise_speed, speed_dist, turn_dist)
 
-        # prep edges and next_turn (TODO: do this in path plannig)
+        # prep edges and next_turn
         active_edge = ['' if edge == -1 else f'{edge[0]}-{edge[1]}' for edge in edges]
-        active_turns = ['' if turn_node == -1 else f'{turn_node}' for turn_node in next_turn]
+        active_turns = ['' if turn_node == -1 else f'{turn_node[0]} {turn_node}' for turn_node in next_turn]
 
         # First, define some strings we will often be using
         trn = f'ADDWPT {drone_id} FLYTURN\n'
@@ -124,7 +124,7 @@ class BlueskySCNTools():
 
         return lines
     
-    def Dict2Scn(self, filepath, dictionary):
+    def Dict2Scn(self, filepath, dictionary, pathplanfilename):
         """Creates a scenario file from dictionary given that dictionary
         has the correct format.
     
@@ -148,6 +148,10 @@ class BlueskySCNTools():
                 dictionary['drone_id']['alts'] = alts
                 
             Set alts as None if no altitude constraints are needed.
+        
+        pathplanfilename: string
+            This is the name of the dill containing path planning class used for flow
+            control and replanning
     
         """
         if filepath[-4:] != '.scn':
@@ -156,6 +160,7 @@ class BlueskySCNTools():
         with open(filepath, 'w+') as f:
             f.write('00:00:00>HOLD\n00:00:00>PAN 48.223775 16.337976\n00:00:00>ZOOM 50\n')
             f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASED\n')
+            f.write(f'00:00:00>LOADPATH {pathplanfilename}\n')
             for drone_id in dictionary:
                 try:
                     start_time = dictionary[drone_id]['start_time']

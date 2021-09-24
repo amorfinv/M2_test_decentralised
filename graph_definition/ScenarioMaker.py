@@ -27,7 +27,9 @@ print('Graph loaded!')
 ##Initialise the flow control entity
 graph=street_graph(G,edges) 
 
-    
+
+# path planning file TODO: match scenario name
+path_plan_filename = 'Path_Planning'
 
 # Step 2: Generate traffic from it
 concurrent_ac = 10
@@ -90,7 +92,7 @@ print('All paths created!')
     
 # Step 4: Create scenario file from dictionary
 bst.Dict2Scn(r'Test_Scenario.scn', 
-              scenario_dict)
+              scenario_dict, path_plan_filename)
 
 print('Scenario file created!')
 
@@ -99,7 +101,7 @@ list2dill.append(flight_plans_dict)
 list2dill.append(graph)
 
 ##Dill the flight_plans_dict
-output_file=open("Path_Planning.dill", 'wb')
+output_file=open(f"{path_plan_filename}.dill", 'wb')
 dill.dump(list2dill,output_file)
 output_file.close()
 
