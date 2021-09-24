@@ -69,7 +69,7 @@ class BlueskySCNTools():
 
         # prep edges and next_turn
         active_edge = ['' if edge == -1 else f'{edge[0]}-{edge[1]}' for edge in edges]
-        active_turns = ['' if turn_node == -1 else f'{turn_node[0]} {turn_node}' for turn_node in next_turn]
+        active_turns = ['' if turn_node == -1 else f'{turn_node[0]} {turn_node[1]}' for turn_node in next_turn]
 
         # First, define some strings we will often be using
         trn = f'ADDWPT {drone_id} FLYTURN\n'
