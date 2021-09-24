@@ -339,10 +339,6 @@ coords = np.array([[16.35814017,48.20567324],
 # %%
 nodes = ox.nearest_nodes(GB.G_0, coords[:,0], coords[:,1])
 
-nodes.pop(nodes.index(319898633))
-nodes.pop(nodes.index(2200458285))
-nodes.pop(nodes.index(274610745))
-
 orig_nodes_numbers = copy.copy(nodes)
 
 dest_nodes_numbers = copy.copy(nodes)
@@ -391,7 +387,6 @@ def evalOneMax(individual):
     
     # Process nodes to put em in the right form
     omsnx_keys_list=list(G._node.keys())
-    G_list=list(G._node)
     
     ###Initialise the graph for the search
     graph={}
@@ -411,11 +406,11 @@ def evalOneMax(individual):
         orig_nodes.append(graph[node])
     
     # Get cost
-    cost = dijkstra_search_multiple(graph, orig_nodes, dest_nodes)
+    total_cost = dijkstra_search_multiple(graph, orig_nodes, dest_nodes)
     print('--------------------------------------')
     print(individual)
     print(f'Cost for this individual: {cost}')
-    return cost
+    return total_cost
 
 
 toolbox.register("evaluate", evalOneMax)
