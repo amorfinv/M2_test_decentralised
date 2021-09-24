@@ -166,7 +166,7 @@ def main():
     # new edge with osmid
     osmid = 27027315
     new_point = Point(16.41993200607308,48.19151248104808)
-    nodes, edges = graph_funcs.new_edge_osmid_to_point(nodes, edges, osmid, new_point, '1366')
+    nodes, edges = graph_funcs.new_edge_osmid_to_point(nodes, edges, osmid, new_point, '1367')
 
     # create graph
     G = ox.graph_from_gdfs(nodes, edges)
