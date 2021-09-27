@@ -14,6 +14,7 @@ start = time.time()
 #G= pickle.load(open("G-multigraph.pickle", "rb"))#load G
 #edge=pickle.load(open("edge_gdf.pickle", "rb"))#load edge_geometry
 G = ox.io.load_graphml('processed_graph.graphml')
+
 edge = ox.graph_to_gdfs(G)[1]
 fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
 

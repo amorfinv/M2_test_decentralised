@@ -15,6 +15,9 @@ import math
 import copy
 from plugins.streets.flow_control import street_graph,bbox
 from shapely.geometry import Point
+from plugins.streets.Conversions import Conversions
+import time
+
 
 
 class Node:
@@ -28,6 +31,10 @@ class Node:
         self.x=x
         self.y=y
         self.z=z
+        
+        self.x_cartesian=None
+        self.y_cartesian=None
+
 
         #the parents(predessecors) and children(successor) of the node expressed as lists containing their indexes in the graph 
         self.parents=[]
@@ -48,6 +55,8 @@ class Node:
         self.speed=10
         #the stroke group
         self.group=group
+        
+        self.expanded=False
 
         
 class Path:
@@ -64,6 +73,7 @@ def initialise(path):
     path.goal.rhs=0
     path.goal.inQueue=True
     path.goal.h=heuristic(path.start,path.goal)
+    path.goal.expanded=True
     heapq.heappush(path.queue, (path.goal.h,0,path.goal.x,path.goal.y,path.goal.z,path.goal.index, path.goal))
  
 
@@ -96,15 +106,38 @@ def distance(p1,p2): ##harvestine distance
         
     return 2*R*math.atan2(math.sqrt(a), math.sqrt(1 - a)) 
 
-##Compuute the heuristic of a node
-def heuristic(current, goal):
+# =============================================================================
+# ##Compuute the heuristic of a node
+# def heuristic(current, goal):
+# 
+#     d1=distance(current,goal)
+#     d2=distance(current,goal)
+#     h=(d1+d2)/current.av_speed_horizontal
+#     if current.z!=goal.z:
+#         h=h+25 #set a standard cost for going to the turn layer # g=5/current.av_speed_vertical
+#     return h
+# =============================================================================
 
-    d1=distance(current,goal)
-    d2=distance(current,goal)
-    h=(d1+d2)/current.av_speed_horizontal
+def heuristic(current, goal):
+# =============================================================================
+#     n1=Node(current.key_index,current.x,current.y,current.z,current.index,current.group)
+#     n2=Node(goal.key_index,goal.x,goal.y,goal.z,goal.index,goal.group)
+#     n1.y=0
+#     n2.y=0
+#     d1=distance(n1,n2)
+# 
+#     n1.y=current.y
+#     n1.x=0
+#     n2.y=goal.y
+#     n2.x=0
+#     d2=distance(n1,n2)
+#     h=(d1+d2)/current.av_speed_horizontal
+# =============================================================================
+    h=(abs(current.x_cartesian-goal.x_cartesian)+abs(current.y_cartesian-goal.y_cartesian))/current.av_speed_horizontal
     if current.z!=goal.z:
-        h=h+25 #set a standard cost for going to the turn layer # g=5/current.av_speed_vertical
+        h=h+5 #set a standard cost for going to the turn layer # g=5/current.av_speed_vertical
     return 1#h
+
 
 ##Compute the cost of moving from a node to its neighborh node
 def compute_c(current,neigh, edges):
@@ -154,7 +187,7 @@ def update_vertex(path,node):
             path.queue.pop()
             
             heapq.heapify(path.queue)
-            
+            node.expanded=True
             heapq.heappush(path.queue, (node.key[0],node.key[1],node.x,node.y,node.z,node.index,node))
             
     elif node.g!=node.rhs and (not node.inQueue):
@@ -163,6 +196,7 @@ def update_vertex(path,node):
         node.inQueue=True
         node.h=heuristic(node, path.start)
         node.key=calculateKey(node, path.start, path.k_m)
+        node.expanded=True
         heapq.heappush(path.queue, (node.key[0],node.key[1],node.x,node.y,node.z,node.index,node))
         
     elif node.g==node.rhs and node.inQueue:
@@ -216,6 +250,7 @@ def compute_shortest_path(path,graph, G,edges):
                 #path.queue.remove(path.queue[0])
                 heapq.heappop(path.queue)
                 current_node.inQueue=True
+                current_node.expanded=True
                 heapq.heappush(path.queue, (current_node.key[0],current_node.key[1],current_node.x,current_node.y,current_node.z,current_node.index,current_node))
         elif current_node.g>current_node.rhs:
             current_node.g=current_node.rhs
@@ -463,6 +498,7 @@ class PathPlanning:
         self.start_point=Point(tuple((lon_start,lat_start)))
         self.goal_point=Point(tuple((lon_dest,lat_dest)))
         self.cutoff_angle=20
+        self.conversions=Conversions(0,0)
 
 
         exp_const=00.5##0.005 ## we need to think about the value of that constant
@@ -511,6 +547,7 @@ class PathPlanning:
                        group=self.edge_gdf[p][key].stroke_group
                        z=self.edge_gdf[p][key].layer_alt
                        node=Node(key,x,y,z,i+new_nodes_counter,group)
+                       node.x_cartesian,node.y_cartesian=self.conversions.geodetic2cartesian(y,x)
                        my_group.update({i+new_nodes_counter:group})
                        self.graph.append(node)
                        tmp.append(group)
@@ -528,6 +565,7 @@ class PathPlanning:
                         group=self.edge_gdf[p][key].stroke_group
                         z=self.edge_gdf[p][key].layer_alt
                         node=Node(key,x,y,z,i+new_nodes_counter,group)
+                        node.x_cartesian,node.y_cartesian=self.conversions.geodetic2cartesian(y,x)
                         my_group.update({i+new_nodes_counter:group})
                         self.graph.append(node)
                         tmp.append(group)
@@ -545,6 +583,7 @@ class PathPlanning:
                     if not ii:
                         z=self.edge_gdf[key][ch].layer_alt
                         node=Node(key,x,y,z,i+new_nodes_counter,group)
+                        node.x_cartesian,node.y_cartesian=self.conversions.geodetic2cartesian(y,x)
                         my_group.update({i+new_nodes_counter:group})
                         
                         self.graph.append(node)
@@ -561,6 +600,7 @@ class PathPlanning:
                         new_nodes_counter=new_nodes_counter+1
                         z=self.edge_gdf[key][ch].layer_alt
                         node=Node(key,x,y,z,i+new_nodes_counter,group)
+                        node.x_cartesian,node.y_cartesian=self.conversions.geodetic2cartesian(y,x)
                         my_group.update({i+new_nodes_counter:group})
                         self.graph.append(node)
                         tmp.append(group)
@@ -575,6 +615,7 @@ class PathPlanning:
            if ii==0:
                 z=10 ########Nees to find what altitude that shoudl be 
                 node=Node(key,x,y,z,i+new_nodes_counter,-1)
+                node.x_cartesian,node.y_cartesian=self.conversions.geodetic2cartesian(y,x)
                 self.graph.append(node)
 
                 self.os_keys_dict[key]=i+new_nodes_counter
@@ -690,6 +731,9 @@ class PathPlanning:
                     
         self.route=route
         self.turns=turns 
+        self.edges_list=edges_list
+        self.next_turn_point=next_turn_point
+        self.groups=groups    
         
         return route,turns,edges_list,next_turn_point,groups
     
@@ -746,9 +790,12 @@ class PathPlanning:
                 path.start.g=float('inf')## not sure for that
                 path.start.rhs=float('inf')## not sure for that
                 path_found=compute_shortest_path(path,graph,G,edges)
+
+                
                 if not   path_found:
                     #path.start.g=float('inf')## not sure for that
                     path.goal.inQueue=True
+            
                     heapq.heappush(path.queue, (path.goal.h,0,path.goal.x,path.goal.y,path.goal.z,path.goal.index, path.goal))## TODO :that might add delay, check that
                     path_found=compute_shortest_path(path,graph,G,edges)
                     
@@ -756,6 +803,7 @@ class PathPlanning:
                 change=False    
                     
         if not path_found:
+            #return self.route_get,self.turns_get,self.next_node_index_get,self.turn_coords_get,self.group_numbers_get
             return None,None,None,None,None
             
             
@@ -867,6 +915,12 @@ class PathPlanning:
                 tmp=(route[i+1][0],route[i+1][1])
                 turn_coords.append(tmp)
         turn_coords.append((-1,-1))
+        
+        self.route_get=route
+        self.turns_get=turns
+        self.next_node_index_get=next_node_index
+        self.turn_coords_get=turn_coords
+        self.group_numbers_get=group_numbers
 
         return route,turns,next_node_index,turn_coords,group_numbers
         
@@ -889,7 +943,10 @@ class PathPlanning:
         edges_g=copy.deepcopy(self.edge_gdf)
         ## check for changes in the aircrafts subgraph if any
         cnt=0
+        expanded=False
         change_list=[]
+        
+
         for change in changes_list:
             k=change[0]
             kk=change[1]
@@ -899,11 +956,18 @@ class PathPlanning:
                     cnt=cnt+1
                     tmp=[]
                     ind=self.os_keys_dict_succ[k][kk]
+                    if self.graph[ind].expanded:
+                        expanded=True
                     tmp.append(self.graph[ind])
                     ind=self.os_keys_dict_pred[kk][k]
+                    if self.graph[ind].expanded:
+                        expanded=True
                     tmp.append(self.graph[ind])
                     change_list.append(tmp)
-        if cnt>0:
+                    
+
+        if cnt>0 and expanded:
+            
             ## find next node
             #d,index=flow_control_graph.get_nearest_node(lon,lat)  
             index=next_node_index
@@ -958,8 +1022,14 @@ class PathPlanning:
                         
                 self.route=route
                 self.turns=turns
+                self.edges_list=edges_list
+                self.next_turn_point=next_turn_point
+                self.groups=groups    
+            
+        elif cnt>0:
+            self.edge_gdf=copy.deepcopy(edges_g)
 
-        return route,turns,edges_list,next_turn_point,groups     
+        return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups     
       
     ##Function handling the replanning process, called when aircraft is spawned
     ##Retruns: route,turns,edges_list,next_turn_point,groups
