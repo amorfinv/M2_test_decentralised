@@ -75,6 +75,7 @@ def dijkstra_search(graph, start, goal, printPaths=False):
          
     for g in goal:
         costs[g]=100000# if no path is foucn cost=-1
+        print(f'Path not found between {start.key} and {g}.')
     if printPaths:
         for g in goals_duplicate:
             if not g in goal:
