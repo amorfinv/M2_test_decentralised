@@ -38,6 +38,39 @@ plan = PathPlanning(graph,gdf,16.3314843,48.2208402 ,16.3424207 ,48.2172288  )
 route,turns,edges,next_turn,groups=plan.plan()
 x_list=[]
 y_list=[]
+
+scenario_dict = dict()
+
+route = np.array(route)
+# Create dictionary
+scenario_dict['D101'] = dict()
+# Add start time
+scenario_dict['D101']['start_time'] = 0
+#Add lats
+scenario_dict['D101']['lats'] = route[:,1]
+#Add lons
+scenario_dict['D101']['lons'] = route[:,0]
+#Add turnbool
+scenario_dict['D101']['turnbool'] = turns
+#Add alts
+scenario_dict['D101']['alts'] = route[:,2]
+#Add active edges
+scenario_dict['D101']['edges'] = edges
+#Add stroke group
+scenario_dict['D101']['stroke_group'] = groups
+#Add next turn
+scenario_dict['D101']['next_turn'] = next_turn
+
+    
+
+
+print('All paths created!')
+    
+# Step 4: Create scenario file from dictionary
+bst.Dict2Scn(r'Demonstration_Scenario.scn', 
+              scenario_dict, 'fake_path')
+
+print('Scenario file created!')
     
 for r in route:
     x_list.append(r[0])
@@ -58,6 +91,40 @@ prev_index=33144601
 lat= 48.2214613
 lon=16.3317914
 route,turns,edges,next_turn,groups=plan.replan(change_list,graph,prev_index,next_index,lat,lon)
+
+
+scenario_dict = dict()
+
+route = np.array(route)
+# Create dictionary
+scenario_dict['D101'] = dict()
+# Add start time
+scenario_dict['D101']['start_time'] = 0
+#Add lats
+scenario_dict['D101']['lats'] = route[:,1]
+#Add lons
+scenario_dict['D101']['lons'] = route[:,0]
+#Add turnbool
+scenario_dict['D101']['turnbool'] = turns
+#Add alts
+scenario_dict['D101']['alts'] = route[:,2]
+#Add active edges
+scenario_dict['D101']['edges'] = edges
+#Add stroke group
+scenario_dict['D101']['stroke_group'] = groups
+#Add next turn
+scenario_dict['D101']['next_turn'] = next_turn
+
+
+
+print('All paths created!')
+    
+# Step 4: Create scenario file from dictionary
+bst.Dict2Scn(r'Demonstration_Scenario1.scn', 
+              scenario_dict, 'fake_path')
+
+print('Scenario file created!')
+
 x_list=[]
 y_list=[]
     
