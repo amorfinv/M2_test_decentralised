@@ -18,11 +18,6 @@ import sys
 
 import numpy as np
 
-from deap import algorithms
-from deap import base
-from deap import creator
-from deap import tools
-
 import osmnx as ox
 import networkx as nx
 from os import path
@@ -32,11 +27,6 @@ from whole_vienna.graph_builder import GraphBuilder
 import random
 import os
 import copy
-
-##Ray init code, user needs to apply#################
-# see: https://docs.ray.io/en/master/walkthrough.html
-import ray
-from ray_map import ray_deap_map
 
 class Node:
     def __init__(self,key,x,y):
@@ -343,40 +333,7 @@ orig_nodes_numbers = copy.copy(nodes)
 
 dest_nodes_numbers = copy.copy(nodes)
 
-#ray.shutdown()
-#ray.init(num_cpus=1) # will use default python map on current process, useful for debugging?
-#ray.init(num_cpus=1) # will batch out via ActorPool, slower vs above for trivial loads because overhead
-
-'''
-Eval is made arbitrarily more expensive to show difference. Tricky as DeltaPenalty skips evals sometimes.
-'time python onemax_ray.py' on my machine(8 processors) shows:
-num_cpus=1 (map): 25.5 sec(real)
-num_cpus=2 (ray): 17.5 sec(real)
-num_cpus=4 (ray): 13.0 sec(real)
-num_cpus=7 (ray): 13.3 sec(real)
-num_cpus=8 (ray): 13.6 sec(real)
-'''
-######################################################
-
-
-##Example code updated, user needs to apply##########
-def creator_setup():
-    creator.create("FitnessMin", base.Fitness, weights = (-1.0,))
-    creator.create("Individual", list , fitness = creator.FitnessMin)
-# make sure to call locally
-creator_setup()
-######################################################
-
-
-toolbox = base.Toolbox()
-
-# Attribute generator
-toolbox.register("attr_bool", random.randint, 0, 1)
-
-# Structure initializers
-toolbox.register("individual", tools.initRepeat, creator.Individual, 
-                 toolbox.attr_bool, len(GB.stroke_groups))
-toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+connected = []
 
 graph = {}
 
@@ -386,6 +343,9 @@ def evalOneMax(individual):
             
     # reoroder edge geodatframe
     G = GB.build_graph(individual)
+    
+    global connected
+    connected = nx.strongly_connected_components(G)
     
     # Process nodes to put em in the right form
     omsnx_keys_list=list(G._node.keys())
@@ -411,35 +371,38 @@ def evalOneMax(individual):
     # Get cost
     total_cost = dijkstra_search_multiple(graph, orig_nodes, dest_nodes)
     print('--------------------------------------')
-    print(individual)
+    #print(individual)
     print(f'Cost for this individual: {total_cost}')
     return total_cost
 
-
-toolbox.register("evaluate", evalOneMax)
-# Here we apply a feasible constraint: 
-# https://deap.readthedocs.io/en/master/tutorials/advanced/constraints.html
-toolbox.register("mate", tools.cxTwoPoint)
-toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
-toolbox.register("select", tools.selTournament, tournsize=3)
-
-##This is different!#################################
-#toolbox.register("map", ray_deap_map, creator_setup = creator_setup)
-######################################################
-
 ind1 = [0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1]
 
-group_flip = [251]
+group_flip = [251,818,627,951,1342]
 
 for group in group_flip:
     if ind1[group] == 0:
         ind1[group] = 1
     else:
         ind1[group] = 0
-        
-ox.shortest_path(GB.build_graph(ind1), 29646671, 199685)
 
 print(evalOneMax(ind1))
+if len(list(connected)) == 1:
+    print('connected!')
+    
+doorways = [29006482,29006426,98693581,60214747,61832943,123746798,335886722,1086176387,293186405,61836666,123752235,61836724,199645,199657,86002348,98806881,199676,2309659180,199579,199631,25280879,252278546,349088725,1200092857,344594624,61846438,199633,78185943,1353014351,1523533148,294134554,2293870432,303569846,78185101,199578,199555,78206150,93025635,199709,25280894,199711,378034,251064643,199629,378033,199630,1972053,378036,33236715,33236714,33236713,33236712,3247534287,13870920,33236698,199670,16053361,199714,33236691,394514,199674,199554,2003243064,1438440,835947132,1986058,377970,9697671,378478,6266012505,378982,33469810,9697669,400877,33472670,17314952,378476,14078721,378547,4032457024,4032457021,1174052565,33245899,1521667613,393530,24966921,25267588,17314597,26405242,17314578,1468355127,33469876,105820957,17314580,248525008,32452325,68227270,68227268,33199276,342051037,106013175,354936108,105997268,68175583,213287619,60631931,33471568,34166935,34166934,60631873,64976837,60957676,60631904,199556,60957673,60957701,66840257,272454513,164424667,289862055,34978472,33470206,60424767,1835762311,378973,199664,25280691,64980132,33344236,61922011,2600458442,61923120,60632128,61922604,199557,378965,25280695,600206222,259679451,60733473,99109994,199719,60730742,1843138875,2459063161,199663,24950468,69686609,24950515,1170707214]
+
+entries = []
+exits = []
+
+for door in doorways:
+    node = graph[door]
+    if len(node.children) > 1:
+        # It has more than one child, so it must be going inwards, so it's an entry
+        entries.append(door)
+    else:
+        # It probably only has one child, so it has stuff going in it, so it's an exit
+        exits.append(door)
+
 
 # if __name__ == "__main__":
 #     pop = toolbox.population(n=6)

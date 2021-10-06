@@ -58,7 +58,7 @@ def dijkstra_search(graph, start, goal, printPaths=False):
     while not frontier.empty():
         current = frontier.get()
 
-        if current.key in goal:
+        while current.key in goal:
             #pathFound=True
             costs[current.key]=cost_so_far[current.key]
             goal.remove(current.key)
