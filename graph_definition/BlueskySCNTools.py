@@ -9,14 +9,32 @@ import random
 import osmnx as ox
 import networkx as nx
 import os 
+import json
+
 nm = 1852
 ft = 1/0.3048
 
 class BlueskySCNTools():
     def __init__(self):
-        return
 
-    def Drone2Scn(self, drone_id, start_time, lats, lons, turnbool,alts = None, edges = None, group_num=None, next_turn = None, priority = 0):
+        # Open strokes.JSON as a dictionary
+        with open('strokes.json', 'r') as filename:
+            self.stroke_dict = json.load(filename)
+        
+        # Opening edges.JSON as a dictionary
+        with open('edges.json', 'r') as filename:
+            self.edge_dict = json.load(filename)
+
+        # Opening nodes.JSON as a dictionary
+        with open('nodes.json', 'r') as filename:
+            self.node_dict = json.load(filename)
+
+        # Opening layers.JSON as a dictionary
+        with open('layers.json', 'r') as filename:
+            self.layer_dict = json.load(filename)
+        
+    def Drone2Scn(self, drone_id, start_time, lats, lons, turnbool,alts = None, edges = None, group_num=None, next_turn = None, 
+                cruise_speed_constraint = True, priority = 0):
         """Converts arrays to Bluesky scenario files. The first
         and last waypoints will be taken as the origin and 
         destination of the drone.
@@ -50,10 +68,13 @@ class BlueskySCNTools():
             
         next_turn : int
             Gives when the next turn is going to be.
-            
+
+        cruise_speed_constraint : bool
+            Choose if non-turn waypoints get a speed constraint.
+
         priority : int
             Gives the priority of the drone.
-    
+
         """
 
         # Define the lines list to be returned
@@ -64,12 +85,30 @@ class BlueskySCNTools():
         cruise_speed = 30 # [kts]
         speed_dist = 10 # [m]
         turn_dist = 10 # [m]
-        speeds, turnbool = self.TurnSpeedBuffer(lats, lons, turnbool, alts, 
-                            turn_speed, cruise_speed, speed_dist, turn_dist)
+
+        if cruise_speed_constraint:
+            speeds, turnbool = self.TurnSpeedBuffer(lats, lons, turnbool, alts, 
+                                turn_speed, cruise_speed, speed_dist, turn_dist)
+        else:
+            speeds, turnbool = self.TurnSpeedBuffer(lats, lons, turnbool, alts, 
+                    turn_speed, -999, speed_dist, turn_dist)
 
         # prep edges and next_turn
         active_edge = ['' if edge == -1 else f'{edge[0]}-{edge[1]}' for edge in edges]
         active_turns = ['' if turn_node == -1 else f'{turn_node[0]} {turn_node[1]}' for turn_node in next_turn]
+
+        # find starting altitude
+        height_type = self.edge_dict[active_edge[0]]['layer_height']
+        flight_levels = self.layer_dict['info']['levels']
+
+        for flight_level in flight_levels:
+            level_type = self.layer_dict['config'][height_type]['levels'][f'{flight_level}'][0]
+            
+            # start at lowest altitude cruise layer
+            if level_type == 'C':
+
+                alt = f'{flight_level}'
+                break
 
         # First, define some strings we will often be using
         trn = f'ADDWPT {drone_id} FLYTURN\n'
@@ -87,7 +126,7 @@ class BlueskySCNTools():
         # First, we need to create the drone, Matrice 600 going 30 kts for now.
         # Let's calculate its required heading.
         qdr = self.qdrdist(lats[0], lons[0], lats[1], lons[1], 'qdr')
-        cre_text = f'CREM2 {drone_id} M600 {lats[0]} {lons[0]} {qdr} 25 {turn_speed} {priority}\n'
+        cre_text = f'CREM2 {drone_id} M600 {lats[0]} {lons[0]} {qdr} {alt} {turn_speed} {priority}\n'
         lines.append(start_time_txt + cre_text)
         
         # Then we need to for loop through all the lats
@@ -106,11 +145,19 @@ class BlueskySCNTools():
                     # We had a turn waypoint initially, change to flyover mode
                     lines.append(start_time_txt + fvr)
                     
-            # Add the waypoint
+            # Add the waypoint(TODO: fix this)
             if any(alts):
-                wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} {speeds[i]} {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
+                if cruise_speed_constraint:
+                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} {speeds[i]} {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
+                else:
+                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} ,, {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
+
             else:
-                wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,, {speeds[i]} {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
+                if cruise_speed_constraint:
+                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,, {speeds[i]} {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
+                else:
+                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,,, {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
+
             lines.append(start_time_txt + wpt_txt)
             
             # Set prev waypoint type value
@@ -124,7 +171,7 @@ class BlueskySCNTools():
 
         return lines
     
-    def Dict2Scn(self, filepath, dictionary, pathplanfilename):
+    def Dict2Scn(self, filepath, dictionary, pathplanfilename, cruise_speed_constraint = True):
         """Creates a scenario file from dictionary given that dictionary
         has the correct format.
     
@@ -152,6 +199,9 @@ class BlueskySCNTools():
         pathplanfilename: string
             This is the name of the dill containing path planning class used for flow
             control and replanning
+        
+        cruise_speed_constraint: bool
+            Choose if non-turn waypoints get a speed constraint
     
         """
         if filepath[-4:] != '.scn':
@@ -175,7 +225,7 @@ class BlueskySCNTools():
                     print('Key error. Make sure the dictionary is formatted correctly.')
                     return
                 
-                lines = self.Drone2Scn(drone_id, start_time, lats, lons, turnbool, alts, edges, group_num, next_turn)
+                lines = self.Drone2Scn(drone_id, start_time, lats, lons, turnbool, alts, edges, group_num, next_turn, cruise_speed_constraint)
                 f.write(''.join(lines))
                 
     def Graph2Traf(self, G, concurrent_ac, aircraft_vel, max_time, dt, min_dist, 
@@ -433,6 +483,7 @@ class BlueskySCNTools():
         num_wpts = len(lats)
         # Array that holds the speeds
         speeds = [cruisespeed] * num_wpts
+
         for i in range(num_wpts):
             if turnbool[i] == 0 or turnbool[i] == False:
                 # We're only interested in turn waypoints

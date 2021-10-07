@@ -37,6 +37,7 @@ aircraft_vel = 12 # [m/s]
 max_time = 600 # [s]
 dt = 10
 min_dist = 1000 # [m]
+cruise_speed_constraint = True
 
 orig_nodes = [30696015, 3155094143, 33345321,  25280685, 1119870220, 33302019,
               33144416, 378696, 33143911, 264055537, 33144706, 33144712, 
@@ -78,6 +79,8 @@ for flight in generated_traffic:
         scenario_dict[flight[0]]['turnbool'] = turns
         #Add alts
         scenario_dict[flight[0]]['alts'] = route[:,2]
+        # scenario_dict[flight[0]]['alts'] = []
+
         #Add active edges
         scenario_dict[flight[0]]['edges'] = edges
         #Add stroke group
@@ -92,7 +95,7 @@ print('All paths created!')
     
 # Step 4: Create scenario file from dictionary
 bst.Dict2Scn(r'Test_Scenario.scn', 
-              scenario_dict, path_plan_filename)
+              scenario_dict, path_plan_filename, cruise_speed_constraint)
 
 print('Scenario file created!')
 
