@@ -34,7 +34,7 @@ class BlueskySCNTools():
             self.layer_dict = json.load(filename)
         
     def Drone2Scn(self, drone_id, start_time, lats, lons, turnbool,alts = None, edges = None, group_num=None, next_turn = None, 
-                cruise_speed_constraint = True, priority = 0):
+                cruise_speed_constraint = True, start_speed = None, priority = 0):
         """Converts arrays to Bluesky scenario files. The first
         and last waypoints will be taken as the origin and 
         destination of the drone.
@@ -72,6 +72,9 @@ class BlueskySCNTools():
         cruise_speed_constraint : bool
             Choose if non-turn waypoints get a speed constraint.
 
+        start_speed: float
+            Set start speed for drone. If nothing is set, use the turn speed
+
         priority : int
             Gives the priority of the drone.
 
@@ -91,8 +94,7 @@ class BlueskySCNTools():
                                 turn_speed, cruise_speed, speed_dist, turn_dist)
         else:
             speeds, turnbool = self.TurnSpeedBuffer(lats, lons, turnbool, alts, 
-                    turn_speed, -999, speed_dist, turn_dist)
-
+                    turn_speed, '', speed_dist, turn_dist)
         # prep edges and next_turn
         active_edge = ['' if edge == -1 else f'{edge[0]}-{edge[1]}' for edge in edges]
         active_turns = ['' if turn_node == -1 else f'{turn_node[0]} {turn_node[1]}' for turn_node in next_turn]
@@ -125,8 +127,12 @@ class BlueskySCNTools():
         # Everyone starts at 25ft above ground
         # First, we need to create the drone, Matrice 600 going 30 kts for now.
         # Let's calculate its required heading.
+        if not start_speed:
+            start_speed = turn_speed
+
+        
         qdr = self.qdrdist(lats[0], lons[0], lats[1], lons[1], 'qdr')
-        cre_text = f'CREM2 {drone_id} M600 {lats[0]} {lons[0]} {qdr} {alt} {turn_speed} {priority}\n'
+        cre_text = f'CREM2 {drone_id} M600 {lats[0]} {lons[0]} {qdr} {alt} {start_speed} {priority}\n'
         lines.append(start_time_txt + cre_text)
         
         # Then we need to for loop through all the lats
@@ -146,15 +152,16 @@ class BlueskySCNTools():
                     lines.append(start_time_txt + fvr)
                     
             # Add the waypoint(TODO: fix this)
+            speed = speeds[i]
             if any(alts):
-                if cruise_speed_constraint:
-                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} {speeds[i]} {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
+                if speed:
+                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} {speed} {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
                 else:
                     wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} ,, {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
 
             else:
-                if cruise_speed_constraint:
-                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,, {speeds[i]} {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
+                if speed:
+                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,, {speed} {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
                 else:
                     wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,,, {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
 
@@ -171,7 +178,7 @@ class BlueskySCNTools():
 
         return lines
     
-    def Dict2Scn(self, filepath, dictionary, pathplanfilename, cruise_speed_constraint = True):
+    def Dict2Scn(self, filepath, dictionary, pathplanfilename, cruise_speed_constraint = True, start_speed = None):
         """Creates a scenario file from dictionary given that dictionary
         has the correct format.
     
@@ -202,6 +209,9 @@ class BlueskySCNTools():
         
         cruise_speed_constraint: bool
             Choose if non-turn waypoints get a speed constraint
+
+        start_speed: float
+            Set start speed for drone. If nothing is set, use the turn speed
     
         """
         if filepath[-4:] != '.scn':
@@ -225,7 +235,8 @@ class BlueskySCNTools():
                     print('Key error. Make sure the dictionary is formatted correctly.')
                     return
                 
-                lines = self.Drone2Scn(drone_id, start_time, lats, lons, turnbool, alts, edges, group_num, next_turn, cruise_speed_constraint)
+                lines = self.Drone2Scn(drone_id, start_time, lats, lons, turnbool, alts, edges, group_num, next_turn, 
+                                      cruise_speed_constraint, start_speed)
                 f.write(''.join(lines))
                 
     def Graph2Traf(self, G, concurrent_ac, aircraft_vel, max_time, dt, min_dist, 
@@ -372,6 +383,61 @@ class BlueskySCNTools():
             timestep += 1
             start_time += dt
             
+        return trafgen
+
+    def Paths2Traf(self, G, routes):
+        """Creates random traffic using the nodes of graph G as origins and
+        destinations.
+    
+        Parameters
+        ----------
+        G : graphml
+            OSMNX graph, can be created using create_graph.py
+        
+        routes : list
+            List of lists. Each list contains a certain path [origin_node, dest_node, speed, start_time]
+            
+        Output
+        ------
+        (ID, start_time, origin, destination, path_length)
+        
+        ID : str
+            The flight ID.
+            
+        start_time : int [s]
+            The simulation time at which the flight should start.
+            
+        origin : (lat,lon) [deg]
+            The origin of the flight.
+            
+        destination : (lat,lon) [deg]
+            The destination of the flight
+            
+        length : float [m]
+            The approximate length of the path.
+    
+        """
+        nodes = []
+
+        for node in G.nodes:
+            nodes.append((G.nodes[node]['y'], G.nodes[node]['x'], node))
+            
+        # Some parameters
+        ac_no = 1
+        trafgen = []        
+  
+        for route in routes:
+
+            origin_node = route[0]
+            dest_node = route[1]
+
+            origin = (G.nodes[origin_node]['y'], G.nodes[origin_node]['x'], route[0])
+            destination = (G.nodes[dest_node]['y'], G.nodes[dest_node]['x'], route[0])
+
+
+            trafgen.append(('D'+str(ac_no), route[3], origin, destination))
+            ac_no += 1
+        
         return trafgen
     
     def qdrdist(self, latd1, lond1, latd2, lond2, mode):
