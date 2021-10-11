@@ -32,10 +32,11 @@ print('Graph loaded!')
 graph=street_graph(G,edges) 
 
 # generate some traffic
-path_1 = [251523470, 33144695, 30, 0]
-path_2 = [25280685,  33144821, 30, 0]
+# path_1 = [251523470, 33144695, 30, 0]
+# path_2 = [25280685,  33144821, 30, 0]
+path_3 = [33345286, 1850015446, 30, 0]
 
-paths = [path_1, path_2]
+paths = [path_3]
 
 generated_traffic = bst.Paths2Traf(G, paths)
 cruise_speed_constraint = False
