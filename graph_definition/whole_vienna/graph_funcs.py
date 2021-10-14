@@ -1782,7 +1782,7 @@ def new_groups_90(nodes, edges, angle_cut_off = 45):
     node_ids = list(nodes.index.values)
     edge_uv = list(edges.index.values)
 
-    nodes_to_check = []
+    nodes_to_split = []
 
     for osmid, node_deg in G_check.degree(node_ids):
         if node_deg == 2:
@@ -1792,21 +1792,34 @@ def new_groups_90(nodes, edges, angle_cut_off = 45):
             edge_1 = edges_in_node[0]
             edge_2 = edges_in_node[1]
 
-            # find interior angle between both edges
-            int_angle_dict = ast.literal_eval(edges.loc[edge_1, 'edge_interior_angle'])
+            # find interior angle between both edges (TODO: FIX how it reads rather than try/except)
+            try:
+                int_angle_dict = ast.literal_eval(edges.loc[edge_1, 'edge_interior_angle'])
+            except ValueError:
+                int_angle_dict = edges.loc[edge_1, 'edge_interior_angle']
+
             int_angle = int_angle_dict[edge_2]
 
             if  90 - angle_cut_off < int_angle < 90 + angle_cut_off :
-                nodes_to_check.append(osmid)
+                nodes_to_split.append(osmid)
 
-    for node_split in nodes_to_check:
+    for node_split in nodes_to_split:
+        
+        # find group to split dynamically in case it has changed
+        edges_with_node = [item for item in edge_uv if node_split in item]
+        group_to_split_0 = edges_gdf_new.loc[edges_with_node[0], 'stroke_group']
+        group_to_split_1 = edges_gdf_new.loc[edges_with_node[1], 'stroke_group']
 
-        new_group_gdf = split_group_at_node(node_split, edges_gdf_new)
-        new_group_edges = new_group_gdf.index.values
+        # Only split if the group number is the same
+        if group_to_split_0 == group_to_split_1:
 
-        # drop new_group dataframe new_group_gdf to edges_gdf
-        edges_gdf_new.drop(index=new_group_edges, inplace=True)
-        edges_gdf_new = edges_gdf_new.append(new_group_gdf)
+            # split group
+            new_group_gdf = split_group_at_node(edges_gdf_new, node_split, group_to_split_0)
+            new_group_edges = new_group_gdf.index.values
+
+            # drop new_group dataframe new_group_gdf to edges_gdf
+            edges_gdf_new.drop(index=new_group_edges, inplace=True)
+            edges_gdf_new = edges_gdf_new.append(new_group_gdf)
 
     return nodes_gdf_new, edges_gdf_new
 
