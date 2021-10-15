@@ -1,10 +1,9 @@
 # %%
-from math import cos
-from re import T
 import osmnx as ox
 import geopandas as gpd
 from os import path
 import numpy as np
+from time import time
 # use osmnx environment here
 
 '''
@@ -22,10 +21,27 @@ def main():
     # convert to gdf
     nodes, edges = ox.graph_to_gdfs(G)
 
-    # calculate the cost
-    cost = height_cost_estimate(nodes, edges)
+    # initiaize cost estimate
+    init_genome, group_dict, node_connectivity, stroke_lenghts = init_height_cost_estimate(nodes, edges)
 
-def height_cost_estimate(nodes_gdf, edges_gdf):
+    # calculate cost
+    cost = cost_estimate(init_genome, group_dict, node_connectivity, stroke_lenghts)
+
+def init_height_cost_estimate(nodes_gdf, edges_gdf):
+    """Initialize parameters for the genetic algorithm.
+
+    Args:
+        nodes_gdf (geopandas.GeoDataFrame): gdf of nodes
+        edges_gdf (geopandas.GeoDataFrame): gdf of edges with stroke group and their length
+
+    Returns:
+        genome (numpy.array): numpy array containing genome. 0 is "height 0" and 1 is "height 1". 
+                              The index of the array is group number,
+        group_dict (dict): Contains the edge as the key and stroke group as the value,
+        node_connectivity (dict): Contains the node as the key and the edges connecting them as the value
+        stroke_lenghts (numpy.array): numpy array contatining stroke lenghts.
+                                      The index of the array is the group number
+    """
 
     # stroke_group array
     stroke_group_array = np.sort(np.unique(edges_gdf.loc[:,'stroke_group']).astype(np.int16))
@@ -70,12 +86,21 @@ def height_cost_estimate(nodes_gdf, edges_gdf):
     # get cost with current info
     group_dict = {index:np.int16(row['stroke_group']) for index, row in edges_gdf.iterrows()}
     
-    cost = cost_estimate(genome, group_dict, node_connectivity, stroke_lenghts)
-
-    return cost
+    return genome, group_dict, node_connectivity, stroke_lenghts
 
 def cost_estimate(genome, group_dict, node_connectivity, stroke_lenghts):
+    """Function to calculate the cost of the layer arrangement.
 
+    Args:
+        genome (numpy.array): numpy array containing genome. 0 is "height 0" and 1 is "height 1". 
+                              The index of the array is group number,
+        group_dict (dict): Contains the edge as the key and stroke group as the value,
+        node_connectivity (dict): Contains the node as the key and the edges connecting them as the value
+        stroke_lenghts (numpy.array): numpy array contatining stroke lenghts.
+                                      The index of the array is the group number
+    Returns:
+        [float]: Returns the cost of the layer arrangement
+    """
     # cost of bad degree-2 node
     cost_deg_2 = 0.5
 
@@ -95,31 +120,9 @@ def cost_estimate(genome, group_dict, node_connectivity, stroke_lenghts):
     # initialize cost to zero
     cost = 0
 
-    # loop through each node (TODO: after debug)
-    i = 0
+    # loop through each node 
     for osmid, edges_with_node in node_connectivity.items():
-    # ###### DEBUG COST
-    #     break
-    
-    # # degree-2 nodes to test
-    # nodes_deg_2_no_cost = [47998130]
-    # nodes_deg_2_yes_cost = [33182954, 33182938, 33182946]
 
-    # # degree 3 nodes to test
-    # nodes_deg_3_no_cost = [29666813, 33344372, 33344367, 60429937, 1362648435, 60429906] 
-    # nodes_deg_3_yes_cost = [33344371, 33344366, 151008013, 393912, 122530095]
-    # nodes_deg_3_mix = [29666813, 33344371, 33344367, 33344366, 1362648435, 151008013]
-
-    # # degree 4 nodes to test
-    # nodes_deg_4_no_cost = [33182959, 48210036, 47997672, 47997734, 33471567] 
-    # nodes_deg_4_yes_cost = [33471565, 17312853]
-    # nodes_deg_4_no_cost_odd = [394906]
-    # # check these nodes :394906, 199728, 68202474, 281224229
-
-    # # debug stuff
-    # i = 0
-    # for osmid in nodes_deg_4_no_cost_odd:
-    # #### DEBUG COST
         # start looping through dict here and calculate cost at each node
         edges_with_node = node_connectivity[osmid]
 
@@ -310,8 +313,7 @@ def cost_estimate(genome, group_dict, node_connectivity, stroke_lenghts):
 
         else:
             print(f'There are no costs for a degree-{node_degree} node')
-    
-    print(cost)
+
     return cost
 
 
