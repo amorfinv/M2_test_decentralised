@@ -33,7 +33,7 @@ graph=street_graph(G,edges)
 
 fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
 
-plan = PathPlanning(graph,gdf,16.328936, 48.221698 ,16.3392305  ,48.2176641 )
+plan = PathPlanning(graph,gdf,16.328936,48.221698 ,16.3436724,48.226886  )
 #plan = PathPlanning(graph,gdf,16.343225, 48.2182985 ,16.3335919 ,48.2293961 )#d1
 #plan = PathPlanning(graph,gdf,16.3498014,48.2250679 ,16.3378102  ,48.2187331 )#d2
 #plan = PathPlanning(graph,gdf,16.3314843 ,48.2208402 ,16.3392305  ,48.2176641)#d3
@@ -51,9 +51,9 @@ for r in route:
     
 ax.scatter(x_list,y_list, color='b')
 
-id1=213287623
-id2=1629378075
-value=1.0
+id1=33345291 
+id2=251523470
+value=5.0
 
 
 ax.scatter(G._node[id1]['x'],G._node[id1]['y'], color='r')
@@ -64,11 +64,11 @@ graph.edges_graph[id1][id2].speed=value
 change_list=[[id1,id2,value]]
 
 
-next_index=33144655
+next_index=33144621
 prev_index=33144616
 #ax.scatter(G._node[next_index]['x'],G._node[next_index]['y'], color='r')
-lat= 48.2219586834612
-lon=16.329071164462935
+lat= 48.2219805
+lon=16.3281112 
 
 
 # =============================================================================
