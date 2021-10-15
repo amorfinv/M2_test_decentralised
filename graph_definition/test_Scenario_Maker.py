@@ -35,6 +35,9 @@ graph=street_graph(G,edges)
 # path_1 = [251523470, 33144695, 30, 0]
 # path_2 = [25280685,  33144821, 30, 0]
 path_3 = [33345286, 1850015446, 30, 0]
+#path_3 = [33345286, 33345289, 30, 0]
+path_3 = [33144706, 1850015446, 30, 0]
+#path_3 = [394989, 1850015446, 30, 0]
 
 paths = [path_3]
 
@@ -44,16 +47,28 @@ cruise_speed_constraint = False
 # Step 1: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
 flight_plans_dict={}
+fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
+
 for flight in generated_traffic:
     # First get the route and turns
     origin = flight[2]
     destination = flight[3]
 
-    plan = PathPlanning(graph,gdf, origin[1], origin[0], destination[1], destination[0])
+    #plan = PathPlanning(graph,gdf, origin[1], origin[0], destination[1], destination[0])
+
+    plan = PathPlanning(graph,gdf, 16.3311818, 48.2202168,16.3364564, 48.228031)
     route=[]
     turns=[]
     route,turns,edges,next_turn,groups=plan.plan()
-
+    
+    x_list=[]
+    y_list=[]
+    for r in route:
+        x_list.append(r[0])
+        y_list.append(r[1])
+    
+    ax.scatter(x_list,y_list, color='b')
+    ax.scatter(G._node[33345289]['x'],G._node[33345289]['y'],color="r")
     flight_plans_dict[flight[0]]=plan
     if route!=[]:
         route = np.array(route)
