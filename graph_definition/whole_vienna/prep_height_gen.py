@@ -39,6 +39,9 @@ def main():
     # create graph and save edited
     G = ox.graph_from_gdfs(nodes, edges)
 
+    # add length as attribute
+    ox.distance.add_edge_lengths(G)
+
     # save as graphml
     ox.save_graphml(G, filepath=path.join(gis_data_path, 'streets','prep_height_allocation.graphml'))
     
