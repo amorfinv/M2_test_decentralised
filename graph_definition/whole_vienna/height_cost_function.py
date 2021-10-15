@@ -188,10 +188,10 @@ def cost_estimate(genome, group_dict, node_connectivity):
             pass
         elif node_degree == 5:
             i += 1
-            print('degree 5 here')
+            print(f'Warning: Degree-5 node {osmid}')
         elif node_degree == 6:
             i += 1
-            print('degree 6 here')
+            print(f'Warning: Degree-6 node {osmid}')
 
         else:
             print(f'There are no costs for a degree-{node_degree} node')
