@@ -28,7 +28,7 @@ def main():
     # add edge interior angles
     edges['edge_interior_angle'] = graph_funcs.add_edge_interior_angles(edges)
 
-    # new group where there is a 90 degree turn +-45
+    # new group where there is a 90 degree turn +-45 (TODO: perhaps do not do this?)
     nodes, edges = graph_funcs.new_groups_90(nodes, edges, angle_cut_off = 45)
 
     # allocate group heights based on cardinal directions to initialize gen algorithm

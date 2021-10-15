@@ -662,9 +662,9 @@ def allocate_group_height(nodes_gdf, edges_gdf, rotation_val=0):
         
         # allocate layer depending on bounds
         if low_bound_1 < group_bearing < high_bound_1 or low_bound_2 < group_bearing < high_bound_2:
-            layer_loc = 'height 1'
+            layer_loc = 'height 0'
         else:
-            layer_loc = 'height 2'
+            layer_loc = 'height 1'
 
         group_heights[group_num] = layer_loc
     
