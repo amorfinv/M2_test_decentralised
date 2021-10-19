@@ -16,23 +16,175 @@ def main():
     gis_data_path = 'gis'
 
     # Load MultiDigraph from create_graph.py
-    G = ox.load_graphml(filepath=path.join(gis_data_path, 'streets', 'prep_height_allocation.graphml'))
+    G = ox.load_graphml(filepath=path.join(gis_data_path, 'streets', 'prep_height_allocation_2.graphml'))
 
     # convert to gdf
     nodes, edges = ox.graph_to_gdfs(G)
 
     # initiaize cost estimate
-    init_genome, group_dict, node_connectivity, stroke_lenghts = init_height_cost_estimate(nodes, edges)
+    nodes_to_ignore = [98693581,
+                        123746798,
+                        1086176387,
+                        61836666,
+                        199645,
+                        199579,
+                        199631,
+                        25280879,
+                        252278546,
+                        1200092857,
+                        344594624,
+                        61846438,
+                        199633,
+                        1353014351,
+                        294134554,
+                        2293870432,
+                        303569846,
+                        78185101,
+                        78206150,
+                        199709,
+                        25280894,
+                        199711,
+                        251064643,
+                        199629,
+                        378033,
+                        1972053,
+                        378036,
+                        33236714,
+                        33236713,
+                        33236712,
+                        13870920,
+                        199670,
+                        16053361,
+                        33236691,
+                        199674,
+                        2003243064,
+                        377970,
+                        9697671,
+                        9697669,
+                        17314952,
+                        14078721,
+                        378547,
+                        4032457024,
+                        4032457021,
+                        1174052565,
+                        33245899,
+                        24966921,
+                        25267588,
+                        26405242,
+                        105820957,
+                        17314580,
+                        248525008,
+                        68227270,
+                        105997268,
+                        60631931,
+                        34166934,
+                        60957676,
+                        66840257,
+                        272454513,
+                        164424667,
+                        60424767,
+                        1835762311,
+                        25280691,
+                        64980132,
+                        61922011,
+                        2600458442,
+                        60632128,
+                        61922604,
+                        378965,
+                        25280695,
+                        60733473,
+                        199719,
+                        1843138875,
+                        2459063161,
+                        69686609,
+                        29006482,
+                        29006426,
+                        60214747,
+                        61832943,
+                        335886722,
+                        293186405,
+                        123752235,
+                        61836724,
+                        199657,
+                        86002348,
+                        98806881,
+                        199676,
+                        2309659180,
+                        349088725,
+                        78185943,
+                        1523533148,
+                        199578,
+                        199555,
+                        93025635,
+                        378034,
+                        199630,
+                        33236715,
+                        3247534287,
+                        33236698,
+                        199714,
+                        394514,
+                        199554,
+                        1438440,
+                        835947132,
+                        1986058,
+                        378478,
+                        6266012505,
+                        378982,
+                        33469810,
+                        400877,
+                        33472670,
+                        378476,
+                        1521667613,
+                        393530,
+                        17314597,
+                        17314578,
+                        1468355127,
+                        33469876,
+                        32452325,
+                        68227268,
+                        33199276,
+                        342051037,
+                        106013175,
+                        354936108,
+                        68175583,
+                        213287619,
+                        33471568,
+                        34166935,
+                        60631873,
+                        64976837,
+                        60631904,
+                        199556,
+                        60957673,
+                        60957701,
+                        289862055,
+                        34978472,
+                        33470206,
+                        378973,
+                        199664,
+                        33344236,
+                        61923120,
+                        199557,
+                        600206222,
+                        259679451,
+                        99109994,
+                        60730742,
+                        199663,
+                        24950468,
+                        24950515,
+                        1170707214,
+                        199553]
+    init_genome, group_dict, node_connectivity, stroke_lenghts = init_height_cost_estimate(nodes, edges, nodes_to_ignore)
 
     # calculate cost
     cost = cost_estimate(init_genome, group_dict, node_connectivity, stroke_lenghts)
 
-def init_height_cost_estimate(nodes_gdf, edges_gdf):
+def init_height_cost_estimate(nodes_gdf, edges_gdf, nodes_to_ignore=[]):
     """Initialize parameters for the genetic algorithm.
 
     Args:
         nodes_gdf (geopandas.GeoDataFrame): gdf of nodes
         edges_gdf (geopandas.GeoDataFrame): gdf of edges with stroke group and their length
+        nodes_to_ignore (list): List of nodes to ignore in the cost function.
 
     Returns:
         genome (numpy.array): numpy array containing genome. 0 is "height 0" and 1 is "height 1". 
@@ -79,9 +231,10 @@ def init_height_cost_estimate(nodes_gdf, edges_gdf):
     for osmid in node_osmids:
         
         # edges with node
-        edges_with_node = [item for item in edge_uv if osmid in item]
+        if osmid not in nodes_to_ignore:
+            edges_with_node = [item for item in edge_uv if osmid in item]
 
-        node_connectivity[osmid] = edges_with_node
+            node_connectivity[osmid] = edges_with_node
 
     # get cost with current info
     group_dict = {index:np.int16(row['stroke_group']) for index, row in edges_gdf.iterrows()}
@@ -142,7 +295,7 @@ def cost_estimate(genome, group_dict, node_connectivity, stroke_lenghts):
             
             # first check if there is one group
             if group_sets == 1:
-                print(f'Warning: Degree-2 node {osmid} has one group')
+                # print(f'Warning: Degree-2 node {osmid} has one group')
                 continue
                 
             # If there are two different groups then we don't hurt the genome so much 
