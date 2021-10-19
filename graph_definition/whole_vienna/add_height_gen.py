@@ -34,7 +34,7 @@ def main():
 
 
 def build_graph(nodes, edges, height_allocations):
-    """graph builder
+    """graph builder from height allocation list
 
     Args:
         dir_list (list): list with booleans. each value represents group
@@ -47,19 +47,17 @@ def build_graph(nodes, edges, height_allocations):
     stroke_group_array = np.sort(np.unique(edges.loc[:,'stroke_group']).astype(np.int16))
 
     # edges uv
-    edge_uv = list(edges.index.values)
+    edges_uv = list(edges.index.values)
 
     height_list = []
 
-    for edge_id in edge_uv:
+    for edge_id in edges_uv:
         
         stroke_group = edges_gdf.loc[edge_id,'stroke_group']
 
         height_allocation = height_allocations[int(stroke_group)]
 
         height_list.append(height_allocation)
-        
-        # edges_gdf[edge_id]['height_allocation'] = height_allocation
 
     edges_gdf['height_allocation'] = height_list
     
