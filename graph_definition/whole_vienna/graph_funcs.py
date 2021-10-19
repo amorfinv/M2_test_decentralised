@@ -2401,6 +2401,264 @@ def get_phantom_intersections(nodes, edges):
 
     return nodes_gdf, edges_gdf
 
+def split_edges_at_largest_angle(nodes, edges, edge_list, new_group=False):
+    """Function takes a list of edges. Looks at it's geometry and splits
+    it at the largest angle between segments. It also creates a new group
+    if set to True
+
+    Args:
+        nodes (gdf): gdf of nodes
+        edges (gdf): gdf of edges
+        edge_list (list): list of edge ids (u,v,0) to be split at largest angle
+        new_group (bool): If true then there will be a new group at the node
+
+    Returns:
+        (node,edges): Returns a gdf of nodes and edges
+    """
+
+    # copy nodes and edges
+    nodes_gdf = nodes.copy()
+    edges_gdf = edges.copy()
+    
+    # loop through edge list
+    for edge_to_split in edge_list:
+
+        # get linestring geometry of edge
+        line_geom = edges.loc[edge_to_split,'geometry']
+
+        points_to_split = MultiPoint([Point(x,y) for x,y in line_geom.coords[1:]])
+        splitted = ops.split(line_geom,points_to_split)
+        
+        int_angles = []
+        for idx in range(len(splitted)-1):
+            # get first line segment
+            line_segment_1 = splitted[idx]
+            line_segment_1 = list(line_segment_1.coords)
+
+            # get second line segement
+            line_segment_2 = splitted[idx+1]
+            line_segment_2 = list(line_segment_2.coords)
+
+            # get interior angles of line string
+            int_angles.append(180 - angleBetweenTwoLines(line_segment_1, line_segment_2))
+
+
+        # easy way. add new node where highest angle is
+        max_value = max(int_angles)
+        max_index = int_angles.index(max_value)
+
+        # now get the index of the point in original linestring
+        idx = max_index + 1
+        new_node_osmid = get_new_node_osmid(nodes_gdf)
+
+        # split edge
+        node_new, row_new1, row_new2 = split_edge(edge_to_split, new_node_osmid, nodes_gdf, edges_gdf, split_loc=idx, split_type='idx')
+
+        # append nodes and edges and remove split edge
+        nodes_gdf = nodes_gdf.append(node_new)
+        edges_gdf = edges_gdf.append([row_new1, row_new2])
+        edges_gdf.drop(index=edge_to_split, inplace=True)
+
+        # check if you should split the stroke_group
+        if new_group:
+
+            # get stroke_group of edge
+            group_to_split = edges_gdf.loc[row_new1.index.values[0], 'stroke_group']
+
+            # split group
+            new_group_gdf = split_group_at_node(edges_gdf, new_node_osmid, group_to_split)
+            new_group_edges = new_group_gdf.index.values
+
+            # drop new_group dataframe new_group_gdf to edges_gdf
+            edges_gdf.drop(index=new_group_edges, inplace=True)
+            edges_gdf = edges_gdf.append(new_group_gdf)
+
+
+    return nodes_gdf, edges_gdf
+
+def split_edges_at_curve(nodes, edges, edge_list, new_group=False):
+    """Function takes a list of edges. Looks at it's geometry and splits
+    it at the curve location. The function extends the first and last line
+    segments until they intersect and then finds the closest point to the line
+    from that intersection.
+
+    See Andrei's text from October 19 for details.
+
+    It also splits the stroke group at that node if new_group is True
+
+    Args:
+        nodes (gdf): gdf of nodes
+        edges (gdf): gdf of edges
+        edge_list (list): list of edge ids (u,v,0) to be split at largest angle 
+        new_group (bool): If true then there will be a new group at the node
+
+    Returns:
+        (node,edges): Returns a gdf of nodes and edges
+    """
+
+    # copy nodes and edges
+    nodes_gdf = nodes.copy()
+    edges_gdf = edges.copy()
+    
+    # loop through edge list
+    for edge_to_split in edge_list:
+
+        # get linestring geometry of edge
+        line_geom = edges.loc[edge_to_split,'geometry']
+
+        points_to_split = MultiPoint([Point(x,y) for x,y in line_geom.coords[1:]])
+        splitted = ops.split(line_geom,points_to_split)
+
+        # extend start and end lines of linestring
+        scale_factor = 2
+        line_1 = affinity.scale(splitted[0], xfact=scale_factor, yfact=scale_factor, zfact=scale_factor, origin=splitted[0].coords[0])
+        line_2 = affinity.scale(splitted[-1], xfact=scale_factor, yfact=scale_factor, zfact=scale_factor, origin=splitted[-1].coords[1])
+
+        while not line_1.intersects(line_2):
+            scale_factor *= 2
+            line_1 = affinity.scale(splitted[0], xfact=scale_factor, yfact=scale_factor, zfact=scale_factor, origin=splitted[0].coords[0])
+            line_2 = affinity.scale(splitted[-1], xfact=scale_factor, yfact=scale_factor, zfact=scale_factor, origin=splitted[-1].coords[1])
+
+            if scale_factor > 600:
+                print(f'Failed to find an intersection point at edge {edge_to_split}')
+                break
+        
+        # get intersection of the two extended linestrings
+        intersection_point = line_1.intersection(line_2)
+
+        # now find closest point
+        new_point = ops.nearest_points(line_geom, intersection_point)[0]
+        new_node_osmid = get_new_node_osmid(nodes_gdf)
+
+        # split edge
+        node_new, row_new1, row_new2 = split_edge(edge_to_split, new_node_osmid, nodes_gdf, edges_gdf, split_loc=new_point, split_type='new')
+
+        # append nodes and edges and remove split edge
+        nodes_gdf = nodes_gdf.append(node_new)
+        edges_gdf = edges_gdf.append([row_new1, row_new2])
+        edges_gdf.drop(index=edge_to_split, inplace=True)
+
+        # check if you should split the stroke_group
+        if new_group:
+
+            # get stroke_group of new edge
+            group_to_split = edges_gdf.loc[row_new1.index.values[0], 'stroke_group']
+
+            # split group
+            new_group_gdf = split_group_at_node(edges_gdf, new_node_osmid, group_to_split)
+            new_group_edges = new_group_gdf.index.values
+
+            # drop new_group dataframe new_group_gdf to edges_gdf
+            edges_gdf.drop(index=new_group_edges, inplace=True)
+            edges_gdf = edges_gdf.append(new_group_gdf)
+
+    return nodes_gdf, edges_gdf
+
+def split_edges_at_idx(nodes, edges, edge_dict, new_group=False):
+    """Function takes a dictionary with edges as the key
+    and the index where to split linestring as the value
+
+    It also splits the stroke group at that node if new_group is True
+
+    Args:
+        nodes (gdf): gdf of nodes
+        edges (gdf): gdf of edges
+        edge_dict (dict): edge ids (u,v,0) in key and index of split location
+        new_group (bool): If true then there will be a new group at the node
+
+    Returns:
+        (node,edges): Returns a gdf of nodes and edges
+    """
+
+    # copy nodes and edges
+    nodes_gdf = nodes.copy()
+    edges_gdf = edges.copy()
+    
+    # loop through edge dict
+    for edge_to_split, idx in edge_dict.items():
+
+        # get new osmid
+        new_node_osmid = get_new_node_osmid(nodes_gdf)
+
+        # split edge
+        node_new, row_new1, row_new2 = split_edge(edge_to_split, new_node_osmid, nodes_gdf, edges_gdf, split_loc=idx, split_type='idx')
+
+        # append nodes and edges and remove split edge
+        nodes_gdf = nodes_gdf.append(node_new)
+        edges_gdf = edges_gdf.append([row_new1, row_new2])
+        edges_gdf.drop(index=edge_to_split, inplace=True)
+
+        # check if you should split the stroke_group
+        if new_group:
+
+            # get stroke_group of new edge
+            group_to_split = edges_gdf.loc[row_new1.index.values[0], 'stroke_group']
+
+            # split group
+            new_group_gdf = split_group_at_node(edges_gdf, new_node_osmid, group_to_split)
+            new_group_edges = new_group_gdf.index.values
+
+            # drop new_group dataframe new_group_gdf to edges_gdf
+            edges_gdf.drop(index=new_group_edges, inplace=True)
+            edges_gdf = edges_gdf.append(new_group_gdf)
+
+    return nodes_gdf, edges_gdf
+
+def split_edges_at_centroid(nodes, edges, edge_list, new_group=False):
+    """Function takes a list of edges. Looks at it's geometry and splits
+    it at the centroid.
+
+
+    It also splits the stroke group at that node if new_group is True
+
+    Args:
+        nodes (gdf): gdf of nodes
+        edges (gdf): gdf of edges
+        edge_list (list): list of edge ids (u,v,0) to be split at centroid
+        new_group (bool): If true then there will be a new group at the node
+
+    Returns:
+        (node,edges): Returns a gdf of nodes and edges
+    """
+
+    # copy nodes and edges
+    nodes_gdf = nodes.copy()
+    edges_gdf = edges.copy()
+    
+    # loop through edge list
+    for edge_to_split in edge_list:
+
+        # get linestring geometry of edge
+        line_geom = edges.loc[edge_to_split,'geometry']
+
+        # now find closest point
+        new_point = line_geom.interpolate(0.5, normalized=True)
+        new_node_osmid = get_new_node_osmid(nodes_gdf)
+
+        # split edge
+        node_new, row_new1, row_new2 = split_edge(edge_to_split, new_node_osmid, nodes_gdf, edges_gdf, split_loc=new_point, split_type='new')
+
+        # append nodes and edges and remove split edge
+        nodes_gdf = nodes_gdf.append(node_new)
+        edges_gdf = edges_gdf.append([row_new1, row_new2])
+        edges_gdf.drop(index=edge_to_split, inplace=True)
+
+        # check if you should split the stroke_group
+        if new_group:
+
+            # get stroke_group of new edge
+            group_to_split = edges_gdf.loc[row_new1.index.values[0], 'stroke_group']
+
+            # split group
+            new_group_gdf = split_group_at_node(edges_gdf, new_node_osmid, group_to_split)
+            new_group_edges = new_group_gdf.index.values
+
+            # drop new_group dataframe new_group_gdf to edges_gdf
+            edges_gdf.drop(index=new_group_edges, inplace=True)
+            edges_gdf = edges_gdf.append(new_group_gdf)
+
+    return nodes_gdf, edges_gdf
+
 def split_line_with_point(line, splitter):
     # code taken from shapely ops.py
     # _split_line_with_point(line, splitter). It did not really work because it get's stuck at first if statement
