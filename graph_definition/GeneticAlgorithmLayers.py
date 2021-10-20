@@ -45,7 +45,7 @@ init_genome, group_dict, node_connectivity, stroke_lenghts = init_height_cost_es
 
 
 ray.shutdown()
-ray.init(num_cpus=32) # will use default python map on current process, useful for debugging?
+ray.init(num_cpus=1) # will use default python map on current process, useful for debugging?
 #ray.init(num_cpus=1) # will batch out via ActorPool, slower vs above for trivial loads because overhead
 
 '''

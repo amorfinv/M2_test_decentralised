@@ -35,7 +35,7 @@ from ray_map import ray_deap_map
 gis_data_path = 'whole_vienna/gis'
 
 # Load MultiDigraph from create_graph.py
-G = ox.load_graphml(filepath=path.join(gis_data_path, 'streets', 'prep_height_allocation.graphml'))
+G = ox.load_graphml(filepath=path.join(gis_data_path, '', 'prep_height_allocation_2.graphml'))
 
 # convert to gdf
 nodes, edges = ox.graph_to_gdfs(G)
@@ -100,7 +100,7 @@ toolbox.register("map", ray_deap_map, creator_setup = creator_setup)
 ######################################################
 
 if __name__ == "__main__":
-    pop = toolbox.population(n=3000)
+    pop = toolbox.population(n=6000)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=1000, 
+    algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=20000, 
                         stats=stats, halloffame=hof)
     # Shutdown at the end
     ray.shutdown()
