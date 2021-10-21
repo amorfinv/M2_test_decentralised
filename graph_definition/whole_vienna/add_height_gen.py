@@ -15,7 +15,7 @@ def main():
     gis_data_path = 'gis'
 
     # Load MultiDigraph from create_graph.py
-    G = ox.load_graphml(filepath=path.join(gis_data_path, 'streets', 'prep_height_allocation.graphml'))
+    G = ox.load_graphml(filepath=path.join(gis_data_path, 'streets', 'prep_height_allocation_2.graphml'))
 
     # convert to gdf
     nodes, edges = ox.graph_to_gdfs(G)
@@ -59,7 +59,7 @@ def build_graph(nodes, edges, height_allocations):
 
         height_list.append(height_allocation)
 
-    edges_gdf['height_allocation'] = height_list
+    edges_gdf['layer_allocation'] = height_list
     
     graph = ox.graph_from_gdfs(nodes, edges_gdf)
 
