@@ -13,6 +13,7 @@ Created on Thu Aug 12 11:14:29 2021
 # Jul 2020
 
 import random
+random.seed(5)
 
 import numpy as np
 
@@ -45,7 +46,7 @@ init_genome, group_dict, node_connectivity, stroke_lenghts = init_height_cost_es
 
 
 ray.shutdown()
-ray.init(num_cpus=32) # will use default python map on current process, useful for debugging?
+ray.init(num_cpus=1) # will use default python map on current process, useful for debugging?
 #ray.init(num_cpus=1) # will batch out via ActorPool, slower vs above for trivial loads because overhead
 
 '''
@@ -100,7 +101,7 @@ toolbox.register("map", ray_deap_map, creator_setup = creator_setup)
 ######################################################
 
 if __name__ == "__main__":
-    pop = toolbox.population(n=6000)
+    pop = toolbox.population(n=6)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)
@@ -108,7 +109,9 @@ if __name__ == "__main__":
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=20000, 
+    algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=10, 
                         stats=stats, halloffame=hof)
+    
+    print(hof)
     # Shutdown at the end
     ray.shutdown()
