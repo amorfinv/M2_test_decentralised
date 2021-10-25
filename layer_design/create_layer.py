@@ -6,11 +6,11 @@ def main():
     # Build layer structure
 
     # at the moment there are two types of layers
-    layers_1_range, flight_dict = build_layer_airspace_dict(25, 500, 25, ['C', 'T', 'F'], ['C', 'T', 'F'], 'range')
-    layers_1_levels, _ = build_layer_airspace_dict(25, 500, 25, ['C', 'T', 'F'], ['C', 'T', 'F'], 'levels')
+    layers_1_range, flight_dict = build_layer_airspace_dict(25, 500, 25, ['C', 'T', 'F'], ['C', 'T', 'F'], 'C', 'range')
+    layers_1_levels, _ = build_layer_airspace_dict(25, 500, 25, ['C', 'T', 'F'], ['C', 'T', 'F'], 'C', 'levels')
 
-    layers_2_range, _ = build_layer_airspace_dict(25, 500, 25, ['F', 'T', 'C'], ['C', 'T', 'F'], 'range')
-    layers_2_levels, _ = build_layer_airspace_dict(25, 500, 25, ['F', 'T', 'C'], ['C', 'T', 'F'], 'levels')
+    layers_2_range, _ = build_layer_airspace_dict(25, 500, 25, ['F', 'T', 'C'], ['C', 'T', 'F'], 'C', 'range')
+    layers_2_levels, _ = build_layer_airspace_dict(25, 500, 25, ['F', 'T', 'C'], ['C', 'T', 'F'], 'C', 'levels')
 
     # create layers dictionary
     layers_1 = {'range': layers_1_range, 'levels': layers_1_levels}
@@ -24,7 +24,7 @@ def main():
     with open('layers.json', 'w') as fp:
         json.dump(airspace, fp)
 
-def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_layers, opt):
+def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_layers, exteme_layer, opt):
     """ This creates an airsapce layer dictionary based on the minimum height, 
     maximum height, spacing, and repeating pattern of the layers. Units can
     be anything but they must be consistent. Minimum and maximum heights are
@@ -44,6 +44,7 @@ def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_
         spacing (int): Uniform spacing between layers
         pattern (list): List of strings with an identifier of the layer. pattern repeats
         closest_layers (list): Order of layer ids for which to provide information in reeturn dictionary.
+        exteme_layer (str): String of desired layer to track the top and bottom layer.
         opt (string): If 'range' return dictionary with keys contaitning range of layer heights.
                       If 'levels' return dictionary with keys containing flight levels.
 
@@ -54,13 +55,13 @@ def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_
                       order of this information depends on closest_layers list.
                       
                       Example:
-                      layers = build_layer_airspace_dict(25, 500, 25, ['C', 'T', 'F'], ['C', 'T', 'F'], 'levels')
+                      layers = build_layer_airspace_dict(25, 500, 25, ['C', 'T', 'F'], ['C', 'T', 'F'], 'C', 'levels')
                       one entry in the dictionary would be as follows:
                       {layer level: [layer id, {bottom 'C' layer level), (top 'C' layer level), (bottom 'T' layer level), 
-                                     (top 't' layer), (bottom 'F' layer level), (top 'F' layer level) 
-                                     ]
+                                     (top 't' layer), (bottom 'F' layer level), (top 'F' layer level), (lowest extreme layer),
+                                     (highest extreme layer)]
                        }
-        [list]: layer heights
+        [dictionary]: layer heights under key='levels', spacing under key='spacing', and pattern under key='pattern'
     """    
     start_ind = min_height
     end_ind = max_height + spacing
@@ -71,6 +72,7 @@ def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_
     n_type_layers = len(pattern)
 
     layer_dict = {}
+    full_layer_pattern = []
 
     # order of layer info
     order_layer_info = {}
@@ -78,7 +80,6 @@ def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_
         order_layer_info[layer_type] = id
 
     counter = 0
-
     for idx, layer in enumerate(flight_layer_heights):
 
         idx_layer = counter%n_type_layers
@@ -146,14 +147,32 @@ def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_
                     height_other_layer = layer_output_choice(flight_layer_heights[diff_idx], spacing, opt)
         
                 other_layer_info.append(height_other_layer)
-        
+
         layer_dict_key = layer_output_choice(layer, spacing, opt)
         layer_dict_value = [layer_choice] + other_layer_info
         layer_dict[layer_dict_key] = layer_dict_value
+
+        # create full layer pattern
+        full_layer_pattern.append(layer_choice)
+
         counter += 1
-    
+
+    # get info about desired extreme layers
+    exteme_layer_bottom_idx = full_layer_pattern.index(exteme_layer)
+    exteme_layer_top_idx = len(full_layer_pattern) - full_layer_pattern[::-1].index(exteme_layer) - 1
+
+    exteme_layer_bottom_height = flight_layer_heights[exteme_layer_bottom_idx]
+    exteme_layer_bottom_height = layer_output_choice(exteme_layer_bottom_height, spacing, opt)
+    exteme_layer_top_height = flight_layer_heights[exteme_layer_top_idx]
+    exteme_layer_top_height = layer_output_choice(exteme_layer_top_height, spacing, opt)
+
+    # add this info to each list inside layer_dict
+    for _, value in layer_dict.items():
+        value.append(exteme_layer_bottom_height)
+        value.append(exteme_layer_top_height)
+
     # other dictionary
-    gen_dict = {'levels': flight_layer_heights, 'spacing': spacing}
+    gen_dict = {'levels': flight_layer_heights, 'spacing': spacing, 'pattern': full_layer_pattern}
 
     return layer_dict, gen_dict
 
