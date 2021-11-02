@@ -1,21 +1,31 @@
+# Creates the layer structure for the airspace and saves it to a json file.
+
 import json
 
 def main():
     # Build constrained layer structure
-    # Two types of layers in constrained airspace
-    layers_0_range, flight_dict, pattern_0 = build_layer_airspace_dict(30, 480, 30, ['C', 'T', 'F'], ['C', 'T', 'F'], 'C', 'range')
-    layers_0_levels, _, _ = build_layer_airspace_dict(30, 480, 30, ['C', 'T', 'F'], ['C', 'T', 'F'], 'C', 'levels')
+    min_height = 30
+    max_height = 480
+    spacing = 30
 
-    layers_1_range, _, pattern_1 = build_layer_airspace_dict(30, 480, 30, ['F', 'T', 'C'], ['C', 'T', 'F'], 'C', 'range')
-    layers_1_levels, _, _ = build_layer_airspace_dict(30, 480, 30, ['F', 'T', 'C'], ['C', 'T', 'F'], 'C', 'levels')
+    # Two types of layers in constrained airspace
+    layers_0_range, flight_dict, pattern_0 = build_layer_airspace_dict(min_height, max_height, spacing, ['C', 'T', 'F'], ['C', 'T', 'F'], 'C', 'range')
+    layers_0_levels, _, _ = build_layer_airspace_dict(min_height, max_height, spacing, ['C', 'T', 'F'], ['C', 'T', 'F'], 'C', 'levels')
+
+    layers_1_range, _, pattern_1 = build_layer_airspace_dict(min_height, max_height, spacing, ['F', 'T', 'C'], ['C', 'T', 'F'], 'C', 'range')
+    layers_1_levels, _, _ = build_layer_airspace_dict(min_height, max_height, spacing, ['F', 'T', 'C'], ['C', 'T', 'F'], 'C', 'levels')
 
     # Build open layer structure
-    layers_open_range, flight_dict_hdg, pattern_open = build_layer_airspace_dict(30, 480, 30, ['C'], ['C', 'T', 'F'], 'C', 'range')
-    layers_open_levels, _, _ = build_layer_airspace_dict(30, 480, 30, ['C'], ['C', 'T', 'F'], 'C', 'levels')
-    height_dict, angle_dict, angle_ranges = build_heading_airspace(flight_dict_hdg['levels'], 0, 360, 45)
+    min_angle = 0
+    max_angle = 360
+    angle_spacing = 45
+
+    layers_open_range, flight_dict_hdg, pattern_open = build_layer_airspace_dict(min_height, max_height, spacing, ['C'], ['C', 'T', 'F'], 'C', 'range')
+    layers_open_levels, _, _ = build_layer_airspace_dict(min_height, max_height, spacing, ['C'], ['C', 'T', 'F'], 'C', 'levels')
+    height_dict, angle_dict, angle_ranges = build_heading_airspace(flight_dict_hdg['levels'], min_angle, max_angle, angle_spacing)
     layers_open_hdg = {'heights': height_dict, 'angle': angle_dict}
     
-    # create constrained layers dictionary
+    # create layers dictionary
     layers_0 = {'range': layers_0_range, 'levels': layers_0_levels, 'pattern': pattern_0}
     layers_1 = {'range': layers_1_range, 'levels': layers_1_levels, 'pattern': pattern_1}
     layers_open = {'range': layers_open_range, 'levels': layers_open_levels, 'pattern': pattern_open, 'heading': layers_open_hdg}
@@ -112,11 +122,6 @@ def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_
     contains the layer level/range and information about type of layer and
     levels/ranges of surrounding aircraft. At the moment only works for layers
     that have 3 sub layers and repeat.
-
-    TODO:
-        - Accept n_layers as an argument instead of max_height if desired.
-        - Accept non-integer values
-        - Work with other types. say when there
 
     Args:
         min_height (int): Minimum flight layer height
