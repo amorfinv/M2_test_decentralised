@@ -40,7 +40,7 @@ for idx , _ in enumerate(lat_list):
 
 # save node dictionary to JSON
 with open('nodes.json', 'w') as fp:
-    json.dump(node_dict, fp)
+    json.dump(node_dict, fp, indent=4)
 
 # convert edges into a dictionary with the directionality as the key. 
 # and with the values as another sub dictionary, with stroke_group and layer_height
@@ -60,7 +60,7 @@ for key, value in edge_dict.items():
 
 # save edge dictionary as json
 with open('edges.json', 'w') as fp:
-    json.dump(edge_dict_new, fp)
+    json.dump(edge_dict_new, fp, indent=4)
 
 # simplify edge_dict keys into a string rather than tuple
 stroke_dict_new = {}
@@ -77,7 +77,7 @@ for key, value in stroke_dict.items():
 
 # save edge dictionary as json
 with open('strokes.json', 'w') as fp:
-    json.dump(stroke_dict_new, fp)
+    json.dump(stroke_dict_new, fp, indent=4)
 
 # Opening edges.JSON as a dictionary
 with open('edges.json', 'r') as filename:
