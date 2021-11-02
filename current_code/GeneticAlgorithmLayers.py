@@ -13,7 +13,6 @@ Created on Thu Aug 12 11:14:29 2021
 # Jul 2020
 
 import random
-random.seed(5)
 
 import numpy as np
 
@@ -21,6 +20,7 @@ from deap import algorithms
 from deap import base
 from deap import creator
 from deap import tools
+import pandas
 
 import osmnx as ox
 from os import path
@@ -101,17 +101,29 @@ toolbox.register("map", ray_deap_map, creator_setup = creator_setup)
 ######################################################
 
 if __name__ == "__main__":
-    pop = toolbox.population(n=6)
-    hof = tools.HallOfFame(1)
-    stats = tools.Statistics(lambda ind: ind.fitness.values)
-    stats.register("avg", np.mean)
-    stats.register("std", np.std)
-    stats.register("min", np.min)
-    stats.register("max", np.max)
-
-    algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=10, 
-                        stats=stats, halloffame=hof)
+    # First, let's select 10 random numbers from which we start the optimisation
+    seeds = [5, 4552709,9107886,  3397946, 270093, 8583586, 6090281, 2776495, 4926941, 465159]
+    for i, seed in enumerate(seeds):
+        random.seed(seed)
+        pop = toolbox.population(n=6)
+        hof = tools.HallOfFame(1)
+        stats = tools.Statistics(lambda ind: ind.fitness.values)
+        stats.register("avg", np.mean)
+        stats.register("std", np.std)
+        stats.register("min", np.min)
+        stats.register("max", np.max)
     
-    print(hof)
-    # Shutdown at the end
-    ray.shutdown()
+        population, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=10, 
+                            stats=stats, halloffame=hof)
+
+        # Save progression to CSV
+        df_log = pandas.DataFrame(log)
+        df_log.to_csv(f'gendata/min{i+1}.csv', index=False)
+        # Save individual to txt
+        with open(f'gendata/min{i+1}.txt', 'w') as f:
+            for individual in hof.items:
+                f.write(str(individual))
+                f.write('\n')
+        
+        # Shutdown at the end
+        ray.shutdown()
