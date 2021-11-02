@@ -8,6 +8,7 @@ import numpy as np
 import BlueskySCNTools
 from plugins.streets.flow_control import street_graph,bbox
 from plugins.streets.agent_path_planning import PathPlanning,Path
+from open_airspace_grid import Cell, open_airspace_grid
 import os
 import dill
 
@@ -16,13 +17,17 @@ bst = BlueskySCNTools.BlueskySCNTools()
 
 # Step 1: Import the graph we will be using
 dir_path = os.path.dirname(os.path.realpath(__file__))
-graph_path = dir_path.replace('graph_definition', 
-          'graph_definition/gis/data/street_graph/processed_graph.graphml')
+graph_path = dir_path.replace('current_code', 
+          'current_code/whole_vienna/gis/layer_heights.graphml')
 G = ox.io.load_graphml(graph_path)
 #G = ox.io.load_graphml('processed_graph.graphml')
 edges = ox.graph_to_gdfs(G)[1]
 gdf=ox.graph_to_gdfs(G, nodes=False, fill_edge_geometry=True)
 print('Graph loaded!')
+
+#Load the open airspace grid
+input_file=open("open_airspace_grid.dill", 'rb')
+grid=dill.load(input_file)
 
 ##Initialise the flow control entity
 graph=street_graph(G,edges) 
@@ -51,6 +56,20 @@ generated_traffic = bst.Graph2Traf(G, concurrent_ac, aircraft_vel, max_time,
                                     dt, min_dist, orig_nodes, dest_nodes)
 print('Traffic generated!')
 
+# =============================================================================
+# lon_start=16.3304374
+# lat_start=48.2293708
+# lon_dest=16.3507849
+# lat_dest=48.224925
+# plan = PathPlanning(grid,graph,gdf, lon_start,lat_start,lon_dest,lat_dest)
+# route=[]
+# turns=[]
+# route,turns,edges,next_turn,groups,in_constrained=plan.plan()
+# 
+# print("planned")
+# =============================================================================
+
+aircraft_type=1
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
 flight_plans_dict={}
@@ -59,10 +78,10 @@ for flight in generated_traffic:
     origin = flight[2]
     destination = flight[3]
 
-    plan = PathPlanning(graph,gdf, origin[1], origin[0], destination[1], destination[0])
+    plan = PathPlanning(aircraft_type,grid,graph,gdf, origin[1], origin[0], destination[1], destination[0])
     route=[]
     turns=[]
-    route,turns,edges,next_turn,groups=plan.plan()
+    route,turns,edges,next_turn,groups,in_constrained=plan.plan()
 
     flight_plans_dict[flight[0]]=plan
     if route!=[]:
@@ -78,8 +97,8 @@ for flight in generated_traffic:
         #Add turnbool
         scenario_dict[flight[0]]['turnbool'] = turns
         #Add alts
-        scenario_dict[flight[0]]['alts'] = route[:,2]
-        # scenario_dict[flight[0]]['alts'] = []
+        #scenario_dict[flight[0]]['alts'] = route[:,2]
+        scenario_dict[flight[0]]['alts'] = []
 
         #Add active edges
         scenario_dict[flight[0]]['edges'] = edges

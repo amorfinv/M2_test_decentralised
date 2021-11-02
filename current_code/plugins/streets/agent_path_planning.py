@@ -1,314 +1,185 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed May  5 12:19:13 2021
+Created on Tue Oct 12 10:51:03 2021
 
 @author: nipat
-## https://github.com/mdeyo/d-star-lite"""
-
-# https://stackoverflow.com/questions/61467693/d-lite-search-algorithm-for-robot-path-planning-gets-stuck-in-infinite-loop-wh
-# https://stackoverflow.com/questions/7245238/pathfinding-algorithm-creating-loops?rq=1
-# https://stackoverflow.com/questions/61462672/ros-move-base-d-dstar-pathplanning-algorithm-implementation
+"""
 
 import heapq
 import numpy as np
 import math
 import copy
-from plugins.streets.flow_control import street_graph,bbox
 from shapely.geometry import Point
-from plugins.streets.Conversions import Conversions
 import time
+from pyproj import  Transformer
+
+from plugins.streets.flow_control import street_graph,bbox
+from plugins.streets.open_airspace_grid import Cell, open_airspace_grid
+
+##########
+##Functions for finding the cell of a point in open airspace
+def index_2d(myList, v):
+    
+    test=[]
+    for i in range(len(myList)):
+        test.append(myList[i][1])
+
+    return (test.index(v))
 
 
+def check_where(p,min_x_ind,cells):
+    x=p[0]
+    y=p[1]
 
-class Node:
-    av_speed_horizontal= 10.0#10.0 ##TODO: that needs fine tunng
-    av_speed_vertical=1.0
-    def __init__(self,key_index,x,y,z,index,group):
-        self.key_index=key_index # the index the osmnx graph
-        self.index=index# the index in the search graph
-
-        #the coordinates of the node as given by osmnx (latitude,longitude)
-        ##Coordinates of the center
-        self.x=x
-        self.y=y
-        self.z=z
-        
-        ##Coordinates of the center
-        self.x_cartesian=None
-        self.y_cartesian=None
-
-
-        #the parents(predessecors) and children(successor) of the node expressed as lists containing their indexes in the graph 
-        self.parents=[]
-        self.children=[]
-        
-        #self.f=0.0
-        self.g=float('inf')
-        self.rhs=float('inf')
-        self.h=0.0
-        self.key=[0.0,0.0]
-
-        self.density=1.0 #shows the traffic density      
-
-        self.inQueue=False
-        
-        #the travelling speed
-        #that will probably depend on the group
-        self.speed=10
-        #the stroke group
-        self.group=group
-        
-        self.expanded=False
-        
-        self.open_airspace=False
-
-        
-class Path:
-    def __init__(self,start,goal):
-        self.start=start
-        self.goal=goal
-        self.k_m=0
-        self.queue=[]
-        self.origin_node_index=None
-        
-##Initialise the path planning      
-def initialise(path):
-    path.queue=[]
-    path.k_m=0
-    path.goal.rhs=0
-    path.goal.inQueue=True
-    path.goal.h=heuristic(path.start,path.goal)
-    path.goal.expanded=True
-    heapq.heappush(path.queue, (path.goal.h,0,path.goal.x,path.goal.y,path.goal.z,path.goal.index, path.goal))
-    path.origin_node_index=path.start.index
-
+    
+    many=[i for i in min_x_ind if i[0] <= x and i[1]>=x] 
+    which=[]
+    for i in range(len(many)):
+        which.append(many[i][2])
  
+    canditade_cells=[]
+    for i in which:
 
-##Compare the keys of two nodes
-def compare_keys(node1,node2):
-    if node1[0]<node2[0]:
+        canditade_cells.append(cells[index_2d(cells,min_x_ind[i][3])])
+
+    wh=-1
+    for i in range(len(canditade_cells)):
+   
+        mn=np.argmin(canditade_cells[i][0], axis=0)
+        mx=np.argmax(canditade_cells[i][0], axis=0)
+
+        
+
+        if canditade_cells[i][0][mn[1]][1] <=y and canditade_cells[i][0][mx[1]][1]>=y : 
+            
+            wh=i
+            break
+    if wh !=-1:
+        winner=canditade_cells[wh]
+    else :
+        winner=-1
+
+    return winner
+    
+def sort_cells_x(cells):
+  
+    min_x_ind=[]
+    for i in range(len(cells)):
+        mn=np.argmin(cells[i][0], axis=0)
+        mx=np.argmax(cells[i][0], axis=0)
+        min_x_ind.append([cells[i][0][mn[0]][0],cells[i][0][mx[0]][0],i,cells[i][1]])
+        
+    #print(sorted(min_x_ind,key=lambda x: (x[1])))
+    return min_x_ind
+##########################
+
+# Given three collinear points p, q, r, the function checks if
+# point q lies on line segment 'pr'
+def onSegment(p, q, r):
+    if ( (q[0] <= max(p[0], r[0])) and (q[0] >= min(p[0], r[0])) and
+            (q[1] <= max(p[1], r[1])) and (q[1] >= min(p[1], r[1]))):
         return True
-    elif node1[0]==node2[0] and node1[1]<node2[1]:
-        return True
-    return False
-    
-##Calculate the keys of a node    
-def calculateKey(node,start, k_m):
-    return (min(node.g, node.rhs) + heuristic(node,start) + k_m, min(node.g, node.rhs))
-
-##Calculate the distance of two points in geodetic coordinates
-def distance(p1,p2): ##harvestine distance
-    R = 6372800  # Earth radius in meters
-    lat1=p1.y
-    lon1=p1.x
-    lat2=p2.y
-    lon2=p2.x 
-        
-    phi1, phi2 = math.radians(lat1), math.radians(lat2) 
-    dphi       = math.radians(lat2 - lat1)
-    dlambda    = math.radians(lon2 - lon1)
-        
-    a = math.sin(dphi/2)**2 + \
-            math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
-        
-    return 2*R*math.atan2(math.sqrt(a), math.sqrt(1 - a)) 
-
-
-
-def heuristic(current, goal):
-    h=(abs(current.x_cartesian-goal.x_cartesian)+abs(current.y_cartesian-goal.y_cartesian))/current.av_speed_horizontal
-    if current.group!=goal.group:
-        h=h+25 #set a standard cost for going to the turn layer # g=5/current.av_speed_vertical
-    return h
-
-
-##Compute the cost of moving from a node to its neighborh node
-def compute_c(current,neigh, edges):
-    g=1
-    if(current.group!=neigh.group):
-        g=25#abs(neigh.z-current.z)/current.av_speed_vertical
-    else:
-        #g=(abs(neigh.x-current.x)+abs(neigh.y-current.y))*2/(current.speed/current.density+neigh.speed/neigh.density)
-        #here i need to check if the group is changing (the drone needs to turn)
-        if current.group==neigh.group:
-            if edges[current.key_index][neigh.key_index].speed==0:
-                g=float('inf')
-                print(" zero speed")
-
-            else:
-                g=edges[current.key_index][neigh.key_index].length/edges[current.key_index][neigh.key_index].speed
-
-        else:
-            g=25 #set a standard cost for going to the turn layer # g=5/current.av_speed_vertical
-    return g
-
-##Return the top key of the queue 
-def top_key(q):
-    if len(q) > 0:
-        return [q[0][0],q[0][1]]
-    else:
-        print('empty queue!')
-        return [float('inf'), float('inf')]
-    
-##Update the vertex of a node
-def update_vertex(path,node):
-
-    if node.g!=node.rhs and node.inQueue:
-        
-        #Update
-        
-        #id_in_queue = [item for item in path.queue if node in item]
-        id_in_queue = [item for item in path.queue if node==item]
-        
-        if id_in_queue != []:
-            if len(id_in_queue) != 1:
-                raise ValueError('more than one ' + str(node.key_index) + ' in the queue!')
-            #path.queue.remove(id_in_queue[0])
-            
-            node.key=calculateKey(node, path.start, path.k_m)
-            path.queue[path.queue.index(id_in_queue[0])]=path.queue[-1]
-            
-            path.queue.pop()
-            
-            heapq.heapify(path.queue)
-            #node.expanded=True
-            heapq.heappush(path.queue, (node.key[0],node.key[1],node.x,node.y,node.z,node.index,node))
-            
-    elif node.g!=node.rhs and (not node.inQueue):
-        #Insert
-        
-        node.inQueue=True
-        node.h=heuristic(node, path.start)
-        node.key=calculateKey(node, path.start, path.k_m)
-        #node.expanded=True
-        heapq.heappush(path.queue, (node.key[0],node.key[1],node.x,node.y,node.z,node.index,node))
-        
-    elif node.g==node.rhs and node.inQueue:
-        
-        #remove
-        
-        #id_in_queue = [item for item in path.queue if id in item]
-        id_in_queue = [item for item in path.queue if node==item]
-        
-        if id_in_queue != []:
-            if len(id_in_queue) != 1:
-                raise ValueError('more than one ' + id + ' in the queue!')
-            #path.queue.remove(id_in_queue[0])
-            
-            node.inQueue=False
-           
-            path.queue[path.queue.index(id_in_queue[0])]=path.queue[-1]
-            
-            path.queue.pop()
-            
-            heapq.heapify(path.queue)
-          
-
-          
-##Compute the shortest path using D* Lite
-##returns flase if no path was found
-def compute_shortest_path(path,graph, G,edges):
-
-    path.start.key=calculateKey(path.start, path.start, path.k_m)
-    k_old=top_key(path.queue)
-    
-    while path.start.rhs>path.start.g or compare_keys(k_old,path.start.key):
-
-        if len(path.queue)==0:
-            print("No path found!")
-            return 0
-
-        k_old=top_key(path.queue)
-        current_node=path.queue[0][6]#get the node with the smallest priority
-        current_node.expanded=True
-        
-# =============================================================================
-#         if current_node==path.start:
-#             print("arrived at start!!")
-#         if current_node.index in path.start.children:
-#             print("in child")
-#             print(current_node.g)
-#             print(current_node.rhs)
-#             print(k_old)
-#             print(calculateKey(current_node, path.start, path.k_m))
-# =============================================================================
-        
-            
-        k_new=calculateKey(current_node, path.start, path.k_m)
-        if compare_keys(k_old, k_new):
-            heapq.heappop(path.queue)
-            current_node.key=k_new
-            current_node.inQueue=True
-            current_node.expanded=True
-            heapq.heappush(path.queue, (current_node.key[0],current_node.key[1],current_node.x,current_node.y,current_node.z,current_node.index,current_node))
-        
-        elif current_node.g>current_node.rhs:
-            current_node.g=current_node.rhs
-            heapq.heappop(path.queue)
-            current_node.inQueue=False
-
-            for p in current_node.parents:
-                pred_node=graph[p]  
-
-                if pred_node!=path.goal:
-                    pred_node.rhs=min(pred_node.rhs,current_node.g+compute_c(pred_node,current_node,edges))
-                        
-                update_vertex(path, pred_node)
-
-        else:
-            g_old=copy.deepcopy(current_node.g)
-            current_node.g=float('inf')
-            pred_node=current_node
-            if pred_node.rhs==g_old:
-                if pred_node!= path.goal:
-                    tt=[]
-                    for ch in pred_node.children:
-                        child=graph[ch]
-                        tt.append(child.g+compute_c(pred_node,child, edges))
-                    pred_node.rhs=min(tt)
-            update_vertex(path, pred_node)
-
-            for p in current_node.parents:
-                parent=graph[p]
-                if parent.rhs==(g_old+compute_c(parent,current_node,edges)):
-                    if(parent!=path.goal):
-                        tt=[]
-                        for ch in parent.children:
-                            child=graph[ch]
-                            tt.append(child.g+compute_c(parent,child,edges))
-                        parent.rhs=min(tt)
-                update_vertex(path, parent)
+    return False  
                 
-# =============================================================================
-#             pred_node=current_node
-#             if pred_node.rhs==g_old:
-#                 if pred_node!= path.goal:
-#                     tt=[]
-#                     for ch in pred_node.children:
-#                         child=graph[ch]
-#                         tt.append(child.g+compute_c( pred_node,child,edges))
-#                     pred_node.rhs=min(tt)
-#          
-#             update_vertex(path, pred_node)
-# =============================================================================
-            
-            k_old=top_key(path.queue)
-            path.start.key=calculateKey(path.start, path.start, path.k_m)
+def ccw(A,B,C):
+    if (C[1]-A[1]) * (B[0]-A[0]) == (B[1]-A[1]) * (C[0]-A[0]):
+        return 2
+    return (C[1]-A[1]) * (B[0]-A[0]) > (B[1]-A[1]) * (C[0]-A[0])
 
-            
-# =============================================================================
-# 
-#     print("computed")
-#     print(path.start.g)
-#     print(path.start.rhs)
-#     print(path.start.key)
-#     print(k_old)
-#     #print(path.queue)
-# =============================================================================
-    path.start.g=path.start.rhs
+# Return true if line segments AB and CD intersect
+def intersect(A,B,C,D):
+    if ccw(A,B,C)==2 and onSegment(A,C,B):
+        return True
+    elif ccw(A,B,D)==2 and onSegment(A,D,B):
+        return True
+    return ccw(A,C,D) != ccw(B,C,D) and ccw(A,B,C) != ccw(A,B,D)
 
-    return 'Path found!'
+
+def line_intersection_point(line1, line2):
+    xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
+    ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
+
+    def det(a, b):
+        return a[0] * b[1] - a[1] * b[0]
+
+    div = det(xdiff, ydiff)
+    if div == 0:
+       return none,none#raise Exception('lines do not intersect')
+
+    d = (det(*line1), det(*line2))
+    x = det(d, xdiff) / div
+    y = det(d, ydiff) / div
+    return x, y
+
+def distance_to_line(A, B, E) :
+ 
+    # vector AB
+    AB = [None, None]
+    AB[0] = B[0] - A[0]
+    AB[1] = B[1] - A[1]
+ 
+    # vector BP
+    BE = [None, None]
+    BE[0] = E[0] - B[0]
+    BE[1] = E[1] - B[1]
+ 
+    # vector AP
+    AE = [None, None];
+    AE[0] = E[0] - A[0]
+    AE[1] = E[1] - A[1]
+ 
+    # Variables to store dot product
+ 
+    # Calculating the dot product
+    AB_BE = AB[0] * BE[0] + AB[1] * BE[1]
+    AB_AE = AB[0] * AE[0] + AB[1] * AE[1]
+ 
+    # Minimum distance from
+    # point E to the line segment
+    reqAns = 0
+ 
+    # Case 1
+    if (AB_BE > 0) :
+ 
+        # Finding the magnitude
+        y = E[1] - B[1]
+        x = E[0] - B[0]
+        reqAns = math.sqrt(x * x + y * y)
+
+    # Case 2
+    elif (AB_AE < 0) :
+        y = E[1] - A[1]
+        x = E[0] - A[0]
+        reqAns = math.sqrt(x * x + y * y)
+ 
+    # Case 3
+    else:
+ 
+        # Finding the perpendicular distance
+        x1 = AB[0]
+        y1 = AB[1]
+        x2 = AE[0]
+        y2 = AE[1]
+        mod = math.sqrt(x1 * x1 + y1 * y1)
+        reqAns = abs(x1 * y2 - y1 * x2) / mod
+     
+    return reqAns
+ 
+def find_closest_point_on_linesegment(line,point):
+    ##https://diego.assencio.com/?index=ec3d5dfdfc0b6a0d147a656f0af332bd
     
+    pp=[0,0]
+    ls=((point[0]-line[0][0])*(line[1][0]-line[0][0])+(point[1]-line[0][1])*(line[1][1]-line[0][1]))/((line[1][0]-line[0][0])*(line[1][0]-line[0][0])+(line[1][1]-line[0][1])*(line[1][1]-line[0][1]))
+    if ls<=0:
+        pp=line[0]
+    elif ls>=1:
+        pp=line[1]
+    else:
+        pp[0]=line[0][0]+ls*(line[1][0]-line[0][0])
+        pp[1]=line[0][1]+ls*(line[1][1]-line[0][1])
+        
+    return pp
+
 def distance_point(A,B):
     R = 6372800  # Earth radius in meters
     lat1=A[1]
@@ -331,7 +202,6 @@ def lies_between(A,B,C):
     b = distance_point(C,A)
     c = distance_point(A,B)
     return a**2 + b**2 >= c**2 and a**2 + c**2 >= b**2
-            
 
 ##Returns the nearest edge of a point
 def get_nearest_edge(gdf, point):
@@ -378,6 +248,244 @@ def get_nearest_edge(gdf, point):
 
 
     return geometry, u, v
+
+
+class CellNode:
+    def __init__(self,cell):
+        self.p0=cell.p0
+        self.p1=cell.p1
+        self.p2=cell.p2
+        self.p3=cell.p3
+
+class Node:
+    av_speed_horizontal= 10.0#10.0 ##TODO: that needs fine tunng
+    av_speed_vertical=1.0
+    def __init__(self,key_index,lon,lat,z,index,group):
+        self.key_index=key_index # the index the osmnx graph
+        self.index=index# the index in the search graph
+
+        #the coordinates of the node as given by osmnx (latitude,longitude)
+        ##Coordinates of the center
+        self.lon=lon
+        self.lat=lat
+        self.z=z
+        
+        ##Coordinates of the center
+        self.x_cartesian=None
+        self.y_cartesian=None
+
+
+        #the parents(predessecors) and children(successor) of the node expressed as lists containing their indexes in the graph 
+        self.parents=[]
+        self.children=[]
+        
+        #self.f=0.0
+        self.g=float('inf')
+        self.rhs=float('inf')
+        self.h=0.0
+        self.key=[0.0,0.0]
+
+        self.density=1.0 #shows the traffic density      
+
+        self.inQueue=False
+        
+        #the travelling speed
+        #that will probably depend on the group
+        self.speed=10
+        #the stroke group
+        self.group=group
+        
+        self.expanded=False
+        
+        self.open_airspace=False
+        self.cell=None
+        
+class Path:
+    def __init__(self,start,goal,speed):
+        self.start=start
+        self.goal=goal
+        self.k_m=0
+        self.queue=[]
+        self.origin_node_index=None
+        self.speed=speed
+        
+##Initialise the path planning      
+def initialise(path):
+    path.queue=[]
+    path.k_m=0
+    path.goal.rhs=0
+    path.goal.inQueue=True
+    path.goal.h=heuristic(path.start,path.goal,path.speed)
+    path.goal.expanded=True
+    heapq.heappush(path.queue, (path.goal.h,0,path.goal.index, path.goal))
+    path.origin_node_index=path.start.index
+ 
+
+##Compare the keys of two nodes
+def compare_keys(node1,node2):
+    if node1[0]<node2[0]:
+        return True
+    elif node1[0]==node2[0] and node1[1]<node2[1]:
+        return True
+    return False
+    
+##Calculate the keys of a node    
+def calculateKey(node,start, path):
+    return (min(node.g, node.rhs) + heuristic(node,start,path.speed) + path.k_m, min(node.g, node.rhs))
+
+##Calculate the distance of two points in cartesian coordinates
+def eucledean_distance(p1,p2):
+    return  math.sqrt((p1.x_cartesian-p2.x_cartesian)*(p1.x_cartesian-p2.x_cartesian)+ (p1.y_cartesian-p2.y_cartesian)*(p1.y_cartesian-p2.y_cartesian) )    
+
+def heuristic(current, goal,speed):
+    if current.open_airspace or goal.open_airspace:
+        #h=( math.sqrt((current.x_cartesian-goal.x_cartesian)*(current.x_cartesian-goal.x_cartesian)+(current.y_cartesian-goal.y_cartesian)*(current.y_cartesian-goal.y_cartesian)))/current.av_speed_horizontal
+        h=eucledean_distance(current, goal)/min(current.av_speed_horizontal,speed)
+    else:
+        h=(abs(current.x_cartesian-goal.x_cartesian)+abs(current.y_cartesian-goal.y_cartesian))/min(current.av_speed_horizontal,speed)
+
+    if current.group!=goal.group:
+        h=h+25
+    return h
+
+
+##Compute the cost of moving from a node to its neighborh node
+def compute_c(current,neigh,edges,speed):
+    g=1
+    if current.open_airspace  or neigh.open_airspace:
+         #g=( math.sqrt((current.x_cartesian-neigh.x_cartesian)*(current.x_cartesian-neigh.x_cartesian)+(current.y_cartesian-neigh.y_cartesian)*(current.y_cartesian-neigh.y_cartesian)))/current.speed
+         g=eucledean_distance(current,neigh)/min(current.speed,speed)
+    else:
+        if(current.group!=neigh.group):
+            g=25#abs(neigh.z-current.z)/current.av_speed_vertical
+        else:
+            #g=(abs(neigh.x-current.x)+abs(neigh.y-current.y))*2/(current.speed/current.density+neigh.speed/neigh.density)
+            #check if the group is changing (the drone needs to turn)
+            if current.group==neigh.group:
+                if edges[current.key_index][neigh.key_index].speed==0:
+                    g=float('inf')
+                    print(" zero speed")
+    
+                else:
+                    g=edges[current.key_index][neigh.key_index].length/min(edges[current.key_index][neigh.key_index].speed,speed)
+    return g    
+
+##Return the top key of the queue 
+def top_key(q):
+    if len(q) > 0:
+        return [q[0][0],q[0][1]]
+    else:
+        print('empty queue!')
+        return [float('inf'), float('inf')]
+    
+##Update the vertex of a node
+def update_vertex(path,node):
+
+    if node.g!=node.rhs and node.inQueue:     
+        #Update
+        id_in_queue = [item for item in path.queue if node.index==item[2]]
+        if id_in_queue != []:
+            if len(id_in_queue) != 1:
+                raise ValueError('more than one ' + str(node.key_index) + ' in the queue!')
+            node.key=calculateKey(node, path.start, path)
+            path.queue[path.queue.index(id_in_queue[0])]=path.queue[-1]
+            path.queue.pop()
+            heapq.heapify(path.queue)
+            #node.expanded=True
+            heapq.heappush(path.queue, (node.key[0],node.key[1],node.index,node))
+            
+    elif node.g!=node.rhs and (not node.inQueue):
+        #Insert
+        node.inQueue=True
+        node.h=heuristic(node, path.start,path.speed)
+        node.key=calculateKey(node, path.start, path)
+        #node.expanded=True
+        heapq.heappush(path.queue, (node.key[0],node.key[1],node.index,node))
+        
+    elif node.g==node.rhs and node.inQueue: 
+        #remove
+        id_in_queue = [item for item in path.queue if node.index==item[2]]
+        
+        if id_in_queue != []:
+            if len(id_in_queue) != 1:
+                raise ValueError('more than one ' + id + ' in the queue!')
+            node.inQueue=False
+            path.queue[path.queue.index(id_in_queue[0])]=path.queue[-1]
+            path.queue.pop()
+            heapq.heapify(path.queue)
+          
+
+          
+##Compute the shortest path using D* Lite
+##returns flase if no path was found
+def compute_shortest_path(path,graph,G,edges):
+
+    path.start.key=calculateKey(path.start, path.start, path)
+    k_old=top_key(path.queue)
+   
+    while path.start.rhs>path.start.g or compare_keys(k_old,path.start.key):
+
+        if len(path.queue)==0:
+            print("No path found!")
+            return 0
+
+        k_old=top_key(path.queue)
+        current_node=path.queue[0][3]#get the node with the highest priority
+        current_node.expanded=True
+        
+        k_new=calculateKey(current_node, path.start, path)
+        
+        if compare_keys(k_old, k_new):
+            heapq.heappop(path.queue)
+            current_node.key=k_new
+            current_node.inQueue=True
+            current_node.expanded=True
+            heapq.heappush(path.queue, (current_node.key[0],current_node.key[1],current_node.index,current_node))
+            
+        elif current_node.g>current_node.rhs:
+            current_node.g=current_node.rhs
+            heapq.heappop(path.queue)
+            current_node.inQueue=False
+
+            for p in current_node.parents:
+                pred_node=graph[p]  
+
+                if pred_node!=path.goal:
+                    pred_node.rhs=min(pred_node.rhs,current_node.g+compute_c(pred_node,current_node,edges,path.speed))
+                update_vertex(path, pred_node)
+        else:
+            g_old=copy.deepcopy(current_node.g)
+            current_node.g=float('inf')
+            pred_node=current_node
+
+                    
+            for p in current_node.parents:
+                parent=graph[p]
+                if parent.rhs==(g_old+compute_c(parent,current_node,edges,path.speed)):
+                    if(parent!=path.goal):
+                        tt=[]
+                        for ch in parent.children:
+                            child=graph[ch]
+                            tt.append(child.g+compute_c(parent,child,edges,path.speed))
+                        parent.rhs=min(tt)
+                update_vertex(path, parent)
+            if pred_node.rhs==g_old:
+                if pred_node!= path.goal:
+                    tt=[]
+                    for ch in pred_node.children:
+                        child=graph[ch]
+                        tt.append(child.g+compute_c(pred_node,child,edges,path.speed))
+                    pred_node.rhs=min(tt)
+            update_vertex(path, pred_node)               
+
+        k_old=top_key(path.queue)
+        path.start.key=calculateKey(path.start, path.start, path)
+        
+
+    path.start.g=path.start.rhs
+            
+    return 'Path found!'
+
 
 
 """
@@ -478,63 +586,159 @@ def computeAngle(point1, point2):
     angle = round(math.degrees(math.atan(height/base)), 3)
     return(angle)
 
-##Class handling the path planning process
+
+
 class PathPlanning:
     
-    def __init__(self,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest):
+    def __init__(self,aircraft_type,open_airspace_grid,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest):
+        self.aircraft_type=aircraft_type
         self.start_index=None
         self.start_index_previous=None
+        self.start_in_open=True
         self.goal_index=None
         self.goal_index_next=None
+        self.dest_in_open=True
+        self.open_airspace_grid=open_airspace_grid#open_airspace_grid#copy.deepcopy(open_airspace_grid)
+        self.flow_control_graph=copy.deepcopy(flow_control_graph)#flow_control_graph#copy.deepcopy(flow_control_graph)
+        self.gdf=gdf#copy.deepcopy(gdf)
         self.G = None#G
-        self.edge_gdf=None#copy.deepcopy(edges)
+        self.edge_gdf=None
         self.path=None
         self.os_keys_dict_succ={}
         self.os_keys_dict_pred={}
-        self.os_keys_dict={}
         self.route=[]
         self.turns=[]
-        self.flow_control_graph=flow_control_graph
-        self.gdf=gdf
+
         self.start_point=Point(tuple((lon_start,lat_start)))
         self.goal_point=Point(tuple((lon_dest,lat_dest)))
         self.cutoff_angle=20
-        self.conversions=Conversions(0,0)
-        self.route_nodes=[]
-
-
-        exp_const=00.5##0.005 ## we need to think about the value of that constant
-        box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
-
-        self.G,edges=self.flow_control_graph.extract_subgraph(box)
-
-        self.edge_gdf=copy.deepcopy(edges)
-
-
-        #find start and destination nodes
-        point=(lat_start,lon_start)
-        geometry, u, v=get_nearest_edge(self.gdf, point)
-        self.start_index=v
-        self.start_index_previous=u
         
-        point=(lat_dest,lon_dest)
-        geometry, u, v=get_nearest_edge(self.gdf, point)
-        self.goal_index=u
-        self.goal_index_next=v
+        self.open_airspace_cells=[]
+        
+        if self.aircraft_type==1:
+            self.speed_max=10.29 ##20 knots
+        elif self.aircraft_type==2:
+            self.speed_max=15.43 # 30 knots
+            
+        for i in range(len(self.open_airspace_grid.grid)):
+            p=copy.deepcopy(self.open_airspace_grid.grid[i])
+   
+            y = np.array([[p.p0[0], p.p0[1]], [p.p1[0], p.p1[1]], [p.p2[0] ,p.p2[1]], [p.p3[0], p.p3[1]]])
+            self.open_airspace_cells.append([y,i])
 
-       # d_start,self.start_index=self.flow_control_graph.get_nearest_node(lon_start,lat_start)
-        #d_dest,self.goal_index=self.flow_control_graph.get_nearest_node(lon_dest,lat_dest)
+
+        if self.start_in_open:
+            transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+            p=transformer.transform(lat_start,lon_start)
+            min_x_ind=sort_cells_x(self.open_airspace_cells)
+            winner=check_where(p,min_x_ind,self.open_airspace_cells)
+            if winner==-1:
+                self.start_in_open=False
+                point=(lat_start,lon_start)
+                geometry, u, v=get_nearest_edge(self.gdf, point)
+                self.start_index=v
+                self.start_index_previous=u
+            else:
+                open_start=winner[1]
+                self.start_index=self.open_airspace_grid.grid[open_start].key_index
+                self.start_index_previous=0
+
+
         
+        if self.dest_in_open:
+            transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+            p=transformer.transform(lat_dest,lon_dest)
+            min_x_ind=sort_cells_x(self.open_airspace_cells)
+            winner=check_where(p,min_x_ind,self.open_airspace_cells)
+            if winner==-1:
+                self.dest_in_open=False
+                point=(lat_dest,lon_dest)
+                geometry, u, v=get_nearest_edge(self.gdf, point)
+                self.goal_index=u
+                self.goal_index_next=v
+            else:
+                open_goal=winner[1]
+                self.goal_index=self.open_airspace_grid.grid[open_goal].key_index
+                self.goal_index_next=0
+
+        self.open_airspace_cells=[]   
+            
+        if self.goal_index_next==self.start_index or self.goal_index==self.start_index:
+            print("same")
+            
+            
+        #find the area of interest based on teh start and goal point
+        ##TODO: tune the exp_const
+        if not self.start_in_open and not self.dest_in_open:
+            exp_const=0.02##0.005 ## we need to think about the value of that constant
+            box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
+            
+            G,edges=self.flow_control_graph.extract_subgraph(box)#self.flow_control_graph.extract_subgraph(box)#copy.deepcopy(self.flow_control_graph.extract_subgraph(box))
+            self.G=copy.deepcopy(G)
+            self.edge_gdf=copy.deepcopy(edges)
+        else:
+            exp_const=0.02##0.005 ## we need to think about the value of that constant
+            #box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
+            box=bbox(min(self.start_point.y,self.goal_point.y)-exp_const,min(self.start_point.x,self.goal_point.x)-exp_const,max(self.start_point.y,self.goal_point.y)+exp_const,max(self.start_point.x,self.goal_point.x)+exp_const) 
+    
+            edges=self.flow_control_graph.extract_subgraph(box)
+            self.G=copy.deepcopy(G)
+            self.edge_gdf=copy.deepcopy(edges)
+            
         
+        del self.flow_control_graph #empty these, we do no tneed it any more
+        
+
         #Create the graph
         self.graph=[]
+
+        transformer = Transformer.from_crs('epsg:32633', 'epsg:4326')
+        #Add open airspace nodes to graph
+        for i in range(len(self.open_airspace_grid.grid)):
+           cell=self.open_airspace_grid.grid[i]
+           group=-1
+           x=cell.center_x
+           y=cell.center_y
+           p=transformer.transform(x,y)
+           lon=p[1]
+           lat=p[0]
+           key=cell.key_index
+           dict_tmp={}
+           dict_tmp[0]=i
+           self.os_keys_dict_pred[key]=dict_tmp
+           self.os_keys_dict_succ[key]=dict_tmp
+           z=25 # 30 feet /2 in meters
+           node=Node(key,lon,lat,z,i,group)
+           node.open_airspace=True
+           node.cell=CellNode(cell)
+           node.x_cartesian=cell.center_x
+           node.y_cartesian=cell.center_y
+           for j in cell.neighbors:
+               node.children.append(j)
+
+
+           self.graph.append(node)
+           
+        for node in self.graph:      
+            neighboors=copy.deepcopy(node.children)
+            node.children=[]
+            for i in neighboors:
+                key=self.os_keys_dict_succ[i][0]
+                node.children.append(key)
+                node.parents.append(key)
+
+
+        ##Add constrained nodes to graph
         omsnx_keys_list=list(self.G.keys())
+        transformer = Transformer.from_crs( 'epsg:4326','epsg:32633')
+             
         
         new_nodes_counter=0
+        graph_len=len(self.graph)
         for i in range(len(omsnx_keys_list)):
            key=omsnx_keys_list[i]
-           x=self.G[key].x
-           y=self.G[key].y 
+           lon=self.G[key].x
+           lat=self.G[key].y 
 
            parents=self.G[key].parents
            children=self.G[key].children
@@ -546,81 +750,88 @@ class PathPlanning:
                if not ii:
                    if p in list(self.edge_gdf.keys()) and key in self.edge_gdf[p]: 
 
-                       group=self.edge_gdf[p][key].stroke_group
+                       group=int(self.edge_gdf[p][key].stroke_group)
                        z=self.edge_gdf[p][key].layer_alt
-                       node=Node(key,x,y,z,i+new_nodes_counter,group)
-                       node.x_cartesian,node.y_cartesian=self.conversions.geodetic2cartesian(y,x)
-                       my_group.update({i+new_nodes_counter:group})
+                       node=Node(key,lon,lat,z,i+new_nodes_counter+graph_len,group)
+                       p=transformer.transform(lat,lon)
+                       node.x_cartesian,node.y_cartesian =p[0],p[1]
+                       my_group.update({i+new_nodes_counter+graph_len:group})
                        self.graph.append(node)
                        tmp.append(group)
                        ii=ii+1
                        if key in self.os_keys_dict_pred.keys():
-                           self.os_keys_dict_pred[key][p]=i+new_nodes_counter
+                           self.os_keys_dict_pred[key][p]=i+new_nodes_counter+graph_len
                        else:
                            dict={}
-                           dict[p]=i+new_nodes_counter
+                           dict[p]=i+new_nodes_counter+graph_len
                            self.os_keys_dict_pred[key]=dict
                else: 
                 if p in list(self.edge_gdf.keys()) and key in self.edge_gdf[p]: 
 
                         new_nodes_counter=new_nodes_counter+1
-                        group=self.edge_gdf[p][key].stroke_group
+                        group=int(self.edge_gdf[p][key].stroke_group)
                         z=self.edge_gdf[p][key].layer_alt
-                        node=Node(key,x,y,z,i+new_nodes_counter,group)
-                        node.x_cartesian,node.y_cartesian=self.conversions.geodetic2cartesian(y,x)
-                        my_group.update({i+new_nodes_counter:group})
+                        node=Node(key,lon,lat,z,i+new_nodes_counter+graph_len,group)
+                        p=transformer.transform(lat,lon)
+                        node.x_cartesian,node.y_cartesian = p[0],p[1]
+                        my_group.update({i+new_nodes_counter+graph_len:group})
                         self.graph.append(node)
                         tmp.append(group)
                         ii=ii+1
                         if key in self.os_keys_dict_pred.keys():
-                           self.os_keys_dict_pred[key][p]=i+new_nodes_counter
+                           self.os_keys_dict_pred[key][p]=i+new_nodes_counter+graph_len
                         else:
                            dict={}
-                           dict[p]=i+new_nodes_counter
+                           dict[p]=i+new_nodes_counter+graph_len
                            self.os_keys_dict_pred[key]=dict
                            
            for ch in children:
-                group=self.edge_gdf[key][ch].stroke_group
+                group=int(self.edge_gdf[key][ch].stroke_group)
                 if not group in tmp:
                     if not ii:
                         z=self.edge_gdf[key][ch].layer_alt
-                        node=Node(key,x,y,z,i+new_nodes_counter,group)
-                        node.x_cartesian,node.y_cartesian=self.conversions.geodetic2cartesian(y,x)
-                        my_group.update({i+new_nodes_counter:group})
+                        node=Node(key,lon,lat,z,i+new_nodes_counter+graph_len,group)
+                        p=transformer.transform(lat,lon)
+                        node.x_cartesian,node.y_cartesian = p[0],p[1]
+                        my_group.update({i+new_nodes_counter+graph_len:group})
                         
                         self.graph.append(node)
                         tmp.append(group)
                         ii=ii+1
                         if key in self.os_keys_dict_succ.keys():
-                           self.os_keys_dict_succ[key][ch]=i+new_nodes_counter
+                           self.os_keys_dict_succ[key][ch]=i+new_nodes_counter+graph_len
                         else:
                            dict={}
-                           dict[ch]=i+new_nodes_counter
+                           dict[ch]=i+new_nodes_counter+graph_len
                            self.os_keys_dict_succ[key]=dict
                         
                     else:
                         new_nodes_counter=new_nodes_counter+1
                         z=self.edge_gdf[key][ch].layer_alt
-                        node=Node(key,x,y,z,i+new_nodes_counter,group)
-                        node.x_cartesian,node.y_cartesian=self.conversions.geodetic2cartesian(y,x)
-                        my_group.update({i+new_nodes_counter:group})
+                        node=Node(key,lon,lat,z,i+new_nodes_counter+graph_len,group)
+                        p=transformer.transform(lat,lon)
+                        node.x_cartesian,node.y_cartesian = p[0],p[1]
+                        my_group.update({i+new_nodes_counter+graph_len:group})
                         self.graph.append(node)
                         tmp.append(group)
                         ii=ii+1
                         if key in self.os_keys_dict_succ.keys():
-                           self.os_keys_dict_succ[key][ch]=i+new_nodes_counter
+                           self.os_keys_dict_succ[key][ch]=i+new_nodes_counter+graph_len
                         else:
                            dict={}
-                           dict[ch]=i+new_nodes_counter
+                           dict[ch]=i+new_nodes_counter+graph_len
                            self.os_keys_dict_succ[key]=dict
                         
            if ii==0:
                 z=10 ########Need to find what altitude that should be 
-                node=Node(key,x,y,z,i+new_nodes_counter,-1)
-                node.x_cartesian,node.y_cartesian=self.conversions.geodetic2cartesian(y,x)
+                node=Node(key,lon,lat,z,i+new_nodes_counter+graph_len,-1)
+                p=transformer.transform(lat,lon)
+                node.x_cartesian,node.y_cartesian =p[0],p[1]
                 self.graph.append(node)
 
-                self.os_keys_dict[key]=i+new_nodes_counter
+                self.os_keys_dict_succ[key]=i+new_nodes_counter+graph_len
+                self.os_keys_dict_pred[key]=i+new_nodes_counter+graph_len
+                #print("No succ or pred: "+str(key))
 
                         
            if len(my_group)>1:
@@ -628,72 +839,112 @@ class PathPlanning:
                    for index_ in my_group:
                         if my_group[index]!=my_group[index_] and index!=index_:
                             self.graph[index].children.append(index_)
-                            self.graph[index].parents.append(index_)
-                      
+                            self.graph[index].parents.append(index_)            
+           
         #add the children and parents to each node                
-        for i in self.graph:
-            key=i.key_index
-            parents=self.G[key].parents
-            children=self.G[key].children
-            for p in parents:
-                for j in self.graph:
-                    if p==j.key_index and (j.group==i.group or i.group==-1) :
-                        i.parents.append(j.index)
-                        
-                        if i.key_index in self.os_keys_dict_pred.keys():
-                                self.os_keys_dict_pred[i.key_index][p]=i.index
-                        else:
-                                dict={}
-                                dict[p]=i.index
-                                self.os_keys_dict_pred[i.key_index]=dict                        
-                        
-                        break
-          
-            for ch in children:
-                for j in self.graph:
-                    if ch==j.key_index and (j.group==i.group or i.group==-1):
-                        i.children.append(j.index)
-                        
-                        if i.key_index in self.os_keys_dict_succ.keys():
-                                self.os_keys_dict_succ[i.key_index][ch]=i.index
-                        else:
-                                dict={}
-                                dict[ch]=i.index
-                                self.os_keys_dict_succ[i.key_index]=dict                        
-                        
-                        break
+        for ii,i in enumerate(self.graph):
+            if ii<graph_len:
+                cell=self.open_airspace_grid.grid[ii]
+                z_p=25
+                z_ch=25
+                for ch in cell.entry_list:
+                    for j in self.graph:
+                        if ch==j.key_index and j.z==z_ch:
+                            i.children.append(j.index)
+                            j.parents.append(i.index)
+                            
+                            if i.key_index in self.os_keys_dict_succ.keys():
+                                    self.os_keys_dict_succ[i.key_index][ch]=i.index
+                            else:
+                                    dict={}
+                                    dict[p]=i.index
+                                    self.os_keys_dict_succ[i.key_index]=dict   
+                                    
+                            if j.key_index in self.os_keys_dict_pred.keys():
+                                    self.os_keys_dict_pred[j.key_index][i.key_index]=j.index
+                            else:
+                                    dict={}
+                                    dict[i.key_index]=j.index
+                                    self.os_keys_dict_pred[j.key_index]=dict 
+                            break                    
+                for p in cell.exit_list:
+                    for j in self.graph:
+                        if p==j.key_index and j.z==z_p:
+                            i.parents.append(j.index)
+                            j.children.append(i.index)
+                            
+                            if i.key_index in self.os_keys_dict_pred.keys():
+                                    self.os_keys_dict_pred[i.key_index][p]=i.index
+                            else:
+                                    dict={}
+                                    dict[p]=i.index
+                                    self.os_keys_dict_pred[i.key_index]=dict   
+                                    
+                            if j.key_index in self.os_keys_dict_succ.keys():
+                                    self.os_keys_dict_succ[j.key_index][i.key_index]=j.index
+                            else:
+                                    dict={}
+                                    dict[i.key_index]=j.index
+                                    self.os_keys_dict_succ[j.key_index]=dict 
+                            break
+            else:
+                key=i.key_index
+                parents=self.G[key].parents
+                children=self.G[key].children
+                for p in parents:
+                    for j in self.graph:
+                        if p==j.key_index and (j.group==i.group or i.group==-1) :
+                            i.parents.append(j.index)
+                            
+                            if i.key_index in self.os_keys_dict_pred.keys():
+                                    self.os_keys_dict_pred[i.key_index][p]=i.index
+                            else:
+                                    dict={}
+                                    dict[p]=i.index
+                                    self.os_keys_dict_pred[i.key_index]=dict                        
+                            
+                            break
+              
+                for ch in children:
+                    for j in self.graph:
+                        if ch==j.key_index and (j.group==i.group or i.group==-1):
+                            i.children.append(j.index)
+                            
+                            if i.key_index in self.os_keys_dict_succ.keys():
+                                    self.os_keys_dict_succ[i.key_index][ch]=i.index
+                            else:
+                                    dict={}
+                                    dict[ch]=i.index
+                                    self.os_keys_dict_succ[i.key_index]=dict                        
+                            break
+               
 
         
         
     ##Function handling the path planning process
-    ##Retruns: route,turns,edges_list,next_turn_point,groups
-    ##route is the list of waypoints (lat,lon,alittude)
-    ##turns is the list of booleans indicating for every waypoint if it is a turn
-    ##edges_list is the list of the edge in which is every waypoint, each edge is defined as a tuple (u,v) where u,v are the osmnx indices of the nodes defineing the edge
-    ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint     
-    ##groups is the list of the group in which each waypoint belongs to        
+    ##Retruns: route
+    ##route is the list of waypoints (x,y,alittude)     
     def plan(self):
 
         start_id=self.os_keys_dict_pred[self.start_index][self.start_index_previous]
         goal_id=self.os_keys_dict_succ[self.goal_index][self.goal_index_next]
         
         start_node=self.graph[start_id] 
-        x_start=start_node.x
-        y_start=start_node.y
+        x_start=start_node.lon
+        y_start=start_node.lat
         
         goal_node=self.graph[goal_id] 
         
-        x_goal=goal_node.x
-        y_goal=goal_node.y
+        x_goal=goal_node.lon
+        y_goal=goal_node.lat
          
         
         
-        self.path=Path(start_node,goal_node)
-        self.route_origin_node=copy.deepcopy(self.path.start)
+        self.path=Path(start_node,goal_node,self.speed_max)
         
         initialise(self.path)
         
-        path_found=compute_shortest_path(self.path,self.graph, self.G,self.edge_gdf)
+        path_found=compute_shortest_path(self.path,self.graph,self.G,self.edge_gdf)
         print(path_found)
         
         route=[]
@@ -703,13 +954,12 @@ class PathPlanning:
         indices_nodes=[]
         turn_indices=[]
         if path_found:
-            route,turns,indices_nodes,turn_coord,groups=self.get_path(self.path,self.graph, self.G,self.edge_gdf)
-            
-            
-            os_id1=indices_nodes[0]
-            os_id2=indices_nodes[1]
+            route,turns,indices_nodes,turn_coord,groups,in_constrained=self.get_path(self.path,self.graph, self.G,self.edge_gdf)
+
+            os_id1=self.start_index_previous
+            os_id2=indices_nodes[0]
             cnt=0
-            for i in range(1,len(indices_nodes)):
+            for i in range(0,len(indices_nodes)):
                 if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
                     cnt=cnt+1
                 else:
@@ -737,8 +987,9 @@ class PathPlanning:
         self.edges_list=edges_list
         self.next_turn_point=next_turn_point
         self.groups=groups    
+        self.in_constrained=in_constrained
         
-        return route,turns,edges_list,next_turn_point,groups
+        return route,turns,edges_list,next_turn_point,groups,in_constrained
     
     ##Function to export the route based on the D* search graph
     ##Retruns: route,turns,next_node_index,turn_coord,groups
@@ -749,37 +1000,35 @@ class PathPlanning:
     ##groups is the list of the group in which each waypoint belongs to
     def get_path(self,path,graph, G,edges,edges_old=None,change=False,change_list=[]):
 
-        route=[]
-        group_numbers=[]
-        turn_coords=[]
+        route_centers=[]
         next_node_index=[]
+        group_numbers=[]
         turns=[]
+        turn_coords=[]
+        airspace_transitions=[]
+        in_open_airspace=False
+        in_constrained=[] #list indicating in every waypoint is in constrained airspace (value=1) or in open airspace (value =0)
         
         path_found=True
         
         if change: #Scan for changes
-            #path.k_m=path.k_m+heuristic(current_node, path.start) ###############not sure for that
-            #path.start=current_node ###############not sure for that
-            path.k_m=path.k_m+heuristic(graph[path.origin_node_index],path.start)#path.k_m+graph[path.origin_node_index].g-path.start.g#heuristic(path.start,self.route_origin_node)
-            #path.queue=[]
+        ##replan
+            path.k_m=path.k_m+heuristic(graph[path.origin_node_index],path.start,path.speed)
             for c in change_list:
                 
-
                 if not  c[0].expanded or not c[1].expanded:
                     print("not expanded")
                     
-                print(c[0].key_index,c[1].key_index)
-                print(c[0].index,c[1].index)
 
-                c_old=compute_c(c[0], c[1],edges_old)
+                c_old=compute_c(c[0], c[1],edges_old,path.speed)
 
                     #update cost and obstacles here
-                if c_old>compute_c(c[0], c[1],edges): #if cost is decreased
+                if c_old>compute_c(c[0], c[1],edges,path.speed): #if cost is decreased
 
                     if(c[0]!=path.goal):
     
-                        c[0].rhs=min(c[0].rhs,compute_c(c[0], c[1], edges)+c[1].g)
-                        c[0].g=c[0].rhs
+                        c[0].rhs=min(c[0].rhs,compute_c(c[0], c[1], edges)+c[1].g,path.speed)
+
                             
                 elif c[0].rhs== c_old+c[1].g: #if cost is increased
 
@@ -787,39 +1036,27 @@ class PathPlanning:
                         tt=[]
                         for ch in c[0].children:
                             child=graph[ch]
-                            tt.append(child.g+compute_c( c[0],child, edges))
+                            tt.append(child.g+compute_c( c[0],child, edges,path.speed))
                         c[0].rhs=min(tt)
-                        c[0].g=c[0].rhs
-                update_vertex(path, c[0])
-# =============================================================================
-#                 path.start.g=float('inf')## not sure for that
-#                 path.start.rhs=float('inf')## not sure for that
-#                 
-#                 path.goal.inQueue=True
-#                 heapq.heappush(path.queue, (path.goal.h,0,path.goal.x,path.goal.y,path.goal.z,path.goal.index, path.goal))## TODO :that might add delay, check that
-#                 path_found=compute_shortest_path(path,graph,G,edges)
-# =============================================================================
+                        path.start.rhs=float('inf')## not sure for that
 
-                path.start.g=float('inf')## not sure for that
-                path.start.rhs=float('inf')## not sure for that
+                update_vertex(path, c[0])
+                
+
+                #path.start.g=float('inf')## not sure for that
+                #path.start.rhs=float('inf')## not sure for that
                 
                 edges_old[c[0].key_index][c[1].key_index].speed=edges[c[0].key_index][c[1].key_index].speed
-                path_found=compute_shortest_path(path,graph,G,edges_old)
-                #path_found=compute_shortest_path(path,graph,G,edges)
+            path_found=compute_shortest_path(path,graph,G,edges_old)
 
 
-                print(path_found)
-                change=False 
-                if not  path_found:
-                    print("Compute path all from the start")
-                    break
+            print(path_found)
+            change=False 
+            if not  path_found:
+                print("Compute path all from the start")
+                #break
                 
         if not  path_found:
-                    #path.start.g=float('inf')## not sure for that
-                    #path.goal.inQueue=True
-                   # path.start.g=float('inf')## not sure for that
-                   # path.start.rhs=float('inf')## not sure for that
-                    #heapq.heappush(path.queue, (path.goal.h,0,path.goal.x,path.goal.y,path.goal.z,path.goal.index, path.goal))## TODO :that might add delay, check that
             for i in range(len(graph)):
                 n=graph[i]
                 n.g=float('inf')
@@ -831,103 +1068,231 @@ class PathPlanning:
                 self.route_origin_node=copy.deepcopy(path.start)
                     
             initialise(path)
-            path_found=compute_shortest_path(path,graph,G,edges)           
+            path_found=compute_shortest_path(path,graph,G,edges) 
+            
         if not path_found:
-            #return self.route_get,self.turns_get,self.next_node_index_get,self.turn_coords_get,self.group_numbers_get
             return None,None,None,None,None
-            
-            
         
-        linestring=edges[self.start_index_previous][self.start_index].geometry
-        next_node_index.append(self.start_index_previous)
-        coords = list(linestring.coords)
-        for c in range(len(coords)-1):
-            if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((self.start_point.x,self.start_point.y)),tuple((path.start.x,path.start.y)))):
-                tmp=(coords[c][0],coords[c][1],path.start.z) #the points before the first node
-                route.append(tmp) 
-                group_numbers.append(path.start.group)
-                next_node_index.append(self.start_index)
-                turns.append(0)
-                
 
         next_node_index.append(self.start_index)
-        tmp=(path.start.x,path.start.y,path.start.z)
+        tmp=(self.start_point.x,self.start_point.y,path.start.z)
         group_numbers.append(path.start.group)
-        route.append(tmp)
+        route_centers.append(tmp)
         turns.append(0)
-        
-        group=path.start.group
-        
-        
-        
-        while path.start.key_index!=path.goal.key_index :
-            
-    
-            current_node=path.start
-# =============================================================================
-#             print("while")
-#             print(current_node.index)
-#             print(current_node.g)
-# 
-# =============================================================================
-            minim=float('inf')
-            for ch in path.start.children:
-                n=graph[ch]
-                #print(n.g)
 
-                if compute_c(path.start, n,edges)+n.g<minim:
-                    minim=compute_c(path.start, n,edges)+n.g
-                    current_node=n
-                    
-        
-        
-            if current_node.key_index!=path.start.key_index:
-                #find the intermediate points
-                pp=1
-                linestring=edges[path.start.key_index][current_node.key_index].geometry #if the start index should go first need to get checked
-                coords = list(linestring.coords)
-                for c in range(len(coords)-1):
-                    if not c==0:
-                        tmp=(coords[c][0],coords[c][1],current_node.z) #the intermediate point
-                        route.append(tmp) 
-                        group_numbers.append(current_node.group)
-                        next_node_index.append(current_node.key_index)
-                        turns.append(0)
-
-                next_node_index.append(current_node.key_index)
-                tmp=(current_node.x,current_node.y,current_node.z) #the next node
-                group_numbers.append(current_node.group)
-                route.append(tmp)
-                turns.append(0)
+        if not path.start.open_airspace:     
+            linestring=edges[self.start_index_previous][self.start_index].geometry
+            coords = list(linestring.coords)
+            for c in range(len(coords)-1):
+                if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((self.start_point.x,self.start_point.y)),tuple((path.start.lon,path.start.lat)))):
+                    tmp=(coords[c][0],coords[c][1],path.start.z) #the points before the first node
+                    route_centers.append(tmp) 
+                    group_numbers.append(path.start.group)
+                    next_node_index.append(self.start_index)
+                    turns.append(0)
                 
 
-            path.start=current_node
-            
-       
-        tmp=(path.goal.x,path.goal.y,path.goal.z)
-        route.append(tmp)
-        next_node_index.append(path.goal.key_index)
-        group_numbers.append(-1)
-        turns.append(0)
-         
-
-        linestring=edges[self.goal_index][self.goal_index_next].geometry
-        coords = list(linestring.coords)
-        for c in range(len(coords)-1):
-            if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((self.goal_point.x,self.goal_point.y)),tuple((path.goal.x,path.goal.y)))):
-                tmp=(coords[c][0],coords[c][1],path.start.z) #the points before the first node
-                route.append(tmp) 
-                group_numbers.append(-1)
-                next_node_index.append(self.goal_index_next)
-                turns.append(0)
-
-        tmp=(self.goal_point.x,self.goal_point.y,path.goal.z)
-        route.append(tmp)
-        group_numbers.append(-1)
-        next_node_index.append(self.goal_index_next)
-        turns.append(0)
+            next_node_index.append(self.start_index)
+            tmp=(path.start.lon,path.start.lat,path.start.z)
+            group_numbers.append(path.start.group)
+            route_centers.append(tmp)
+            turns.append(0)
+        if path.start.group==-1:
+            airspace_transitions.append(0)
+            in_open_airspace=True
+        
+        group=path.start.group            
 
         
+        selected_nodes_index=[]
+        selected_nodes_index.append(path.start.index)
+        
+        while path.start.key_index!=path.goal.key_index :
+    
+            current_node=path.start
+            minim=float('inf')
+
+            
+            for ch in path.start.children:
+                n=graph[ch]
+               
+                if compute_c(path.start, n,edges,path.speed)+n.g<minim:
+                    minim=compute_c(path.start, n,edges,path.speed)+n.g
+                    current_node=n
+                    
+                    
+            if current_node.index in selected_nodes_index:
+                print("get_path stack")
+                break
+                
+            selected_nodes_index.append(current_node.index)
+
+                    
+            if current_node.key_index!=path.start.key_index:
+                
+                if not current_node.open_airspace and not path.start.open_airspace:
+                    #find the intermediate points
+                    pp=1
+                    linestring=edges[path.start.key_index][current_node.key_index].geometry #if the start index should go first need to get checked
+                    coords = list(linestring.coords)
+                    for c in range(len(coords)-1):
+                        if not c==0:
+                            tmp=(coords[c][0],coords[c][1],current_node.z) #the intermediate point
+                            route_centers.append(tmp) 
+                            group_numbers.append(current_node.group)
+                            next_node_index.append(current_node.key_index)
+                            turns.append(0)
+
+                if current_node.key_index!=path.goal.key_index or not current_node.open_airspace:
+                    next_node_index.append(current_node.key_index)
+                    tmp=(current_node.lon,current_node.lat,current_node.z) #the next node
+                    group_numbers.append(current_node.group)
+                    route_centers.append(tmp)
+                    turns.append(0)  
+                    
+                    if current_node.group==-1 and not in_open_airspace:
+                        airspace_transitions.append(len(group_numbers)-1)
+                        in_open_airspace=True
+                    elif current_node.group!=-1 and  in_open_airspace:
+                        airspace_transitions.append(len(group_numbers)-1)
+                        in_open_airspace=False
+                
+   
+            path.start=current_node
+            
+           
+          
+        if not path.goal.open_airspace: 
+    
+            linestring=edges[self.goal_index][self.goal_index_next].geometry
+            coords = list(linestring.coords)
+            for c in range(len(coords)-1):
+                if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((self.goal_point.x,self.goal_point.y)),tuple((path.goal.lon,path.goal.lat)))):
+                    tmp=(coords[c][0],coords[c][1],path.start.z) #the points before the first node
+                    route_centers.append(tmp) 
+                    group_numbers.append(path.goal.group)
+                    next_node_index.append(self.goal_index_next)
+                    turns.append(0)
+                
+
+            tmp=(self.goal_point.x,self.goal_point.y,path.goal.z)
+            route_centers.append(tmp)
+            group_numbers.append(path.goal.group)
+            next_node_index.append(self.goal_index_next)
+            turns.append(0)   
+        else:
+            tmp=(self.goal_point.x,self.goal_point.y,path.goal.z)
+            route_centers.append(tmp)
+            group_numbers.append(path.goal.group)
+            next_node_index.append(self.goal_index)
+            turns.append(0)  
+
+        if in_open_airspace:
+            airspace_transitions.append(len(group_numbers)-1)
+            in_open_airspace=False
+        
+        delete_indices=[]
+        
+        if len(airspace_transitions)==0:
+            route=route_centers
+        else:
+            open_i=0
+            transformer1 = Transformer.from_crs( 'epsg:32633','epsg:4326')
+            
+            route=[]
+            route.append(route_centers[0])
+
+            if airspace_transitions[open_i]>0:
+                p1=[route_centers[airspace_transitions[open_i]-1][0],route_centers[airspace_transitions[open_i]-1][1]]
+            else:
+                p1=[route_centers[airspace_transitions[open_i]][0],route_centers[airspace_transitions[open_i]][1]]
+            p2=[route_centers[airspace_transitions[open_i+1]][0],route_centers[airspace_transitions[open_i+1]][1]]
+            transformer2 = Transformer.from_crs( 'epsg:4326','epsg:32633')
+            
+            p1=transformer2.transform(p1[1],p1[0])
+            p2=transformer2.transform(p2[1],p2[0])  
+
+            
+            
+            for j in range(len(next_node_index)-2):
+                if j+1>airspace_transitions[open_i+1]:
+                    if open_i+2<len(airspace_transitions):
+                        open_i=open_i+2
+                    
+                        p1=[route_centers[airspace_transitions[open_i]-1][0],route_centers[airspace_transitions[open_i]-1][1]]
+                        p2=[route_centers[airspace_transitions[open_i+1]][0],route_centers[airspace_transitions[open_i+1]][1]]
+                        transformer2 = Transformer.from_crs( 'epsg:4326','epsg:32633')
+                        
+                        p1=transformer2.transform(p1[1],p1[0])
+                        p2=transformer2.transform(p2[1],p2[0])
+
+    
+                if  group_numbers[j+1]!=-1: 
+                    route.append(route_centers[j+1])
+                else:
+                    if j==0 and  group_numbers[j]!=-1:
+                        i=self.start_index_previous
+                    elif group_numbers[j]!=-1:
+                        i=next_node_index[j]
+                    else:
+                        i=0
+    
+                    ii=next_node_index[j+1]
+
+                    node1=self.graph[self.os_keys_dict_pred[ii][i]]
+
+                    if group_numbers[j+1]!=-1 or group_numbers[j+2]!=-1:
+                        i=next_node_index[j+1]
+                    else:
+                        i=0
+                    
+                    ii=next_node_index[j+2]
+                    
+                    if group_numbers[j+2]!=-1:
+                        delete_indices.append(j+1)
+                        
+                        continue
+    
+                    node2=self.graph[self.os_keys_dict_pred[ii][i]]
+                    
+                    
+                    if node1.cell.p0[0]==node2.cell.p2[0] :
+                        ymin=max(node1.cell.p1[1],node2.cell.p2[1])
+                        ymax=min(node1.cell.p0[1],node2.cell.p3[1])
+                        edge=[[node1.cell.p0[0],ymin],[node1.cell.p0[0],ymax]]
+                    elif node1.cell.p2[0]==node2.cell.p0[0]:
+                        ymin=max(node1.cell.p2[1],node2.cell.p1[1])
+                        ymax=min(node1.cell.p3[1],node2.cell.p0[1])
+                        edge=[[node1.cell.p2[0],ymin],[node1.cell.p2[0],ymax]]
+
+
+                    pp1=find_closest_point_on_linesegment(edge,p1)
+
+                    intersection=intersect(p1,p2,edge[0],edge[1])
+                    if intersection:
+                        px,py=line_intersection_point([p1,p2], edge)
+                    else:
+                        px=pp1[0]
+                        py=pp1[1]
+
+                    p=[px,py]                   
+                    p1=p
+                          
+                    tranformed_p=transformer1.transform(px,py)
+                    lon,lat =tranformed_p[1],tranformed_p[0]
+              
+                    tmp=(lon,lat,node1.z)
+                    route.append(tmp)
+                    
+            route.append(route_centers[len(route_centers)-1])
+            
+        for i in range(len(delete_indices)):
+            j=delete_indices[len(delete_indices)-1-i]
+            del group_numbers[j]
+            del turns[j]
+            del route_centers[j]
+            del next_node_index[j]
+            
         ##Check for turn points
         lat_prev=self.start_point.x
         lon_prev=self.start_point.y
@@ -942,29 +1307,35 @@ class PathPlanning:
             line_string_2 = [(lat_cur,lon_cur), (lat_next,lon_next)]
             angle = 180 - angleBetweenTwoLines(line_string_1,line_string_2)
 
-            if angle>self.cutoff_angle and turns[i-1]!=1:
+            if angle>self.cutoff_angle and turns[i-1]!=1 and group_numbers[i-1]!=-1:
                 turns[i-1]=1
                 tmp=(route[i-1][0],route[i-1][1])
                 turn_coords.append(tmp)
             lat_prev=lat_cur
             lon_prev=lon_cur
-            if group_numbers[i]==group_numbers[i+1]:
+            if group_numbers[i]==group_numbers[i+1] or group_numbers[i+1]==-1:
                 continue
             elif turns[i+1]!=1:
                 turns[i+1]=1
                 tmp=(route[i+1][0],route[i+1][1])
                 turn_coords.append(tmp)
         turn_coords.append((-1,-1))
-        
+
+        for i in group_numbers:
+            if i==-1:
+                in_constrained.append(0)
+            else:
+                in_constrained.append(1)        
+
         self.route_get=route
         self.turns_get=turns
         self.next_node_index_get=next_node_index
         self.turn_coords_get=turn_coords
         self.group_numbers_get=group_numbers
+        self.in_constrained=in_constrained
 
-        return route,turns,next_node_index,turn_coords,group_numbers
-
-        
+        return route,turns,next_node_index,turn_coords,group_numbers,in_constrained
+    
     ##Function handling the replanning process, called when flow control is updated
     ##Retruns: route,turns,edges_list,next_turn_point,groups
     ##route is the list of waypoints (lat,lon,alittude)
@@ -993,7 +1364,6 @@ class PathPlanning:
             
             k=change[0]
             kk=change[1]
-            #print(change[2])
             if k==prev_node_osmnx_id and kk==next_node_index:
                 #if teh changes are on the current edge of the aircraft do nothing
                 continue
@@ -1016,46 +1386,39 @@ class PathPlanning:
                         change_list.append(tmp)
                     
 
+
         if cnt>0 and change_list!=[]:
             
-
-            index=next_node_index
-            start_id=-1
-    
-            for i in self.graph:
-                if i.key_index==index:
-                    start_id=i.index
-                    break
-    
-            start_id=self.os_keys_dict_pred[next_node_index][prev_node_osmnx_id]
+            if prev_node_osmnx_id in self.os_keys_dict_pred[next_node_index].keys():
+                start_id=self.os_keys_dict_pred[next_node_index][prev_node_osmnx_id]
+            else:
+                prev_node_osmnx_id =0
+                start_id=self.os_keys_dict_pred[next_node_index][prev_node_osmnx_id]
             start_node=self.graph[start_id] 
             self.path.start=start_node
             
 
             self.start_index=next_node_index
             self.start_index_previous=prev_node_osmnx_id
-            print(next_node_index)
-            print(prev_node_osmnx_id)
 
                 
             ##call get path
-            route,turns,indices_nodes,turn_coord,groups=self.get_path(self.path,self.graph, self.G,edges_g,self.edge_gdf,True,change_list)
+            route,turns,indices_nodes,turn_coord,groups,in_constrained=self.get_path(self.path,self.graph, self.G,edges_g,self.edge_gdf,True,change_list)
             
             self.path.origin_node_index=start_id
              
             if route != None :
-                os_id1=indices_nodes[0]
-                os_id2=indices_nodes[1]
+                os_id1=self.start_index_previous
+                os_id2=indices_nodes[0]
                 cnt=0
                 edges_list=[]
                 next_turn_point=[]
-                for i in range(1,len(indices_nodes)):
+                for i in range(0,len(indices_nodes)):
                     if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
                         cnt=cnt+1
                     else:
                         for j in range(cnt):
                             edges_list.append((os_id1,os_id2))
-                        #edges_list.append((os_id1,indices_nodes[i]))
                         cnt=1
                         os_id1=os_id2
                         os_id2=indices_nodes[i]
@@ -1078,12 +1441,13 @@ class PathPlanning:
                 self.turns=turns
                 self.edges_list=edges_list
                 self.next_turn_point=next_turn_point
-                self.groups=groups    
+                self.groups=groups  
+                self.in_constrained=in_constrained
             
         elif cnt>0:
             self.edge_gdf=copy.deepcopy(edges_g)
 
-        return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups     
+        return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained 
       
     ##Function handling the replanning process, called when aircraft is spawned
     ##Retruns: route,turns,edges_list,next_turn_point,groups

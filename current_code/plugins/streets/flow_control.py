@@ -10,6 +10,7 @@ import heapq
 import math
 import numpy as np
 import random
+import json
 
 
 ##https://github.com/chuducty/KD-Tree-Python
@@ -278,10 +279,20 @@ class street_graph:
     def __init__(self,G,edges_gdf):
         self.nodes_graph={}
         self.edges_graph={}
-        self.modified={}
+        self.modified={} # TODO : that should probably be deleted
+        self.high_traffic_groups=[]
+        self.medium_traffic_groups=[]
+        self.loiter_nfz_edges=[] # TODO : add the edges currently used for loitering missions
+        self.modified_group={}
         self.create_graph(G,edges_gdf)
         self.create_tree(G)
         self.G=G
+        
+        # Open strokes.JSON as a dictionary
+        with open('strokes.json', 'r') as filename:
+            self.stroke_dict = json.load(filename)
+        for key in self.stroke_dict:
+            self.modified_group[key]=0 # 0 means low traffic, 1 medium traffic and 2 high traffic
 
         
     ##Create a kd tree with the flow control nodes
