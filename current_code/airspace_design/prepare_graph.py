@@ -128,8 +128,8 @@ def main():
     dummy_edge_dict[f'{dummy_osmid}-{dummy_osmid}'] = {'stroke_group': str(stroke_open), 'height_allocation': 'open'}
     
     dummy_stroke_dict = {}
-    dummy_stroke_dict[str(stroke_entry)] = stroke_dict_new[str(stroke_exit)]
-    dummy_stroke_dict[str(stroke_exit)] = stroke_dict_new[str(stroke_entry)]
+    dummy_stroke_dict[str(stroke_entry)] = stroke_dict_new[str(stroke_entry)]
+    dummy_stroke_dict[str(stroke_exit)] = stroke_dict_new[str(stroke_exit)]
     dummy_stroke_dict[str(stroke_open)] = stroke_dict_new[str(stroke_open)]
 
     # create dummy dict
