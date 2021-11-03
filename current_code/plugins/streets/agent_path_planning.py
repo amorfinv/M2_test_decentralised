@@ -962,6 +962,8 @@ class PathPlanning:
                     indices_nodes[i]=8642421055
 
             os_id1=self.start_index_previous
+            if os_id1==0:
+                os_id1=8642421055
             os_id2=indices_nodes[0]
             cnt=0
             for i in range(0,len(indices_nodes)):
@@ -1459,7 +1461,13 @@ class PathPlanning:
             self.path.origin_node_index=start_id
              
             if route != None :
+                for i in range(len(groups)):
+                    if groups[i]==-1:
+                        indices_nodes[i]=8642421055
+                
                 os_id1=self.start_index_previous
+                if os_id1==0:
+                    os_id1=8642421055
                 os_id2=indices_nodes[0]
                 cnt=0
                 edges_list=[]
