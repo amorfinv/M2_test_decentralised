@@ -70,6 +70,7 @@ print('Traffic generated!')
 # =============================================================================
 
 aircraft_type=1
+priority=1
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
 flight_plans_dict={}
@@ -78,7 +79,7 @@ for flight in generated_traffic:
     origin = flight[2]
     destination = flight[3]
 
-    plan = PathPlanning(aircraft_type,grid,graph,gdf, origin[1], origin[0], destination[1], destination[0])
+    plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[1], origin[0], destination[1], destination[0])
     route=[]
     turns=[]
     route,turns,edges,next_turn,groups,in_constrained=plan.plan()

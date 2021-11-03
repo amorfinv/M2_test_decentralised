@@ -590,7 +590,7 @@ def computeAngle(point1, point2):
 
 class PathPlanning:
     
-    def __init__(self,aircraft_type,open_airspace_grid,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest):
+    def __init__(self,aircraft_type,priority,open_airspace_grid,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest):
         self.aircraft_type=aircraft_type
         self.start_index=None
         self.start_index_previous=None
@@ -608,6 +608,7 @@ class PathPlanning:
         self.os_keys_dict_pred={}
         self.route=[]
         self.turns=[]
+        self.priority=priority # 1 for high, 2 for medium,3 for low priority
 
         self.start_point=Point(tuple((lon_start,lat_start)))
         self.goal_point=Point(tuple((lon_dest,lat_dest)))
