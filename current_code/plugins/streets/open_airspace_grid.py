@@ -7,7 +7,7 @@ Created on Tue Oct 12 11:22:00 2021
 
 import math
 import copy
-import osmnx as ox
+#import osmnx as ox
 from pyproj import Proj, transform
 
 # Given three collinear points p, q, r, the function checks if
@@ -79,7 +79,7 @@ class Cell:
         
 
          
-class open_airspace_grid:
+class open_airspace:
     line_extension=1 # TODO : check if that value is fine  
     def __init__(self,geovectors,poly_points):
         self.geovectors=geovectors #list of geovectors with [[p1_x,p1,y],...]
@@ -380,240 +380,242 @@ class open_airspace_grid:
                     
 
         
-    def connect_opengraph2constrained(self):
-     
-         G = ox.io.load_graphml('FINAL_GRAPH.graphml')
-        
-         f = open('entries.txt','r')      
-         contents = f.read()
-         f.close()
-         self.entry_points_list=[int(x) for x in contents.split(",")]
-         
-         f = open('exits.txt','r')
-         contents = f.read()
-         f.close()
-         self.exit_points_list=[int(x) for x in contents.split(",")]    
-         
-         for index in self.entry_points_list:
-             lon=G._node[index]['x']
-             lat=G._node[index]['y']
-             outProj = Proj(init='epsg:32633')
-             inProj = Proj(init='epsg:4326')
-             x,y = transform(inProj,outProj,lon,lat)
-             self.entry_nodes_dict[index]=[x,y]
-             
-         for index in self.exit_points_list:
-             lon=G._node[index]['x']
-             lat=G._node[index]['y']
-             inProj = Proj(init='epsg:4326')
-             outProj = Proj(init='epsg:32633')
-             x,y = transform(inProj,outProj,lon,lat)
-             self.exit_nodes_dict[index]=[x,y]
-         
-            
-         #lists to check for duplicates
-         entry_debug_list=[]
-         exit_debug_list=[]
-         
-         entry_cells_dict={}
-         exit_cells_dict={}
-         for index in self.entry_points_list:
-             entry_cells_dict[index]=[]
-         for index in self.exit_points_list:
-             exit_cells_dict[index]=[]
-         
-         for ii,cell in enumerate(self.grid):
-             
-
-             if ii==219:
-                 for index in self.entry_points_list:
-                    [x,y]=self.entry_nodes_dict[index]
-                    if cell.p2[0]<x<cell.p0[0]+150:
-                        if cell.p0[1]>y>cell.p2[1]:
-                            cell.entry_list.append(index)
-                            entry_debug_list.append(index)
-                            entry_cells_dict[index].append(ii)
-                 for index in self.exit_points_list:
-                    [x,y]=self.exit_nodes_dict[index]
-                    if cell.p2[0]<x<cell.p0[0]+150:
-                        if cell.p0[1]>y>cell.p2[1]:
-                            cell.exit_list.append(index)
-                            exit_debug_list.append(index)
-                            exit_cells_dict[index].append(ii)
-                 continue
-             
-             if ii==46:
-                 for index in self.entry_points_list:
-                    [x,y]=self.entry_nodes_dict[index]
-                    if cell.p2[0]<x<cell.p0[0]+50:
-                        if cell.p0[1]>y>cell.p2[1]:
-                            cell.entry_list.append(index)
-                            entry_debug_list.append(index)
-                            entry_cells_dict[index].append(ii)
-                 for index in self.exit_points_list:
-                    [x,y]=self.exit_nodes_dict[index]
-                    if cell.p2[0]<x<cell.p0[0]+50:
-                        if cell.p0[1]>y>cell.p2[1]:
-                            cell.exit_list.append(index)
-                            exit_debug_list.append(index)
-                            exit_cells_dict[index].append(ii)
-             if ii==195:
-                 for index in self.entry_points_list:
-                    [x,y]=self.entry_nodes_dict[index]
-                    if cell.p2[0]-10<x<cell.p0[0]:
-                        if cell.p0[1]>y>cell.p3[1]:
-                            cell.entry_list.append(index)
-                            entry_debug_list.append(index)
-                            entry_cells_dict[index].append(ii)
-                 for index in self.exit_points_list:
-                    [x,y]=self.exit_nodes_dict[index]
-                    if cell.p2[0]-10<x<cell.p0[0]:
-                        if cell.p0[1]>y>cell.p3[1]:
-                            cell.exit_list.append(index)
-                            exit_debug_list.append(index)
-                            exit_cells_dict[index].append(ii)     
-             if ii==222:
-                 for index in self.entry_points_list:
-                    [x,y]=self.entry_nodes_dict[index]
-                    if cell.p2[0]<x<cell.p0[0]:
-                        if cell.p3[1]>y>cell.p1[1]:
-                            cell.entry_list.append(index)
-                            entry_debug_list.append(index)
-                            entry_cells_dict[index].append(ii)
-                 for index in self.exit_points_list:
-                    [x,y]=self.exit_nodes_dict[index]
-                    if cell.p2[0]<x<cell.p0[0]:
-                        if cell.p3[1]>y>cell.p1[1]:
-                            cell.exit_list.append(index)
-                            exit_debug_list.append(index)
-                            exit_cells_dict[index].append(ii) 
-                 continue
-
-
-                 
-             if cell.constrained_adj_up :
-                 for index in self.entry_points_list:
-                    [x,y]=self.entry_nodes_dict[index]
-                    if cell.p2[0]<=x<=cell.p0[0]:
-                        if cell.p1[1]<=y<=cell.y_max:#+1000:
-                            cell.entry_list.append(index)   
-                            entry_debug_list.append(index)
-                            entry_cells_dict[index].append(ii)
-                 for index in self.exit_points_list:
-                    [x,y]=self.exit_nodes_dict[index]
-                    if cell.p2[0]<=x<=cell.p0[0]:
-                        if cell.p1[1]<=y<=cell.y_max:#+1000:
-                            cell.exit_list.append(index)
-                            exit_debug_list.append(index)
-                            exit_cells_dict[index].append(ii)
-             elif cell.constrained_adj_down:
-                 for index in self.entry_points_list:
-                    [x,y]=self.entry_nodes_dict[index]
-                    if cell.p2[0]<=x<=cell.p1[0]:
-                        if cell.p0[1]>=y>=cell.y_lower:#-1000:
-                            cell.entry_list.append(index)
-                            entry_debug_list.append(index)
-                            entry_cells_dict[index].append(ii)
-                 for index in self.exit_points_list:
-                    [x,y]=self.exit_nodes_dict[index]
-                    if cell.p2[0]<=x<=cell.p1[0]:
-                        if cell.p0[1]>=y>=cell.y_lower:#-1000:
-                            cell.exit_list.append(index)
-                            exit_debug_list.append(index)
-                            exit_cells_dict[index].append(ii)
-                            
-
 # =============================================================================
-### This is probably not needed because there are nodes in teh edges of cells
-#
-#          ####Delete duplicates
-#          for index in self.entry_points_list:
-#              if len(entry_cells_dict[index])>1:
-#                  if len(entry_cells_dict[index])>2:
-#                      print(str(index)+":in more than 2 cells")
-#                  cell1=self.grid[entry_cells_dict[index][0]]
-#                  cell2=self.grid[entry_cells_dict[index][1]]
-#                  entry_debug_list.remove(index)
-#                  [x,y]=self.entry_nodes_dict[index]
-#                  in_cell1=False
-#                  in_cell2=False
-#                  
-#                  if cell1.constrained_adj_up :
-#                     if cell1.p2[0]<x<cell1.p0[0]:
-#                         if min(cell1.p1[1],cell1.p2[1])<y<cell1.y_max:
-#                             in_cell1=True
-#                  elif cell1.constrained_adj_down:
-#                     if cell1.p2[0]<x<cell1.p0[0]:
-#                         if cell1.p0[1]>y>cell1.y_lower:
-#                             in_cell1=True
-#                  if cell2.constrained_adj_up :
-#                     if cell2.p2[0]<x<cell2.p0[0]:
-#                         if min(cell2.p1[1],cell2.p2[1])<y<cell2.y_max:
-#                             in_cell2=True
-#                  elif cell2.constrained_adj_down:
-#                     if cell2.p2[0]<x<cell2.p0[0]:
-#                         if cell2.p0[1]>y>cell2.y_lower:
-#                             in_cell2=True
-#                             
-#                  if in_cell1 and in_cell2:
-#                     print(str(index)+":error: node in two cells")
-#                  elif in_cell1:
-#                     cell2.entry_list.remove(index)
-#                  elif in_cell2:
-#                     cell1.entry_list.remove(index)
-#                  else:
-#                     print(str(index)+":error in no cell")
-#                     
-#          for index in self.exit_points_list:
-#              if len(exit_cells_dict[index])>1:
-#                  if len(exit_cells_dict[index])>2:
-#                      print(str(index)+":in more than 2 cells")
-#                  cell1=self.grid[exit_cells_dict[index][0]]
-#                  cell2=self.grid[exit_cells_dict[index][1]]
-#                  exit_debug_list.remove(index)
-#                  [x,y]=self.exit_nodes_dict[index]
-#                  in_cell1=False
-#                  in_cell2=False
-#                  
-#                  if cell1.constrained_adj_up :
-#                     if cell1.p2[0]<x<cell1.p0[0]:
-#                         if min(cell1.p1[1],cell1.p2[1])<y<cell1.y_max:
-#                             in_cell1=True
-#                  elif cell1.constrained_adj_down:
-#                     if cell1.p2[0]<x<cell1.p0[0]:
-#                         if cell1.p0[1]>y>cell1.y_lower:
-#                             in_cell1=True
-#                  if cell2.constrained_adj_up :
-#                     if cell2.p2[0]<x<cell2.p0[0]:
-#                         if min(cell2.p1[1],cell2.p2[1])<y<cell2.y_max:
-#                             in_cell2=True
-#                  elif cell2.constrained_adj_down:
-#                     if cell2.p2[0]<x<cell2.p0[0]:
-#                         if cell2.p0[1]>y>cell2.y_lower:
-#                             in_cell2=True
-#                             
-#                  if in_cell1 and in_cell2:
-#                     print(str(index)+":error: node in two cells")
-#                  elif in_cell1:
-#                     cell2.exit_list.remove(index)
-#                  elif in_cell2:
-#                     cell1.exit_list.remove(index)
-#                  else:
-#                     print(str(index)+":error in no cell")
-# 
+#     def connect_opengraph2constrained(self):
+#      
+#          G = ox.io.load_graphml('FINAL_GRAPH.graphml')
+#         
+#          f = open('entries.txt','r')      
+#          contents = f.read()
+#          f.close()
+#          self.entry_points_list=[int(x) for x in contents.split(",")]
 #          
-#          if len(entry_debug_list)==len(set(entry_debug_list)):
-#             print("no entry duplicates")
-#          elif len(entry_debug_list)>=len(set(entry_debug_list)):
-#             print("entry duplicates!!!")
-#          if len(exit_debug_list)==len(set(exit_debug_list)):
-#             print("no exit duplicates")
-#          elif len(exit_debug_list)>=len(set(exit_debug_list)):
-#             print("exit duplicates!!!")
+#          f = open('exits.txt','r')
+#          contents = f.read()
+#          f.close()
+#          self.exit_points_list=[int(x) for x in contents.split(",")]    
+#          
+#          for index in self.entry_points_list:
+#              lon=G._node[index]['x']
+#              lat=G._node[index]['y']
+#              outProj = Proj(init='epsg:32633')
+#              inProj = Proj(init='epsg:4326')
+#              x,y = transform(inProj,outProj,lon,lat)
+#              self.entry_nodes_dict[index]=[x,y]
+#              
+#          for index in self.exit_points_list:
+#              lon=G._node[index]['x']
+#              lat=G._node[index]['y']
+#              inProj = Proj(init='epsg:4326')
+#              outProj = Proj(init='epsg:32633')
+#              x,y = transform(inProj,outProj,lon,lat)
+#              self.exit_nodes_dict[index]=[x,y]
+#          
+#             
+#          #lists to check for duplicates
+#          entry_debug_list=[]
+#          exit_debug_list=[]
+#          
+#          entry_cells_dict={}
+#          exit_cells_dict={}
+#          for index in self.entry_points_list:
+#              entry_cells_dict[index]=[]
+#          for index in self.exit_points_list:
+#              exit_cells_dict[index]=[]
+#          
+#          for ii,cell in enumerate(self.grid):
+#              
+# 
+#              if ii==219:
+#                  for index in self.entry_points_list:
+#                     [x,y]=self.entry_nodes_dict[index]
+#                     if cell.p2[0]<x<cell.p0[0]+150:
+#                         if cell.p0[1]>y>cell.p2[1]:
+#                             cell.entry_list.append(index)
+#                             entry_debug_list.append(index)
+#                             entry_cells_dict[index].append(ii)
+#                  for index in self.exit_points_list:
+#                     [x,y]=self.exit_nodes_dict[index]
+#                     if cell.p2[0]<x<cell.p0[0]+150:
+#                         if cell.p0[1]>y>cell.p2[1]:
+#                             cell.exit_list.append(index)
+#                             exit_debug_list.append(index)
+#                             exit_cells_dict[index].append(ii)
+#                  continue
+#              
+#              if ii==46:
+#                  for index in self.entry_points_list:
+#                     [x,y]=self.entry_nodes_dict[index]
+#                     if cell.p2[0]<x<cell.p0[0]+50:
+#                         if cell.p0[1]>y>cell.p2[1]:
+#                             cell.entry_list.append(index)
+#                             entry_debug_list.append(index)
+#                             entry_cells_dict[index].append(ii)
+#                  for index in self.exit_points_list:
+#                     [x,y]=self.exit_nodes_dict[index]
+#                     if cell.p2[0]<x<cell.p0[0]+50:
+#                         if cell.p0[1]>y>cell.p2[1]:
+#                             cell.exit_list.append(index)
+#                             exit_debug_list.append(index)
+#                             exit_cells_dict[index].append(ii)
+#              if ii==195:
+#                  for index in self.entry_points_list:
+#                     [x,y]=self.entry_nodes_dict[index]
+#                     if cell.p2[0]-10<x<cell.p0[0]:
+#                         if cell.p0[1]>y>cell.p3[1]:
+#                             cell.entry_list.append(index)
+#                             entry_debug_list.append(index)
+#                             entry_cells_dict[index].append(ii)
+#                  for index in self.exit_points_list:
+#                     [x,y]=self.exit_nodes_dict[index]
+#                     if cell.p2[0]-10<x<cell.p0[0]:
+#                         if cell.p0[1]>y>cell.p3[1]:
+#                             cell.exit_list.append(index)
+#                             exit_debug_list.append(index)
+#                             exit_cells_dict[index].append(ii)     
+#              if ii==222:
+#                  for index in self.entry_points_list:
+#                     [x,y]=self.entry_nodes_dict[index]
+#                     if cell.p2[0]<x<cell.p0[0]:
+#                         if cell.p3[1]>y>cell.p1[1]:
+#                             cell.entry_list.append(index)
+#                             entry_debug_list.append(index)
+#                             entry_cells_dict[index].append(ii)
+#                  for index in self.exit_points_list:
+#                     [x,y]=self.exit_nodes_dict[index]
+#                     if cell.p2[0]<x<cell.p0[0]:
+#                         if cell.p3[1]>y>cell.p1[1]:
+#                             cell.exit_list.append(index)
+#                             exit_debug_list.append(index)
+#                             exit_cells_dict[index].append(ii) 
+#                  continue
+# 
+# 
+#                  
+#              if cell.constrained_adj_up :
+#                  for index in self.entry_points_list:
+#                     [x,y]=self.entry_nodes_dict[index]
+#                     if cell.p2[0]<=x<=cell.p0[0]:
+#                         if cell.p1[1]<=y<=cell.y_max:#+1000:
+#                             cell.entry_list.append(index)   
+#                             entry_debug_list.append(index)
+#                             entry_cells_dict[index].append(ii)
+#                  for index in self.exit_points_list:
+#                     [x,y]=self.exit_nodes_dict[index]
+#                     if cell.p2[0]<=x<=cell.p0[0]:
+#                         if cell.p1[1]<=y<=cell.y_max:#+1000:
+#                             cell.exit_list.append(index)
+#                             exit_debug_list.append(index)
+#                             exit_cells_dict[index].append(ii)
+#              elif cell.constrained_adj_down:
+#                  for index in self.entry_points_list:
+#                     [x,y]=self.entry_nodes_dict[index]
+#                     if cell.p2[0]<=x<=cell.p1[0]:
+#                         if cell.p0[1]>=y>=cell.y_lower:#-1000:
+#                             cell.entry_list.append(index)
+#                             entry_debug_list.append(index)
+#                             entry_cells_dict[index].append(ii)
+#                  for index in self.exit_points_list:
+#                     [x,y]=self.exit_nodes_dict[index]
+#                     if cell.p2[0]<=x<=cell.p1[0]:
+#                         if cell.p0[1]>=y>=cell.y_lower:#-1000:
+#                             cell.exit_list.append(index)
+#                             exit_debug_list.append(index)
+#                             exit_cells_dict[index].append(ii)
+#                             
+# 
+# # =============================================================================
+# ### This is probably not needed because there are nodes in teh edges of cells
+# #
+# #          ####Delete duplicates
+# #          for index in self.entry_points_list:
+# #              if len(entry_cells_dict[index])>1:
+# #                  if len(entry_cells_dict[index])>2:
+# #                      print(str(index)+":in more than 2 cells")
+# #                  cell1=self.grid[entry_cells_dict[index][0]]
+# #                  cell2=self.grid[entry_cells_dict[index][1]]
+# #                  entry_debug_list.remove(index)
+# #                  [x,y]=self.entry_nodes_dict[index]
+# #                  in_cell1=False
+# #                  in_cell2=False
+# #                  
+# #                  if cell1.constrained_adj_up :
+# #                     if cell1.p2[0]<x<cell1.p0[0]:
+# #                         if min(cell1.p1[1],cell1.p2[1])<y<cell1.y_max:
+# #                             in_cell1=True
+# #                  elif cell1.constrained_adj_down:
+# #                     if cell1.p2[0]<x<cell1.p0[0]:
+# #                         if cell1.p0[1]>y>cell1.y_lower:
+# #                             in_cell1=True
+# #                  if cell2.constrained_adj_up :
+# #                     if cell2.p2[0]<x<cell2.p0[0]:
+# #                         if min(cell2.p1[1],cell2.p2[1])<y<cell2.y_max:
+# #                             in_cell2=True
+# #                  elif cell2.constrained_adj_down:
+# #                     if cell2.p2[0]<x<cell2.p0[0]:
+# #                         if cell2.p0[1]>y>cell2.y_lower:
+# #                             in_cell2=True
+# #                             
+# #                  if in_cell1 and in_cell2:
+# #                     print(str(index)+":error: node in two cells")
+# #                  elif in_cell1:
+# #                     cell2.entry_list.remove(index)
+# #                  elif in_cell2:
+# #                     cell1.entry_list.remove(index)
+# #                  else:
+# #                     print(str(index)+":error in no cell")
+# #                     
+# #          for index in self.exit_points_list:
+# #              if len(exit_cells_dict[index])>1:
+# #                  if len(exit_cells_dict[index])>2:
+# #                      print(str(index)+":in more than 2 cells")
+# #                  cell1=self.grid[exit_cells_dict[index][0]]
+# #                  cell2=self.grid[exit_cells_dict[index][1]]
+# #                  exit_debug_list.remove(index)
+# #                  [x,y]=self.exit_nodes_dict[index]
+# #                  in_cell1=False
+# #                  in_cell2=False
+# #                  
+# #                  if cell1.constrained_adj_up :
+# #                     if cell1.p2[0]<x<cell1.p0[0]:
+# #                         if min(cell1.p1[1],cell1.p2[1])<y<cell1.y_max:
+# #                             in_cell1=True
+# #                  elif cell1.constrained_adj_down:
+# #                     if cell1.p2[0]<x<cell1.p0[0]:
+# #                         if cell1.p0[1]>y>cell1.y_lower:
+# #                             in_cell1=True
+# #                  if cell2.constrained_adj_up :
+# #                     if cell2.p2[0]<x<cell2.p0[0]:
+# #                         if min(cell2.p1[1],cell2.p2[1])<y<cell2.y_max:
+# #                             in_cell2=True
+# #                  elif cell2.constrained_adj_down:
+# #                     if cell2.p2[0]<x<cell2.p0[0]:
+# #                         if cell2.p0[1]>y>cell2.y_lower:
+# #                             in_cell2=True
+# #                             
+# #                  if in_cell1 and in_cell2:
+# #                     print(str(index)+":error: node in two cells")
+# #                  elif in_cell1:
+# #                     cell2.exit_list.remove(index)
+# #                  elif in_cell2:
+# #                     cell1.exit_list.remove(index)
+# #                  else:
+# #                     print(str(index)+":error in no cell")
+# # 
+# #          
+# #          if len(entry_debug_list)==len(set(entry_debug_list)):
+# #             print("no entry duplicates")
+# #          elif len(entry_debug_list)>=len(set(entry_debug_list)):
+# #             print("entry duplicates!!!")
+# #          if len(exit_debug_list)==len(set(exit_debug_list)):
+# #             print("no exit duplicates")
+# #          elif len(exit_debug_list)>=len(set(exit_debug_list)):
+# #             print("exit duplicates!!!")
+# # =============================================================================
+#             
+#          self.entry_cells_dict=entry_cells_dict
+#          self.exit_cells_dict=exit_cells_dict
 # =============================================================================
-            
-         self.entry_cells_dict=entry_cells_dict
-         self.exit_cells_dict=exit_cells_dict
          
     def create_grid_lines(self):    
         ##Assuming no two vertices have the same x

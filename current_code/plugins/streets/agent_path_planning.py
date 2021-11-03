@@ -14,7 +14,7 @@ import time
 from pyproj import  Transformer
 
 from plugins.streets.flow_control import street_graph,bbox
-from plugins.streets.open_airspace_grid import Cell, open_airspace_grid
+from plugins.streets.open_airspace_grid import Cell, open_airspace
 
 ##########
 ##Functions for finding the cell of a point in open airspace
@@ -682,7 +682,7 @@ class PathPlanning:
             #box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
             box=bbox(min(self.start_point.y,self.goal_point.y)-exp_const,min(self.start_point.x,self.goal_point.x)-exp_const,max(self.start_point.y,self.goal_point.y)+exp_const,max(self.start_point.x,self.goal_point.x)+exp_const) 
     
-            edges=self.flow_control_graph.extract_subgraph(box)
+            G,edges=self.flow_control_graph.extract_subgraph(box)
             self.G=copy.deepcopy(G)
             self.edge_gdf=copy.deepcopy(edges)
             
@@ -957,6 +957,10 @@ class PathPlanning:
         if path_found:
             route,turns,indices_nodes,turn_coord,groups,in_constrained=self.get_path(self.path,self.graph, self.G,self.edge_gdf)
 
+            for i in range(len(groups)):
+                if groups[i]==-1:
+                    indices_nodes[i]=8642421055
+
             os_id1=self.start_index_previous
             os_id2=indices_nodes[0]
             cnt=0
@@ -1123,7 +1127,7 @@ class PathPlanning:
                     
                     
             if current_node.index in selected_nodes_index:
-                print("get_path stack")
+                print("get_path stack !! Please report this!")
                 break
                 
             selected_nodes_index.append(current_node.index)
@@ -1310,7 +1314,7 @@ class PathPlanning:
 
             if angle>self.cutoff_angle and turns[i-1]!=1 and group_numbers[i-1]!=-1:
                 turns[i-1]=1
-                tmp=(route[i-1][0],route[i-1][1])
+                tmp=(route[i-1][1],route[i-1][0])
                 turn_coords.append(tmp)
             lat_prev=lat_cur
             lon_prev=lon_cur
@@ -1318,7 +1322,7 @@ class PathPlanning:
                 continue
             elif turns[i+1]!=1:
                 turns[i+1]=1
-                tmp=(route[i+1][0],route[i+1][1])
+                tmp=(route[i+1][1],route[i+1][0])
                 turn_coords.append(tmp)
         turn_coords.append((-1,-1))
 

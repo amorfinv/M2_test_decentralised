@@ -18,23 +18,23 @@ class BlueskySCNTools():
     def __init__(self):
 
         # Open strokes.JSON as a dictionary
-        with open('strokes.json', 'r') as filename:
+        with open('airspace_design/strokes.json', 'r') as filename:
             self.stroke_dict = json.load(filename)
         
         # Opening edges.JSON as a dictionary
-        with open('edges.json', 'r') as filename:
+        with open('airspace_design/edges.json', 'r') as filename:
             self.edge_dict = json.load(filename)
 
         # Opening nodes.JSON as a dictionary
-        with open('nodes.json', 'r') as filename:
+        with open('airspace_design/nodes.json', 'r') as filename:
             self.node_dict = json.load(filename)
 
         # Opening layers.JSON as a dictionary
-        with open('layers.json', 'r') as filename:
+        with open('airspace_design/layers.json', 'r') as filename:
             self.layer_dict = json.load(filename)
         
     def Drone2Scn(self, drone_id, start_time, lats, lons, turnbool,alts = None, edges = None, group_num=None, next_turn = None, 
-                cruise_speed_constraint = True, start_speed = None, priority = 0):
+                cruise_speed_constraint = True, start_speed = None,in_constrained=True, priority = 0):
         """Converts arrays to Bluesky scenario files. The first
         and last waypoints will be taken as the origin and 
         destination of the drone.
@@ -100,7 +100,7 @@ class BlueskySCNTools():
         active_turns = ['' if turn_node == -1 else f'{turn_node[0]} {turn_node[1]}' for turn_node in next_turn]
 
         # find starting altitude
-        height_type = self.edge_dict[active_edge[0]]['layer_height']
+        height_type = self.edge_dict[active_edge[0]]['height_allocation']
         flight_levels = self.layer_dict['info']['levels']
 
         for flight_level in flight_levels:
@@ -155,15 +155,15 @@ class BlueskySCNTools():
             speed = speeds[i]
             if any(alts):
                 if speed:
-                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} {speed} {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
+                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} {speed} {active_edge[i]} {group_num[i]} {active_turns[i]} {in_constrained[i]}\n'
                 else:
-                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} ,, {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
+                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} ,, {active_edge[i]} {group_num[i]} {active_turns[i]} {in_constrained[i]}\n'
 
             else:
                 if speed:
-                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,, {speed} {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
+                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,, {speed} {active_edge[i]} {group_num[i]} {active_turns[i]} {in_constrained[i]}\n'
                 else:
-                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,,, {active_edge[i]} {group_num[i]} {active_turns[i]}\n'
+                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,,, {active_edge[i]} {group_num[i]} {active_turns[i]} {in_constrained[i]}\n'
 
             lines.append(start_time_txt + wpt_txt)
             
@@ -231,12 +231,13 @@ class BlueskySCNTools():
                     edges = dictionary[drone_id]['edges']
                     group_num = dictionary[drone_id]['stroke_group']
                     next_turn = dictionary[drone_id]['next_turn']
+                    in_constrained = dictionary[drone_id]['airspace_type']
                 except:
                     print('Key error. Make sure the dictionary is formatted correctly.')
                     return
                 
                 lines = self.Drone2Scn(drone_id, start_time, lats, lons, turnbool, alts, edges, group_num, next_turn, 
-                                      cruise_speed_constraint, start_speed)
+                                      cruise_speed_constraint, start_speed,in_constrained)
                 f.write(''.join(lines))
                 
     def Graph2Traf(self, G, concurrent_ac, aircraft_vel, max_time, dt, min_dist, 
@@ -294,39 +295,50 @@ class BlueskySCNTools():
             The approximate length of the path.
     
         """
-        nodes = []
-
-        for node in G.nodes:
-            nodes.append((G.nodes[node]['y'], G.nodes[node]['x'], node))
-            
-        # Some parameters
+# =============================================================================
+#         nodes = []
+# 
+#         for node in G.nodes:
+#             nodes.append((G.nodes[node]['y'], G.nodes[node]['x'], node))
+#             
+#         # Some parameters
+#         timestep = 0
+#         ac_no = 1
+#         start_time = 0
+#         
+#         trafgen = []
+#         trafdist = np.empty((0,2))
+#         
+#         # Check if origins or destinations were given, otherwise just stick to
+#         # randomly spawning in network.
+#         if orig_nodes == None:
+#             origins = nodes.copy()
+#         else:
+#             # Create the origins list
+#             origins = []
+#             for node in nodes:
+#                 if node[2] in orig_nodes:
+#                     origins.append(node)
+#                     
+#         # Do the same for destinations
+#         if dest_nodes == None:
+#             destinations = nodes.copy()
+#         else:
+#             # Create the origins list
+#             destinations = []
+#             for node in nodes:
+#                 if node[2] in dest_nodes:
+#                     destinations.append(node)  
+# =============================================================================
+          # Some parameters
         timestep = 0
         ac_no = 1
         start_time = 0
         
         trafgen = []
-        trafdist = np.empty((0,2))
-        
-        # Check if origins or destinations were given, otherwise just stick to
-        # randomly spawning in network.
-        if orig_nodes == None:
-            origins = nodes.copy()
-        else:
-            # Create the origins list
-            origins = []
-            for node in nodes:
-                if node[2] in orig_nodes:
-                    origins.append(node)
-                    
-        # Do the same for destinations
-        if dest_nodes == None:
-            destinations = nodes.copy()
-        else:
-            # Create the origins list
-            destinations = []
-            for node in nodes:
-                if node[2] in dest_nodes:
-                    destinations.append(node)       
+        trafdist = np.empty((0,2))                   
+        origins=orig_nodes.copy()
+        destinations=dest_nodes.copy()
         
         # This loop is for time steps
         while start_time <= max_time:
@@ -361,8 +373,10 @@ class BlueskySCNTools():
                 orig_node = ox.distance.nearest_nodes(G, origin[1], origin[0])
                 target_node = ox.distance.nearest_nodes(G, destination[1], destination[0])
                 #try:
-                if 1:
+                if 0:
                     length = nx.shortest_path_length(G=G, source=orig_node, target=target_node, weight='length')
+                else:
+                    length=2000
                 #except:
                     # There is no solution to get from one node to the other
                     #print('No path found for these two waypoints. Trying again.')

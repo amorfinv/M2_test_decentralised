@@ -289,7 +289,7 @@ class street_graph:
         self.G=G
         
         # Open strokes.JSON as a dictionary
-        with open('strokes.json', 'r') as filename:
+        with open('airspace_design/strokes.json', 'r') as filename:
             self.stroke_dict = json.load(filename)
         for key in self.stroke_dict:
             self.modified_group[key]=0 # 0 means low traffic, 1 medium traffic and 2 high traffic
