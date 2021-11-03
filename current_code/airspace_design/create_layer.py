@@ -34,7 +34,7 @@ def main():
     flight_dict['headings'] = angle_ranges
 
     # create overall dictionary
-    airspace_config = {'height 0': layers_0, 'height 1': layers_1, 'open': layers_open}
+    airspace_config = {'0': layers_0, '1': layers_1, 'open': layers_open}
     airspace = {'config': airspace_config, 'info': flight_dict}
 
     # save layers to json
