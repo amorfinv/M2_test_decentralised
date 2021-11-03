@@ -1336,7 +1336,42 @@ class PathPlanning:
         self.in_constrained=in_constrained
 
         return route,turns,next_node_index,turn_coords,group_numbers,in_constrained
+ 
+    def update_changed_vertices(self,path,graph, G,edges,edges_old=None,change=False,change_list=[]):
+        
+        if change: #Scan for changes
+        ##replan
+            path.k_m=path.k_m+heuristic(graph[path.origin_node_index],path.start,path.speed)
+            for c in change_list:
+                
+                if not  c[0].expanded or not c[1].expanded:
+                    print("not expanded")
+                    
+
+                c_old=compute_c(c[0], c[1],edges_old,path.speed)
+
+                    #update cost and obstacles here
+                if c_old>compute_c(c[0], c[1],edges,path.speed): #if cost is decreased
+
+                    if(c[0]!=path.goal):
     
+                        c[0].rhs=min(c[0].rhs,compute_c(c[0], c[1], edges)+c[1].g,path.speed)
+
+                            
+                elif c[0].rhs== c_old+c[1].g: #if cost is increased
+
+                    if c[0]!=path.goal:
+                        tt=[]
+                        for ch in c[0].children:
+                            child=graph[ch]
+                            tt.append(child.g+compute_c( c[0],child, edges,path.speed))
+                        c[0].rhs=min(tt)
+                        path.start.rhs=float('inf')## not sure for that
+
+                update_vertex(path, c[0])
+                
+                edges_old[c[0].key_index][c[1].key_index].speed=edges[c[0].key_index][c[1].key_index].speed   
+ 
     ##Function handling the replanning process, called when flow control is updated
     ##Retruns: route,turns,edges_list,next_turn_point,groups
     ##route is the list of waypoints (lat,lon,alittude)
@@ -1359,6 +1394,8 @@ class PathPlanning:
         expanded=False
         change_list=[]
         
+        replan_bool=True
+        
 
         for change in changes_list:
             
@@ -1367,6 +1404,9 @@ class PathPlanning:
             kk=change[1]
             if k==prev_node_osmnx_id and kk==next_node_index:
                 #if teh changes are on the current edge of the aircraft do nothing
+                if change[2]<1:
+                    ##If the current group is set to a zero speed geofence
+                    replan_bool=False
                 continue
             
             expanded=False
@@ -1387,8 +1427,14 @@ class PathPlanning:
                         change_list.append(tmp)
                     
 
-
-        if cnt>0 and change_list!=[]:
+        if self.edge_gdf[prev_node_osmnx_id][next_node_index].speed<1:
+            replan_bool=False
+            
+        if not replan_bool and change_list!=[]:
+            self.update_changed_vertices(self.path,self.graph, self.G,edges_g,self.edge_gdf,True,change_list)
+            self.edge_gdf=copy.deepcopy(edges_g)
+            
+        if cnt>0 and change_list!=[] and replan_bool:
             
             if prev_node_osmnx_id in self.os_keys_dict_pred[next_node_index].keys():
                 start_id=self.os_keys_dict_pred[next_node_index][prev_node_osmnx_id]
