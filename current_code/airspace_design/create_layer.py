@@ -9,19 +9,19 @@ def main():
     spacing = 30
 
     # Two types of layers in constrained airspace
-    layers_0_range, flight_dict, pattern_0 = build_layer_airspace_dict(min_height, max_height, spacing, ['C', 'T', 'F'], ['C', 'T', 'F'], 'C', 'range')
-    layers_0_levels, _, _ = build_layer_airspace_dict(min_height, max_height, spacing, ['C', 'T', 'F'], ['C', 'T', 'F'], 'C', 'levels')
-
-    layers_1_range, _, pattern_1 = build_layer_airspace_dict(min_height, max_height, spacing, ['F', 'T', 'C'], ['C', 'T', 'F'], 'C', 'range')
-    layers_1_levels, _, _ = build_layer_airspace_dict(min_height, max_height, spacing, ['F', 'T', 'C'], ['C', 'T', 'F'], 'C', 'levels')
+    layers_0_range, flight_dict, pattern_0 = build_layer_airspace_dict(min_height, max_height, spacing, ['C', 'T', 'F'], ['C', 'T', 'F'], 'C', True, 'range')
+    layers_0_levels, _, _ = build_layer_airspace_dict(min_height, max_height, spacing, ['C', 'T', 'F'], ['C', 'T', 'F'], 'C', True,'levels')
+    
+    layers_1_range, _, pattern_1 = build_layer_airspace_dict(min_height, max_height, spacing, ['F', 'T', 'C'], ['C', 'T', 'F'], 'C', True, 'range')
+    layers_1_levels, _, _ = build_layer_airspace_dict(min_height, max_height, spacing, ['F', 'T', 'C'], ['C', 'T', 'F'], 'C', True, 'levels')
 
     # Build open layer structure
     min_angle = 0
     max_angle = 360
     angle_spacing = 45
 
-    layers_open_range, flight_dict_hdg, pattern_open = build_layer_airspace_dict(min_height, max_height, spacing, ['C'], ['C', 'T', 'F'], 'C', 'range')
-    layers_open_levels, _, _ = build_layer_airspace_dict(min_height, max_height, spacing, ['C'], ['C', 'T', 'F'], 'C', 'levels')
+    layers_open_range, flight_dict_hdg, pattern_open = build_layer_airspace_dict(min_height, max_height, spacing, ['C'], ['C', 'T', 'F'], 'C', True, 'range')
+    layers_open_levels, _, _ = build_layer_airspace_dict(min_height, max_height, spacing, ['C'], ['C', 'T', 'F'], 'C', True, 'levels')
     height_dict, angle_dict, angle_ranges = build_heading_airspace(flight_dict_hdg['levels'], min_angle, max_angle, angle_spacing)
     layers_open_hdg = {'heights': height_dict, 'angle': angle_dict}
     
@@ -114,14 +114,15 @@ def build_heading_airspace(flight_levels,  min_angle, max_angle, angle_spacing):
 
     return height_dict, angle_dict, angle_ranges
 
-def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_layers, exteme_layer, opt):
+def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_layers, exteme_layer, out_of_bounds, opt):
     """ This creates an airsapce layer dictionary based on the minimum height, 
     maximum height, spacing, and repeating pattern of the layers. Units can
     be anything but they must be consistent. Minimum and maximum heights are
     heights where aircraft are expected to be. The layer dictionary returned
     contains the layer level/range and information about type of layer and
     levels/ranges of surrounding aircraft. At the moment only works for layers
-    that have 3 sub layers and repeat.
+    that have 3 sub layers and repeat. There is also an option to include information
+    about the out of bounds level in the layer dictionary.
 
     Args:
         min_height (int): Minimum flight layer height
@@ -130,6 +131,7 @@ def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_
         pattern (list): List of strings with an identifier of the layer. pattern repeats
         closest_layers (list): Order of layer ids for which to provide information in reeturn dictionary.
         exteme_layer (str): String of desired layer to track the top and bottom layer.
+        out_of_bounds (bool): Decide to include information about layers outside of the minimum height. 
         opt (string): If 'range' return dictionary with keys contaitning range of layer heights.
                       If 'levels' return dictionary with keys containing flight levels.
 
@@ -146,7 +148,15 @@ def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_
                                      (top 't' layer), (bottom 'F' layer level), (top 'F' layer level), (lowest extreme layer),
                                      (highest extreme layer)]
                        }
-        [dictionary]: layer heights under key='levels', spacing under key='spacing', and pattern under key='pattern'
+
+                       If out_of_bounds is True, then the dictionary will also contain information about the layer below
+                       the lowest layer.
+
+        [dictionary]: layer heights under key='levels', spacing under key='spacing', and pattern under key='pattern'.
+                      Contains no information about the out of bounds layers.
+
+        [list]: list of layer identifiers in order. Contains no information about the out of bounds layers.
+
     """    
     start_ind = min_height
     end_ind = max_height + spacing
@@ -198,7 +208,7 @@ def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_
             new_first_layer = pattern[new_idx]
 
             # combine to create new local layer pattern
-            layer_pattern =[new_first_layer] + layer_pattern + [new_last_layer]
+            layer_pattern = [new_first_layer] + layer_pattern + [new_last_layer]
 
         # get index of current layer in layer pattern
         idx_current_layer = layer_pattern.index(layer_choice)
@@ -251,7 +261,38 @@ def build_layer_airspace_dict(min_height, max_height, spacing, pattern, closest_
     exteme_layer_top_height = flight_layer_heights[exteme_layer_top_idx]
     exteme_layer_top_height = layer_output_choice(exteme_layer_top_height, spacing, opt)
 
-    # add this info to each list inside layer_dict
+    # add info when flying below the lowest layer (out of bounds)
+    if out_of_bounds:
+        
+        # get layer dict key
+        lowest_height = flight_layer_heights[0]
+        if opt == 'range':
+            layer_dict_key = f'{0}-{lowest_height - spacing/2}'
+        elif opt == 'levels':
+            layer_dict_key = 0
+
+        # get closest layers at top
+        layer_dict_value = ['']
+        for layer in closest_layers:
+
+            # get index of layer and its value
+            try:
+                idx_layer = full_layer_pattern.index(layer)
+            except ValueError:
+                continue
+            
+            value_layer = layer_output_choice(flight_layer_heights[idx_layer], spacing, opt)
+
+            # append nothing for the bottom closest layers
+            layer_dict_value.append('')
+
+            # append value for top closet layers
+            layer_dict_value.append(value_layer)
+
+        # add info to dictionary
+        layer_dict[layer_dict_key] = layer_dict_value
+
+    # add extreme layer height info to each list inside layer_dict
     for _, value in layer_dict.items():
         value.append(exteme_layer_bottom_height)
         value.append(exteme_layer_top_height)
