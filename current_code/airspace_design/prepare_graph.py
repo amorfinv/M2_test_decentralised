@@ -17,6 +17,26 @@ def main():
 
     # also remove some columns from dataframe
     edge_stroke = pd.DataFrame(edge_gdf['stroke_group'].copy())
+
+    # for each edge, get the stroke group
+    stroke_array = np.sort(np.unique(edge_stroke.loc[:, 'stroke_group'].to_numpy()).astype(np.int64))
+
+    stroke_length = {}
+    for stroke in stroke_array:
+        # get the edges with the stroke group
+        stroke_edges = edge_gdf.loc[edge_gdf['stroke_group'] == str(stroke)].to_crs(crs='epsg:32633')
+        
+        # get the nodes of the edges
+        length_stroke = sum(stroke_edges.length)
+
+        # add to dictionary
+        stroke_length[str(stroke)] = length_stroke
+
+    # save node dictionary to JSON
+    with open('stroke_length.json', 'w') as fp:
+        json.dump(stroke_length, fp, indent=4)
+
+
     edge_gdf.drop(['oneway','length', 'bearing', 'edge_interior_angle', 'layer_allocation','bearing_diff', 'geometry'], axis=1, inplace=True)
 
     # create a lat, lon and osmid list to make a dictionary of nodes
