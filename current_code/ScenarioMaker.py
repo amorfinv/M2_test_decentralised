@@ -38,7 +38,7 @@ graph=street_graph(G,edges)
 path_plan_filename = 'Path_Planning'
 
 # Step 2: Generate traffic from it
-concurrent_ac = 1
+concurrent_ac = 4
 aircraft_vel = 12 # [m/s]
 max_time = 120 # [s]
 dt = 10
@@ -87,6 +87,8 @@ for flight in generated_traffic:
     # First get the route and turns
     origin = flight[2]
     destination = flight[3]
+    origin=[48.19404375250662, 16.339584352808064]
+    destination=[48.25071765463373, 16.28807300783087]
 
     plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[1], origin[0], destination[1], destination[0])
     route=[]

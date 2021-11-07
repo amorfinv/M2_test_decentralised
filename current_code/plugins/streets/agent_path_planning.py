@@ -1326,6 +1326,10 @@ class PathPlanning:
                 turns[i+1]=1
                 tmp=(route[i+1][1],route[i+1][0])
                 turn_coords.append(tmp)
+            if angle>0.5 and group_numbers[i-1]==-1:
+                ## if heading changes in open airspace set it as a trun to check for layer change in the navigation
+                ## thos eurns are not marked as turn points
+                turns[i-1]=1
         turn_coords.append((-1,-1))
 
         for i in group_numbers:
