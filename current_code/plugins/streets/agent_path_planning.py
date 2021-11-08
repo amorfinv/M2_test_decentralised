@@ -971,8 +971,7 @@ class PathPlanning:
             os_id2=indices_nodes[0]
             cnt=0
             for i in range(0,len(indices_nodes)):
-                if i>0 and groups[i-1]==-1 and groups[i]==-1:
-                    os_id1=0
+                
                     
                 if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
                     cnt=cnt+1
@@ -983,12 +982,15 @@ class PathPlanning:
                     cnt=1
                     os_id1=os_id2
                     os_id2=indices_nodes[i]
+                    if i>0 and groups[i]==-1 and groups[i-1]==-1:
+                        os_id1=0
             for j in range(cnt):
                 edges_list.append((os_id1,os_id2))
+
                 
             cnt=0
-            for i in turns:
-                if i:
+            for i in range(len(turns)):
+                if turns[i] and in_constrained[i]:
                     next_turn_point.append(turn_coord[cnt])
                     cnt=cnt+1
                 else:
@@ -1498,23 +1500,25 @@ class PathPlanning:
 #                 if os_id1==0:
 #                     os_id1=8642421055
 # =============================================================================
-                os_id2=indices_nodes[0]
-                cnt=0
-                edges_list=[]
-                next_turn_point=[]
-                for i in range(0,len(indices_nodes)):
-                    if i>0 and groups[i-1]==-1 and groups[i]==-1:
+            os_id2=indices_nodes[0]
+            cnt=0
+            for i in range(0,len(indices_nodes)):
+                
+                    
+                if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
+                    cnt=cnt+1
+                else:
+                    for j in range(cnt):
+                        edges_list.append((os_id1,os_id2))
+                    #edges_list.append((os_id1,indices_nodes[i]))
+                    cnt=1
+                    os_id1=os_id2
+                    os_id2=indices_nodes[i]
+                    if i>0 and groups[i]==-1 and groups[i-1]==-1:
                         os_id1=0
-                    if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
-                        cnt=cnt+1
-                    else:
-                        for j in range(cnt):
-                            edges_list.append((os_id1,os_id2))
-                        cnt=1
-                        os_id1=os_id2
-                        os_id2=indices_nodes[i]
-                for j in range(cnt):
-                    edges_list.append((os_id1,os_id2))
+            for j in range(cnt):
+                edges_list.append((os_id1,os_id2))
+
                         
                 cnt=0
                 for i in turns:
