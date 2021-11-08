@@ -87,13 +87,11 @@ for flight in generated_traffic:
     # First get the route and turns
     origin = flight[2]
     destination = flight[3]
-    origin=[48.19404375250662, 16.339584352808064]
-    destination=[48.25071765463373, 16.28807300783087]
 
     plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[1], origin[0], destination[1], destination[0])
     route=[]
     turns=[]
-    route,turns,edges,next_turn,groups,in_constrained=plan.plan()
+    route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
 
     flight_plans_dict[flight[0]]=plan
     if route!=[]:

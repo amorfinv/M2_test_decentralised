@@ -955,18 +955,25 @@ class PathPlanning:
         indices_nodes=[]
         turn_indices=[]
         if path_found:
-            route,turns,indices_nodes,turn_coord,groups,in_constrained=self.get_path(self.path,self.graph, self.G,self.edge_gdf)
+            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed=self.get_path(self.path,self.graph, self.G,self.edge_gdf)
 
-            for i in range(len(groups)):
-                if groups[i]==-1:
-                    indices_nodes[i]=8642421055
+# =============================================================================
+#             for i in range(len(groups)):
+#                 if groups[i]==-1:
+#                     indices_nodes[i]=8642421055
+# =============================================================================
 
             os_id1=self.start_index_previous
-            if os_id1==0:
-                os_id1=8642421055
+# =============================================================================
+#             if os_id1==0:
+#                 os_id1=8642421055
+# =============================================================================
             os_id2=indices_nodes[0]
             cnt=0
             for i in range(0,len(indices_nodes)):
+                if i>0 and groups[i-1]==-1 and groups[i]==-1:
+                    os_id1=0
+                    
                 if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
                     cnt=cnt+1
                 else:
@@ -995,8 +1002,9 @@ class PathPlanning:
         self.next_turn_point=next_turn_point
         self.groups=groups    
         self.in_constrained=in_constrained
+        self.turn_speed=turn_speed
         
-        return route,turns,edges_list,next_turn_point,groups,in_constrained
+        return route,turns,edges_list,next_turn_point,groups,in_constrained,turn_speed
     
     ##Function to export the route based on the D* search graph
     ##Retruns: route,turns,next_node_index,turn_coord,groups
@@ -1304,6 +1312,12 @@ class PathPlanning:
         lat_prev=self.start_point.x
         lon_prev=self.start_point.y
         
+        turn_speed=copy.deepcopy(turns) ## TODO : update those values when they are ready
+        #speed set to 0 for open airspace or for no turn
+        #speed to 10 knots for angles smaller than 45 degrees
+        #speed to 5 knots for turning angles between 45 and 90 degrees
+        #speed to 2 knots for turning angles larger tha 90 degrees
+        
         for i in range(len(group_numbers)-1):
             lat_cur=route[i-1][0]
             lon_cur=route[i-1][1]
@@ -1318,6 +1332,13 @@ class PathPlanning:
                 turns[i-1]=1
                 tmp=(route[i-1][1],route[i-1][0])
                 turn_coords.append(tmp)
+                if angle<45:
+                    turn_speed[i-1]=10
+                elif angle<90:
+                    turn_speed[i-1]=5
+                else:
+                    turn_speed[i-1]=2
+                
             lat_prev=lat_cur
             lon_prev=lon_cur
             if group_numbers[i]==group_numbers[i+1] or group_numbers[i+1]==-1:
@@ -1326,9 +1347,9 @@ class PathPlanning:
                 turns[i+1]=1
                 tmp=(route[i+1][1],route[i+1][0])
                 turn_coords.append(tmp)
-            if angle>0.5 and group_numbers[i-1]==-1:
+            if angle>5 and group_numbers[i-1]==-1:
                 ## if heading changes in open airspace set it as a trun to check for layer change in the navigation
-                ## thos eurns are not marked as turn points
+                ## those turns are not marked as turn points
                 turns[i-1]=1
         turn_coords.append((-1,-1))
 
@@ -1344,8 +1365,9 @@ class PathPlanning:
         self.turn_coords_get=turn_coords
         self.group_numbers_get=group_numbers
         self.in_constrained=in_constrained
+        self.turn_speed=turn_speed
 
-        return route,turns,next_node_index,turn_coords,group_numbers,in_constrained
+        return route,turns,next_node_index,turn_coords,group_numbers,in_constrained,turn_speed
  
     def update_changed_vertices(self,path,graph, G,edges,edges_old=None,change=False,change_list=[]):
         
@@ -1460,23 +1482,29 @@ class PathPlanning:
 
                 
             ##call get path
-            route,turns,indices_nodes,turn_coord,groups,in_constrained=self.get_path(self.path,self.graph, self.G,edges_g,self.edge_gdf,True,change_list)
+            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed=self.get_path(self.path,self.graph, self.G,edges_g,self.edge_gdf,True,change_list)
             
             self.path.origin_node_index=start_id
              
             if route != None :
-                for i in range(len(groups)):
-                    if groups[i]==-1:
-                        indices_nodes[i]=8642421055
+# =============================================================================
+#                 for i in range(len(groups)):
+#                     if groups[i]==-1:
+#                         indices_nodes[i]=8642421055
+# =============================================================================
                 
                 os_id1=self.start_index_previous
-                if os_id1==0:
-                    os_id1=8642421055
+# =============================================================================
+#                 if os_id1==0:
+#                     os_id1=8642421055
+# =============================================================================
                 os_id2=indices_nodes[0]
                 cnt=0
                 edges_list=[]
                 next_turn_point=[]
                 for i in range(0,len(indices_nodes)):
+                    if i>0 and groups[i-1]==-1 and groups[i]==-1:
+                        os_id1=0
                     if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
                         cnt=cnt+1
                     else:
@@ -1506,11 +1534,12 @@ class PathPlanning:
                 self.next_turn_point=next_turn_point
                 self.groups=groups  
                 self.in_constrained=in_constrained
+                self.turn_speed=turn_speed
             
         elif cnt>0:
             self.edge_gdf=copy.deepcopy(edges_g)
 
-        return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained 
+        return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
       
     ##Function handling the replanning process, called when aircraft is spawned
     ##Retruns: route,turns,edges_list,next_turn_point,groups
