@@ -956,7 +956,6 @@ class PathPlanning:
         turn_indices=[]
         if path_found:
             route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed=self.get_path(self.path,self.graph, self.G,self.edge_gdf)
-
 # =============================================================================
 #             for i in range(len(groups)):
 #                 if groups[i]==-1:
@@ -1088,7 +1087,7 @@ class PathPlanning:
             path_found=compute_shortest_path(path,graph,G,edges) 
             
         if not path_found:
-            return None,None,None,None,None
+            return None,None,None,None,None,None,None
         
 
         next_node_index.append(self.start_index)
@@ -1125,6 +1124,7 @@ class PathPlanning:
         selected_nodes_index.append(path.start.index)
         
         while path.start.key_index!=path.goal.key_index :
+            
     
             current_node=path.start
             minim=float('inf')
@@ -1308,7 +1308,7 @@ class PathPlanning:
             del group_numbers[j]
             del turns[j]
             del route_centers[j]
-            del next_node_index[j]
+            del next_node_index[j-1] #TODO : fix that
             
         ##Check for turn points
         lat_prev=self.start_point.x
@@ -1459,10 +1459,11 @@ class PathPlanning:
                     tmp.append(self.graph[ind])
                     if expanded:
                         change_list.append(tmp)
-                    
+              
+        if prev_node_osmnx_id!=0:
 
-        if self.edge_gdf[prev_node_osmnx_id][next_node_index].speed<1:
-            replan_bool=False
+            if self.edge_gdf[prev_node_osmnx_id][next_node_index].speed<1:
+                replan_bool=False
             
         if not replan_bool and change_list!=[]:
             self.update_changed_vertices(self.path,self.graph, self.G,edges_g,self.edge_gdf,True,change_list)
@@ -1485,7 +1486,7 @@ class PathPlanning:
                 
             ##call get path
             route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed=self.get_path(self.path,self.graph, self.G,edges_g,self.edge_gdf,True,change_list)
-            
+            print(indices_nodes)
             self.path.origin_node_index=start_id
              
             if route != None :
@@ -1542,6 +1543,7 @@ class PathPlanning:
             
         elif cnt>0:
             self.edge_gdf=copy.deepcopy(edges_g)
+            
 
         return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
       
