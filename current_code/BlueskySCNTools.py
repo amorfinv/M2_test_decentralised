@@ -173,8 +173,8 @@ class BlueskySCNTools():
         # Delete aircraft at destination waypoint
         lines.append(start_time_txt + f'{drone_id} ATDIST {lats[-1]} {lons[-1]} {5/nm} DEL {drone_id}\n')
         # Enable vnav and lnav
-        lines.append(start_time_txt + vnav)
         lines.append(start_time_txt + lnav)
+        lines.append(start_time_txt + vnav)
 
         return lines
     
