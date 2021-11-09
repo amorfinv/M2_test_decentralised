@@ -38,7 +38,7 @@ graph=street_graph(G,edges)
 path_plan_filename = 'Path_Planning'
 
 # Step 2: Generate traffic from it
-concurrent_ac = 6
+concurrent_ac = 10
 aircraft_vel = 12 # [m/s]
 max_time = 120 # [s]
 dt = 10
