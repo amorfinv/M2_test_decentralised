@@ -135,40 +135,40 @@ class BlueskySCNTools():
         cre_text = f'CREM2 {drone_id} M600 {lats[0]} {lons[0]} {qdr} {alt} {start_speed} {priority}\n'
         lines.append(start_time_txt + cre_text)
         
-        # Then we need to for loop through all the lats
-        prev_wpt_turn = False
-        for i in range(1, len(lats)):
-            if turnbool[i] == 1 or turnbool[i] == True:
-                # We have a turn waypoint
-                if prev_wpt_turn == False:
-                    # The previous waypoint was not a turn one, we need to enter
-                    # turn waypoint mode.
-                    lines.append(start_time_txt + trn)
-                    lines.append(start_time_txt + trn_spd)
-            else:
-                # Not a turn waypoint
-                if prev_wpt_turn == True:
-                    # We had a turn waypoint initially, change to flyover mode
-                    lines.append(start_time_txt + fvr)
+        # # Then we need to for loop through all the lats
+        # prev_wpt_turn = False
+        # for i in range(1, len(lats)):
+        #     if turnbool[i] == 1 or turnbool[i] == True:
+        #         # We have a turn waypoint
+        #         if prev_wpt_turn == False:
+        #             # The previous waypoint was not a turn one, we need to enter
+        #             # turn waypoint mode.
+        #             lines.append(start_time_txt + trn)
+        #             lines.append(start_time_txt + trn_spd)
+        #     else:
+        #         # Not a turn waypoint
+        #         if prev_wpt_turn == True:
+        #             # We had a turn waypoint initially, change to flyover mode
+        #             lines.append(start_time_txt + fvr)
                     
-            # Add the waypoint(TODO: fix this)
-            speed = speeds[i]
-            if any(alts):
-                if speed:
-                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} {speed} {active_edge[i]} {group_num[i]} {active_turns[i]} {in_constrained[i]}\n'
-                else:
-                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} ,, {active_edge[i]} {group_num[i]} {active_turns[i]} {in_constrained[i]}\n'
+        #     # Add the waypoint(TODO: fix this)
+        #     speed = speeds[i]
+        #     if any(alts):
+        #         if speed:
+        #             wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} {speed} {active_edge[i]} {group_num[i]} {active_turns[i]} {in_constrained[i]}\n'
+        #         else:
+        #             wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} {alts[i]} ,, {active_edge[i]} {group_num[i]} {active_turns[i]} {in_constrained[i]}\n'
 
-            else:
-                if speed:
-                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,, {speed} {active_edge[i]} {group_num[i]} {active_turns[i]} {in_constrained[i]}\n'
-                else:
-                    wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,,, {active_edge[i]} {group_num[i]} {active_turns[i]} {in_constrained[i]}\n'
+        #     else:
+        #         if speed:
+        #             wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,, {speed} {active_edge[i]} {group_num[i]} {active_turns[i]} {in_constrained[i]}\n'
+        #         else:
+        #             wpt_txt = f'ADDWPTM2 {drone_id} {lats[i]} {lons[i]} ,,, {active_edge[i]} {group_num[i]} {active_turns[i]} {in_constrained[i]}\n'
 
-            lines.append(start_time_txt + wpt_txt)
+        #     lines.append(start_time_txt + wpt_txt)
             
-            # Set prev waypoint type value
-            prev_wpt_turn = turnbool[i]
+        #     # Set prev waypoint type value
+        #     prev_wpt_turn = turnbool[i]
         
         # Delete aircraft at destination waypoint
         lines.append(start_time_txt + f'{drone_id} ATDIST {lats[-1]} {lons[-1]} {5/nm} DEL {drone_id}\n')
