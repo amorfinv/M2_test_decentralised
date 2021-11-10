@@ -292,6 +292,9 @@ class street_graph:
         with open('airspace_design/strokes.json', 'r') as filename:
             self.stroke_dict = json.load(filename)
             
+        with open('airspace_design/stroke_length.json', 'r') as filename:
+            self.group_lengths= json.load(filename)
+            
         ##Delete the stroke groups that include open airspace
         del self.stroke_dict["1578"]
         del self.stroke_dict["1577"]

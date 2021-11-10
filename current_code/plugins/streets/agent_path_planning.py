@@ -104,7 +104,7 @@ def line_intersection_point(line1, line2):
 
     div = det(xdiff, ydiff)
     if div == 0:
-       return none,none#raise Exception('lines do not intersect')
+       return   None,None#raise Exception('lines do not intersect')
 
     d = (det(*line1), det(*line2))
     x = det(d, xdiff) / div
