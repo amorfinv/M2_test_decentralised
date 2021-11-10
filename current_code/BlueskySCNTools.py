@@ -218,7 +218,8 @@ class BlueskySCNTools():
             filepath = filepath + '.scn'
         
         with open(filepath, 'w+') as f:
-            f.write('00:00:00>HOLD\n00:00:00>PAN 48.223775 16.337976\n00:00:00>ZOOM 50\n')
+            f.write('00:00:00>HOLD\n00:00:00>PAN 48.223775 16.337976\n00:00:00>ZOOM 20\n')
+            f.write('00:00:00>VIS TRAFFIC QUADTRAFFIC\n')
             f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV2\n')
             f.write(f'00:00:00>LOADPATH {pathplanfilename}\n')
             for drone_id in dictionary:
