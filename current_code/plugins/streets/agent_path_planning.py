@@ -1345,8 +1345,8 @@ class PathPlanning:
                 turns[i-1]=1
         turn_coords.append((-1,-1))
 
-        for i in group_numbers:
-            if i==-1:
+        for g,i in enumerate(group_numbers):
+            if i==-1 or ( g>0 and group_numbers[g-1]==-1)or ( g<len(group_numbers)-1 and group_numbers[g+1]==-1):
                 in_constrained.append(0)
             else:
                 in_constrained.append(1)        
