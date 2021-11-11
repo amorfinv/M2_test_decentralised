@@ -260,7 +260,7 @@ class CellNode:
 class Node:
     av_speed_horizontal= 10.0#10.0 ##TODO: that needs fine tunng
     av_speed_vertical=1.0
-    def __init__(self,key_index,lon,lat,z,index,group):
+    def __init__(self,key_index,lon,lat,index,group):
         self.key_index=key_index # the index the osmnx graph
         self.index=index# the index in the search graph
 
@@ -268,7 +268,6 @@ class Node:
         ##Coordinates of the center
         self.lon=lon
         self.lat=lat
-        self.z=z
         
         ##Coordinates of the center
         self.x_cartesian=None
@@ -282,16 +281,10 @@ class Node:
         #self.f=0.0
         self.g=float('inf')
         self.rhs=float('inf')
-        self.h=0.0
         self.key=[0.0,0.0]
-
-        self.density=1.0 #shows the traffic density      
-
+ 
         self.inQueue=False
         
-        #the travelling speed
-        #that will probably depend on the group
-        self.speed=10
         #the stroke group
         self.group=group
         
@@ -340,7 +333,7 @@ def eucledean_distance(p1,p2):
 def heuristic(current, goal,speed):
     if current.open_airspace or goal.open_airspace:
         #h=( math.sqrt((current.x_cartesian-goal.x_cartesian)*(current.x_cartesian-goal.x_cartesian)+(current.y_cartesian-goal.y_cartesian)*(current.y_cartesian-goal.y_cartesian)))/current.av_speed_horizontal
-        h=eucledean_distance(current, goal)/min(current.av_speed_horizontal,speed)
+        h=eucledean_distance(current, goal)/speed
     else:
         h=(abs(current.x_cartesian-goal.x_cartesian)+abs(current.y_cartesian-goal.y_cartesian))/min(current.av_speed_horizontal,speed)
 
@@ -354,7 +347,7 @@ def compute_c(current,neigh,edges,speed):
     g=1
     if current.open_airspace  or neigh.open_airspace:
          #g=( math.sqrt((current.x_cartesian-neigh.x_cartesian)*(current.x_cartesian-neigh.x_cartesian)+(current.y_cartesian-neigh.y_cartesian)*(current.y_cartesian-neigh.y_cartesian)))/current.speed
-         g=eucledean_distance(current,neigh)/min(current.speed,speed)
+         g=eucledean_distance(current,neigh)/speed
     else:
         if(current.group!=neigh.group):
             g=25#abs(neigh.z-current.z)/current.av_speed_vertical
@@ -397,7 +390,7 @@ def update_vertex(path,node):
     elif node.g!=node.rhs and (not node.inQueue):
         #Insert
         node.inQueue=True
-        node.h=heuristic(node, path.start,path.speed)
+        #node.h=heuristic(node, path.start,path.speed)
         node.key=calculateKey(node, path.start, path)
         #node.expanded=True
         heapq.heappush(path.queue, (node.key[0],node.key[1],node.index,node))
@@ -418,7 +411,7 @@ def update_vertex(path,node):
           
 ##Compute the shortest path using D* Lite
 ##returns flase if no path was found
-def compute_shortest_path(path,graph,G,edges):
+def compute_shortest_path(path,graph,edges):
 
     path.start.key=calculateKey(path.start, path.start, path)
     k_old=top_key(path.queue)
@@ -662,7 +655,9 @@ class PathPlanning:
                 self.goal_index=self.open_airspace_grid.grid[open_goal].key_index
                 self.goal_index_next=0
 
-        self.open_airspace_cells=[]   
+        del self.open_airspace_cells
+        
+        
             
         if self.goal_index_next==self.start_index or self.goal_index==self.start_index:
             print("same goal to start index")
@@ -688,7 +683,7 @@ class PathPlanning:
             
         
         del self.flow_control_graph #empty these, we do no tneed it any more
-        
+        del self.gdf
 
         #Create the graph
         self.graph=[]
@@ -708,8 +703,7 @@ class PathPlanning:
            dict_tmp[0]=i
            self.os_keys_dict_pred[key]=dict_tmp
            self.os_keys_dict_succ[key]=dict_tmp
-           z=25 # 30 feet /2 in meters
-           node=Node(key,lon,lat,z,i,group)
+           node=Node(key,lon,lat,i,group)
            node.open_airspace=True
            node.cell=CellNode(cell)
            node.x_cartesian=cell.center_x
@@ -753,8 +747,7 @@ class PathPlanning:
                    if p in list(self.edge_gdf.keys()) and key in self.edge_gdf[p]: 
 
                        group=int(self.edge_gdf[p][key].stroke_group)
-                       z=self.edge_gdf[p][key].layer_alt
-                       node=Node(key,lon,lat,z,i+new_nodes_counter+graph_len,group)
+                       node=Node(key,lon,lat,i+new_nodes_counter+graph_len,group)
                        pp=transformer.transform(lat,lon)
                        node.x_cartesian,node.y_cartesian =pp[0],pp[1]
                        my_group.update({i+new_nodes_counter+graph_len:group})
@@ -772,8 +765,7 @@ class PathPlanning:
 
                         new_nodes_counter=new_nodes_counter+1
                         group=int(self.edge_gdf[p][key].stroke_group)
-                        z=self.edge_gdf[p][key].layer_alt
-                        node=Node(key,lon,lat,z,i+new_nodes_counter+graph_len,group)
+                        node=Node(key,lon,lat,i+new_nodes_counter+graph_len,group)
                         pp=transformer.transform(lat,lon)
                         node.x_cartesian,node.y_cartesian = pp[0],pp[1]
                         my_group.update({i+new_nodes_counter+graph_len:group})
@@ -791,8 +783,7 @@ class PathPlanning:
                 group=int(self.edge_gdf[key][ch].stroke_group)
                 if not group in tmp:
                     if not ii:
-                        z=self.edge_gdf[key][ch].layer_alt
-                        node=Node(key,lon,lat,z,i+new_nodes_counter+graph_len,group)
+                        node=Node(key,lon,lat,i+new_nodes_counter+graph_len,group)
                         p=transformer.transform(lat,lon)
                         node.x_cartesian,node.y_cartesian = p[0],p[1]
                         my_group.update({i+new_nodes_counter+graph_len:group})
@@ -809,8 +800,7 @@ class PathPlanning:
                         
                     else:
                         new_nodes_counter=new_nodes_counter+1
-                        z=self.edge_gdf[key][ch].layer_alt
-                        node=Node(key,lon,lat,z,i+new_nodes_counter+graph_len,group)
+                        node=Node(key,lon,lat,i+new_nodes_counter+graph_len,group)
                         p=transformer.transform(lat,lon)
                         node.x_cartesian,node.y_cartesian = p[0],p[1]
                         my_group.update({i+new_nodes_counter+graph_len:group})
@@ -825,8 +815,7 @@ class PathPlanning:
                            self.os_keys_dict_succ[key]=dict
                         
            if ii==0:
-                z=10 ########Need to find what altitude that should be 
-                node=Node(key,lon,lat,z,i+new_nodes_counter+graph_len,-1)
+                node=Node(key,lon,lat,i+new_nodes_counter+graph_len,-1)
                 p=transformer.transform(lat,lon)
                 node.x_cartesian,node.y_cartesian =p[0],p[1]
                 self.graph.append(node)
@@ -918,6 +907,10 @@ class PathPlanning:
                                     dict[ch]=i.index
                                     self.os_keys_dict_succ[i.key_index]=dict                        
                             break
+                        
+        del self.open_airspace_grid
+        del self.G
+        
 
     ##Function handling the path planning process
     ##Retruns: route
@@ -942,7 +935,7 @@ class PathPlanning:
         
         initialise(self.path)
         
-        path_found=compute_shortest_path(self.path,self.graph,self.G,self.edge_gdf)
+        path_found=compute_shortest_path(self.path,self.graph,self.edge_gdf)
         print(path_found)
         
         route=[]
@@ -952,7 +945,7 @@ class PathPlanning:
         indices_nodes=[]
         turn_indices=[]
         if path_found:
-            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed=self.get_path(self.path,self.graph, self.G,self.edge_gdf)
+            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed=self.get_path(self.path,self.graph,self.edge_gdf)
 
             os_id1=self.start_index_previous
 
@@ -1003,7 +996,7 @@ class PathPlanning:
     ##next_node_index is the list of the next osmnx node for every waypoint
     ##turn_coord is a list containing the coord of every point that is a turn point
     ##groups is the list of the group in which each waypoint belongs to
-    def get_path(self,path,graph, G,edges,edges_old=None,change=False,change_list=[]):
+    def get_path(self,path,graph, edges,edges_old=None,change=False,change_list=[]):
 
         route_centers=[]
         next_node_index=[]
@@ -1052,7 +1045,7 @@ class PathPlanning:
                 #path.start.rhs=float('inf')## not sure for that
                 
                 edges_old[c[0].key_index][c[1].key_index].speed=edges[c[0].key_index][c[1].key_index].speed
-            path_found=compute_shortest_path(path,graph,G,edges_old)
+            path_found=compute_shortest_path(path,graph,edges_old)
 
 
             print(path_found)
@@ -1073,14 +1066,14 @@ class PathPlanning:
                 self.route_origin_node=copy.deepcopy(path.start)
                     
             initialise(path)
-            path_found=compute_shortest_path(path,graph,G,edges) 
+            path_found=compute_shortest_path(path,graph,edges) 
             
         if not path_found:
             return None,None,None,None,None,None,None
         
 
         next_node_index.append(self.start_index)
-        tmp=(self.start_point.x,self.start_point.y,path.start.z)
+        tmp=(self.start_point.x,self.start_point.y)
         group_numbers.append(path.start.group)
         route_centers.append(tmp)
         turns.append(0)
@@ -1090,7 +1083,7 @@ class PathPlanning:
             coords = list(linestring.coords)
             for c in range(len(coords)-1):
                 if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((self.start_point.x,self.start_point.y)),tuple((path.start.lon,path.start.lat)))):
-                    tmp=(coords[c][0],coords[c][1],path.start.z) #the points before the first node
+                    tmp=(coords[c][0],coords[c][1]) #the points before the first node
                     route_centers.append(tmp) 
                     group_numbers.append(path.start.group)
                     next_node_index.append(self.start_index)
@@ -1098,7 +1091,7 @@ class PathPlanning:
                 
 
             next_node_index.append(self.start_index)
-            tmp=(path.start.lon,path.start.lat,path.start.z)
+            tmp=(path.start.lon,path.start.lat)
             group_numbers.append(path.start.group)
             route_centers.append(tmp)
             turns.append(0)
@@ -1144,7 +1137,7 @@ class PathPlanning:
                     coords = list(linestring.coords)
                     for c in range(len(coords)-1):
                         if not c==0:
-                            tmp=(coords[c][0],coords[c][1],current_node.z) #the intermediate point
+                            tmp=(coords[c][0],coords[c][1]) #the intermediate point
                             route_centers.append(tmp) 
                             group_numbers.append(current_node.group)
                             next_node_index.append(current_node.key_index)
@@ -1152,7 +1145,7 @@ class PathPlanning:
 
                 if current_node.key_index!=path.goal.key_index or not current_node.open_airspace:
                     next_node_index.append(current_node.key_index)
-                    tmp=(current_node.lon,current_node.lat,current_node.z) #the next node
+                    tmp=(current_node.lon,current_node.lat) #the next node
                     group_numbers.append(current_node.group)
                     route_centers.append(tmp)
                     turns.append(0)  
@@ -1175,20 +1168,20 @@ class PathPlanning:
             coords = list(linestring.coords)
             for c in range(len(coords)-1):
                 if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((self.goal_point.x,self.goal_point.y)),tuple((path.goal.lon,path.goal.lat)))):
-                    tmp=(coords[c][0],coords[c][1],path.start.z) #the points before the first node
+                    tmp=(coords[c][0],coords[c][1]) #the points before the first node
                     route_centers.append(tmp) 
                     group_numbers.append(path.goal.group)
                     next_node_index.append(self.goal_index_next)
                     turns.append(0)
                 
 
-            tmp=(self.goal_point.x,self.goal_point.y,path.goal.z)
+            tmp=(self.goal_point.x,self.goal_point.y)
             route_centers.append(tmp)
             group_numbers.append(path.goal.group)
             next_node_index.append(self.goal_index_next)
             turns.append(0)   
         else:
-            tmp=(self.goal_point.x,self.goal_point.y,path.goal.z)
+            tmp=(self.goal_point.x,self.goal_point.y)
             route_centers.append(tmp)
             group_numbers.append(path.goal.group)
             next_node_index.append(self.goal_index)
@@ -1288,7 +1281,7 @@ class PathPlanning:
                     tranformed_p=transformer1.transform(px,py)
                     lon,lat =tranformed_p[1],tranformed_p[0]
               
-                    tmp=(lon,lat,node1.z)
+                    tmp=(lon,lat)
                     route.append(tmp)
                     
             route.append(route_centers[len(route_centers)-1])
@@ -1356,17 +1349,19 @@ class PathPlanning:
             else:
                 in_constrained.append(1)        
 
-        self.route_get=route
-        self.turns_get=turns
-        self.next_node_index_get=next_node_index
-        self.turn_coords_get=turn_coords
-        self.group_numbers_get=group_numbers
-        self.in_constrained=in_constrained
-        self.turn_speed=turn_speed
+# =============================================================================
+#         self.route_get=route
+#         self.turns_get=turns
+#         self.next_node_index_get=next_node_index
+#         self.turn_coords_get=turn_coords
+#         self.group_numbers_get=group_numbers
+#         self.in_constrained=in_constrained
+#         self.turn_speed=turn_speed
+# =============================================================================
 
         return route,turns,next_node_index,turn_coords,group_numbers,in_constrained,turn_speed
  
-    def update_changed_vertices(self,path,graph, G,edges,edges_old=None,change=False,change_list=[]):
+    def update_changed_vertices(self,path,graph,edges,edges_old=None,change=False,change_list=[]):
         
         if change: #Scan for changes
         ##replan
@@ -1461,7 +1456,7 @@ class PathPlanning:
                 replan_bool=False
             
         if not replan_bool and change_list!=[]:
-            self.update_changed_vertices(self.path,self.graph, self.G,edges_g,self.edge_gdf,True,change_list)
+            self.update_changed_vertices(self.path,self.graph,edges_g,self.edge_gdf,True,change_list)
             self.edge_gdf=copy.deepcopy(edges_g)
             
         if cnt>0 and change_list!=[] and replan_bool:
@@ -1480,53 +1475,53 @@ class PathPlanning:
 
                 
             ##call get path
-            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed=self.get_path(self.path,self.graph, self.G,edges_g,self.edge_gdf,True,change_list)
-            print(indices_nodes)
+            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed=self.get_path(self.path,self.graph,edges_g,self.edge_gdf,True,change_list)
             self.path.origin_node_index=start_id
              
             if route != None :
-                
+                edges_list=[]
+                next_turn_point=[]
                 os_id1=self.start_index_previous
 
-            os_id2=indices_nodes[0]
-            cnt=0
-            for i in range(0,len(indices_nodes)):
-                
-                    
-                if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
-                    cnt=cnt+1
-                else:
-                    for j in range(cnt):
-                        edges_list.append((os_id1,os_id2))
-                    #edges_list.append((os_id1,indices_nodes[i]))
-                    cnt=1
-                    os_id1=os_id2
-                    os_id2=indices_nodes[i]
-                    if i>0 and groups[i]==-1 and groups[i-1]==-1:
-                        os_id1=0
-            for j in range(cnt):
-                edges_list.append((os_id1,os_id2))
-
-                        
+                os_id2=indices_nodes[0]
                 cnt=0
-                for i in turns:
-                    if i:
-                        next_turn_point.append(turn_coord[cnt])
+                for i in range(0,len(indices_nodes)):
+                    
+                        
+                    if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
                         cnt=cnt+1
                     else:
-                        next_turn_point.append(turn_coord[cnt])
+                        for j in range(cnt):
+                            edges_list.append((os_id1,os_id2))
+                        #edges_list.append((os_id1,indices_nodes[i]))
+                        cnt=1
+                        os_id1=os_id2
+                        os_id2=indices_nodes[i]
+                        if i>0 and groups[i]==-1 and groups[i-1]==-1:
+                            os_id1=0
+                for j in range(cnt):
+                    edges_list.append((os_id1,os_id2))
+    
                             
-                del indices_nodes[0]
-                    
-                self.edge_gdf=copy.deepcopy(edges_g)
+                    cnt=0
+                    for i in turns:
+                        if i:
+                            next_turn_point.append(turn_coord[cnt])
+                            cnt=cnt+1
+                        else:
+                            next_turn_point.append(turn_coord[cnt])
+                                
+                    del indices_nodes[0]
                         
-                self.route=route
-                self.turns=turns
-                self.edges_list=edges_list
-                self.next_turn_point=next_turn_point
-                self.groups=groups  
-                self.in_constrained=in_constrained
-                self.turn_speed=turn_speed
+                    self.edge_gdf=copy.deepcopy(edges_g)
+                            
+                    self.route=route
+                    self.turns=turns
+                    self.edges_list=edges_list
+                    self.next_turn_point=next_turn_point
+                    self.groups=groups  
+                    self.in_constrained=in_constrained
+                    self.turn_speed=turn_speed
             
         elif cnt>0:
             self.edge_gdf=copy.deepcopy(edges_g)
@@ -1571,7 +1566,7 @@ class PathPlanning:
         if cnt:
         
             ##call get path
-            route,turns,indices_nodes,turn_coord,groups=self.get_path(self.path,self.graph, self.G,edges_g,self.edge_gdf,True,change_list)
+            route,turns,indices_nodes,turn_coord,groups=self.get_path(self.path,self.graph,edges_g,self.edge_gdf,True,change_list)
                 
             os_id1=indices_nodes[0]
             os_id2=indices_nodes[1]
