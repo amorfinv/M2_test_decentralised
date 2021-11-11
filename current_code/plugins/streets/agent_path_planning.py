@@ -1025,7 +1025,7 @@ class PathPlanning:
 
                     if(c[0]!=path.goal):
     
-                        c[0].rhs=min(c[0].rhs,compute_c(c[0], c[1], edges)+c[1].g,path.speed)
+                        c[0].rhs=min(c[0].rhs,compute_c(c[0], c[1], edges,path.speed)+c[1].g)
 
                             
                 elif c[0].rhs== c_old+c[1].g: #if cost is increased
@@ -1450,10 +1450,149 @@ class PathPlanning:
                     if expanded:
                         change_list.append(tmp)
               
-        if prev_node_osmnx_id!=0:
+        if prev_node_osmnx_id!=0 and replan_bool:
+            if prev_node_osmnx_id in self.edge_gdf.keys():
+                if next_node_index in self.edge_gdf[prev_node_osmnx_id].keys():
 
-            if self.edge_gdf[prev_node_osmnx_id][next_node_index].speed<1:
-                replan_bool=False
+                    if self.edge_gdf[prev_node_osmnx_id][next_node_index].speed<1:
+                        replan_bool=False
+            
+        if not replan_bool and change_list!=[]:
+            self.update_changed_vertices(self.path,self.graph,edges_g,self.edge_gdf,True,change_list)
+            self.edge_gdf=copy.deepcopy(edges_g)
+            
+        if cnt>0 and change_list!=[] and replan_bool:
+            
+            if prev_node_osmnx_id in self.os_keys_dict_pred[next_node_index].keys():
+                start_id=self.os_keys_dict_pred[next_node_index][prev_node_osmnx_id]
+            else:
+                prev_node_osmnx_id =0
+                start_id=self.os_keys_dict_pred[next_node_index][prev_node_osmnx_id]
+            start_node=self.graph[start_id] 
+            self.path.start=start_node
+            
+
+            self.start_index=next_node_index
+            self.start_index_previous=prev_node_osmnx_id
+
+                
+            ##call get path
+            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed=self.get_path(self.path,self.graph,edges_g,self.edge_gdf,True,change_list)
+            self.path.origin_node_index=start_id
+             
+            if route != None :
+                edges_list=[]
+                next_turn_point=[]
+                os_id1=self.start_index_previous
+
+                os_id2=indices_nodes[0]
+                cnt=0
+                for i in range(0,len(indices_nodes)):
+                    
+                        
+                    if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
+                        cnt=cnt+1
+                    else:
+                        for j in range(cnt):
+                            edges_list.append((os_id1,os_id2))
+                        #edges_list.append((os_id1,indices_nodes[i]))
+                        cnt=1
+                        os_id1=os_id2
+                        os_id2=indices_nodes[i]
+                        if i>0 and groups[i]==-1 and groups[i-1]==-1:
+                            os_id1=0
+
+                for j in range(cnt):
+                    edges_list.append((os_id1,os_id2))
+
+                            
+                cnt=0
+                for i in turns:
+                    if i:
+                        next_turn_point.append(turn_coord[cnt])
+                        cnt=cnt+1
+                    else:
+                        next_turn_point.append(turn_coord[cnt])
+                                
+                del indices_nodes[0]
+                        
+                self.edge_gdf=copy.deepcopy(edges_g)
+                            
+                self.route=route
+                self.turns=turns
+                self.edges_list=edges_list
+                self.next_turn_point=next_turn_point
+                self.groups=groups  
+                self.in_constrained=in_constrained
+                self.turn_speed=turn_speed
+                return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
+            
+        elif cnt>0:
+            self.edge_gdf=copy.deepcopy(edges_g)
+            
+
+        return [],[],[],[],[],[],[]
+      
+    ##Function handling the replanning process, called when aircraft is spawned
+    ##Retruns: route,turns,edges_list,next_turn_point,groups
+    ##route is the list of waypoints (lat,lon,alittude)
+    ##turns is the list of booleans indicating for every waypoint if it is a turn
+    ##edges_list is the list of the edge in which is every waypoint, each edge is defined as a tuple (u,v) where u,v are the osmnx indices of the nodes defineing the edge
+    ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint     
+    ##groups is the list of the group in which each waypoint belongs to 
+    def replan_spawned(self,changes_list,flow_control_graph,prev_node_osmnx_id,next_node_index,lat,lon):
+        route=None
+        turns=None
+        groups=None
+        edges_list=None
+        next_turn_point=None
+        
+        self.start_point=Point(tuple((lon,lat)))
+        
+        edges_g=copy.deepcopy(self.edge_gdf)
+        ## check for changes in the aircrafts subgraph if any
+        cnt=0
+        expanded=False
+        change_list=[]
+        
+        replan_bool=True
+        
+
+        for change in changes_list:
+            
+            
+            k=change[0]
+            kk=change[1]
+            if k==prev_node_osmnx_id and kk==next_node_index:
+                #if teh changes are on the current edge of the aircraft do nothing
+                if change[2]<1:
+                    ##If the current group is set to a zero speed geofence
+                    replan_bool=False
+                continue
+            
+            expanded=False
+            if k in self.edge_gdf.keys():
+                if kk in self.edge_gdf[k].keys():
+                    edges_g[k][kk].speed=change[2]
+                    cnt=cnt+1
+                    tmp=[]
+                    ind=self.os_keys_dict_succ[k][kk]
+                    if self.graph[ind].expanded:
+                        expanded=True
+                    tmp.append(self.graph[ind])
+                    ind=self.os_keys_dict_pred[kk][k]
+                    if self.graph[ind].expanded:
+                       expanded=True
+                    tmp.append(self.graph[ind])
+                    if expanded:
+                        change_list.append(tmp)
+              
+        if prev_node_osmnx_id!=0 and replan_bool:
+            if prev_node_osmnx_id in self.edge_gdf.keys():
+                if next_node_index in self.edge_gdf[prev_node_osmnx_id].keys():
+
+                    if self.edge_gdf[prev_node_osmnx_id][next_node_index].speed<1:
+                        replan_bool=False
             
         if not replan_bool and change_list!=[]:
             self.update_changed_vertices(self.path,self.graph,edges_g,self.edge_gdf,True,change_list)
@@ -1503,103 +1642,29 @@ class PathPlanning:
                     edges_list.append((os_id1,os_id2))
     
                             
-                    cnt=0
-                    for i in turns:
-                        if i:
-                            next_turn_point.append(turn_coord[cnt])
-                            cnt=cnt+1
-                        else:
-                            next_turn_point.append(turn_coord[cnt])
+                cnt=0
+                for i in turns:
+                    if i:
+                        next_turn_point.append(turn_coord[cnt])
+                        cnt=cnt+1
+                    else:
+                        next_turn_point.append(turn_coord[cnt])
                                 
-                    del indices_nodes[0]
+                del indices_nodes[0]
                         
-                    self.edge_gdf=copy.deepcopy(edges_g)
+                self.edge_gdf=copy.deepcopy(edges_g)
                             
-                    self.route=route
-                    self.turns=turns
-                    self.edges_list=edges_list
-                    self.next_turn_point=next_turn_point
-                    self.groups=groups  
-                    self.in_constrained=in_constrained
-                    self.turn_speed=turn_speed
+                self.route=route
+                self.turns=turns
+                self.edges_list=edges_list
+                self.next_turn_point=next_turn_point
+                self.groups=groups  
+                self.in_constrained=in_constrained
+                self.turn_speed=turn_speed
+                return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
             
         elif cnt>0:
             self.edge_gdf=copy.deepcopy(edges_g)
             
 
         return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
-      
-    ##Function handling the replanning process, called when aircraft is spawned
-    ##Retruns: route,turns,edges_list,next_turn_point,groups
-    ##route is the list of waypoints (lat,lon,alittude)
-    ##turns is the list of booleans indicating for every waypoint if it is a turn
-    ##edges_list is the list of the edge in which is every waypoint, each edge is defined as a tuple (u,v) where u,v are the osmnx indices of the nodes defineing the edge
-    ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint     
-    ##groups is the list of the group in which each waypoint belongs to 
-    def replan_spawned(self,flow_control_graph):
-
-        route=None
-        turns=None
-        edges_list=None
-        next_turn_point=None
-        groups=None
-        
-        edges_g=copy.deepcopy(self.edge_gdf)
-
-        ## check for changes in the aircrafts subgraph if any
-        change_list=[]
-        ##Find changes based on the modification at the flow control graph
-        cnt=0
-        for key in self.edge_gdf.keys():
-            for k in self.edge_gdf[key].keys():
-                if flow_control_graph.modified[key][k]:
-                    cnt=cnt+1
-                    edges_g[key][k].speed=flow_control_graph.edges_graph[key][k].speed
-                    cnt=cnt+1
-                    tmp=[]
-                    ind=self.os_keys_dict_succ[key][k]
-                    tmp.append(self.graph[ind])
-                    ind=self.os_keys_dict_pred[k][key]
-                    tmp.append(self.graph[ind])
-                    change_list.append(tmp)
-                    
-        if cnt:
-        
-            ##call get path
-            route,turns,indices_nodes,turn_coord,groups=self.get_path(self.path,self.graph,edges_g,self.edge_gdf,True,change_list)
-                
-            os_id1=indices_nodes[0]
-            os_id2=indices_nodes[1]
-            cnt=0
-            edges_list=[]
-            next_turn_point=[]
-            for i in range(1,len(indices_nodes)):
-                if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
-                    cnt=cnt+1
-                else:
-                    for j in range(cnt):
-                        edges_list.append((os_id1,os_id2))
-                    #edges_list.append((os_id1,indices_nodes[i]))
-                    cnt=1
-                    os_id1=os_id2
-                    os_id2=indices_nodes[i]
-            for j in range(cnt):
-                edges_list.append((os_id1,os_id2))
-                    
-            cnt=0
-            for i in turns:
-                if i:
-                    next_turn_point.append(turn_coord[cnt])
-                    cnt=cnt+1
-                else:
-                    next_turn_point.append(turn_coord[cnt])
-                        
-            del indices_nodes[0]
-                
-            self.edge_gdf=copy.deepcopy(edges_g)
-                    
-            self.route=route
-            self.turns=turns
-            
-
-        return route,turns,edges_list,next_turn_point,groups 
