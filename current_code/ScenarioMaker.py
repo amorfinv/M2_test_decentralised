@@ -85,22 +85,12 @@ priority=1
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
 flight_plans_dict={}
-#for flight in generated_traffic:
-if 1:
+for flight in generated_traffic:
     # First get the route and turns
-    flight=generated_traffic[0]
     origin = flight[2]
     destination = flight[3]
-    origin=[48.22322543634394 ,16.38651597802254]
-    destination=[48.20902345433112 ,16.37065582427942 ]
-
-
     plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[1], origin[0], destination[1], destination[0])
-    route=[]
-    turns=[]
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
-
-
     flight_plans_dict[flight[0]]=plan
     if route!=[]:
         route = np.array(route)
