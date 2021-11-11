@@ -1330,20 +1330,25 @@ class PathPlanning:
                     turn_speed[i-1]=5
                 else:
                     turn_speed[i-1]=2
+                    
+# =============================================================================
+#             if angle>5 and group_numbers[i-1]==-1:
+#                 ## if heading changes in open airspace set it as a trun to check for layer change in the navigation
+#                 ## those turns are not marked as turn points
+#                 turns[i-1]=1
+# =============================================================================
                 
             lat_prev=lat_cur
             lon_prev=lon_cur
             if group_numbers[i]==group_numbers[i+1] or group_numbers[i+1]==-1:
                 continue
-            elif turns[i+1]!=1:
-                turns[i+1]=1
-                tmp=(route[i+1][1],route[i+1][0])
+            elif turns[i]!=1:
+                turns[i]=1
+                tmp=(route[i][1],route[i][0])
                 turn_coords.append(tmp)
-            if angle>5 and group_numbers[i-1]==-1:
-                ## if heading changes in open airspace set it as a trun to check for layer change in the navigation
-                ## those turns are not marked as turn points
-                turns[i-1]=1
+
         turn_coords.append((-1,-1))
+        turns[0]=0
 
         for g,i in enumerate(group_numbers):
             if i==-1 or ( g>0 and group_numbers[g-1]==-1)or ( g<len(group_numbers)-1 and group_numbers[g+1]==-1):

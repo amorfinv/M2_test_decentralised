@@ -30,6 +30,8 @@ print('Graph loaded!')
 input_file=open("open_airspace_grid.dill", 'rb')
 grid=dill.load(input_file)
 
+
+
 ##Initialise the flow control entity
 graph=street_graph(G,edges) 
 
@@ -38,9 +40,9 @@ graph=street_graph(G,edges)
 path_plan_filename = 'Path_Planning'
 
 # Step 2: Generate traffic from it
-concurrent_ac = 10
+concurrent_ac = 5
 aircraft_vel = 12 # [m/s]
-max_time = 120 # [s]
+max_time = 600 # [s]
 dt = 10
 min_dist = 1000 # [m]
 cruise_speed_constraint = True
@@ -83,17 +85,21 @@ priority=1
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
 flight_plans_dict={}
-for flight in generated_traffic:
+#for flight in generated_traffic:
+if 1:
     # First get the route and turns
+    flight=generated_traffic[0]
     origin = flight[2]
     destination = flight[3]
+    origin=[48.22322543634394 ,16.38651597802254]
+    destination=[48.20902345433112 ,16.37065582427942 ]
 
 
     plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[1], origin[0], destination[1], destination[0])
     route=[]
     turns=[]
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
-    #print(edges)
+
 
     flight_plans_dict[flight[0]]=plan
     if route!=[]:
