@@ -605,7 +605,7 @@ class PathPlanning:
 
         self.start_point=Point(tuple((lon_start,lat_start)))
         self.goal_point=Point(tuple((lon_dest,lat_dest)))
-        self.cutoff_angle=20
+        self.cutoff_angle=25
         
         self.open_airspace_cells=[]
         
@@ -1302,27 +1302,27 @@ class PathPlanning:
         #speed to 10 knots for angles smaller than 45 degrees
         #speed to 5 knots for turning angles between 45 and 90 degrees
         #speed to 2 knots for turning angles larger tha 90 degrees
-        
-        for i in range(len(group_numbers)-1):
-            lat_cur=route[i-1][0]
-            lon_cur=route[i-1][1]
-            lat_next=route[i][0]
-            lon_next=route[i][1]
+
+        for i in range(len(group_numbers)-2):
+            lat_cur=route[i][0]
+            lon_cur=route[i][1]
+            lat_next=route[i+1][0]
+            lon_next=route[i+1][1]
             ##Check the angle between the prev point- current point and the current point- next point  
             line_string_1 = [(lat_prev,lon_prev), (lat_cur,lon_cur)]
             line_string_2 = [(lat_cur,lon_cur), (lat_next,lon_next)]
             angle = 180 - angleBetweenTwoLines(line_string_1,line_string_2)
 
-            if angle>self.cutoff_angle and turns[i-1]!=1 and group_numbers[i-1]!=-1:
-                turns[i-1]=1
-                tmp=(route[i-1][1],route[i-1][0])
+            if angle>self.cutoff_angle and turns[i]!=1 and group_numbers[i]!=-1:
+                turns[i]=1
+                tmp=(route[i][1],route[i][0])
                 turn_coords.append(tmp)
-                if angle<45:
-                    turn_speed[i-1]=10
-                elif angle<90:
-                    turn_speed[i-1]=5
+                if angle<100:
+                    turn_speed[i]=10
+                elif angle<150:
+                    turn_speed[i]=5
                 else:
-                    turn_speed[i-1]=2
+                    turn_speed[i]=2
                     
 # =============================================================================
 #             if angle>5 and group_numbers[i-1]==-1:
@@ -1340,7 +1340,7 @@ class PathPlanning:
                 tmp=(route[i][1],route[i][0])
                 turn_coords.append(tmp)
 
-        turn_coords.append((-1,-1))
+        turn_coords.append((-999,-999))
         turns[0]=0
 
         for g,i in enumerate(group_numbers):

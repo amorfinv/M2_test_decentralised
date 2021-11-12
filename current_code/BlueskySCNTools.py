@@ -89,12 +89,12 @@ class BlueskySCNTools():
         speed_dist = 10 # [m]
         turn_dist = 10 # [m]
 
-        if cruise_speed_constraint:
-            speeds, turnbool = self.TurnSpeedBuffer(lats, lons, turnbool, alts, 
-                                turn_speed, cruise_speed, speed_dist, turn_dist)
-        else:
-            speeds, turnbool = self.TurnSpeedBuffer(lats, lons, turnbool, alts, 
-                    turn_speed, '', speed_dist, turn_dist)
+        # if cruise_speed_constraint:
+        #     speeds, turnbool = self.TurnSpeedBuffer(lats, lons, turnbool, alts, 
+        #                         turn_speed, cruise_speed, speed_dist, turn_dist)
+        # else:
+        #     speeds, turnbool = self.TurnSpeedBuffer(lats, lons, turnbool, alts, 
+        #             turn_speed, '', speed_dist, turn_dist)
         # prep edges and next_turn
         active_edge = ['' if edge == -1 else f'{edge[0]}-{edge[1]}' for edge in edges]
         active_turns = ['' if turn_node == -1 else f'{turn_node[0]} {turn_node[1]}' for turn_node in next_turn]
@@ -198,7 +198,7 @@ class BlueskySCNTools():
                 dictionary['drone_id']['start_time'] = start_time
                 dictionary['drone_id']['lats'] = lats
                 dictionary['drone_id']['lons'] = lons
-                dictionary['drone_id']['truebool'] = turnbool
+                dictionary['drone_id']['turnbool'] = turnbool
                 dictionary['drone_id']['alts'] = alts
                 
             Set alts as None if no altitude constraints are needed.
@@ -219,7 +219,6 @@ class BlueskySCNTools():
         
         with open(filepath, 'w+') as f:
             f.write('00:00:00>HOLD\n00:00:00>PAN 48.223775 16.337976\n00:00:00>ZOOM 20\n')
-            f.write('00:00:00>VIS TRAFFIC QUADTRAFFIC\n')
             f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV2\n')
             f.write(f'00:00:00>LOADPATH {pathplanfilename}\n')
             for drone_id in dictionary:
