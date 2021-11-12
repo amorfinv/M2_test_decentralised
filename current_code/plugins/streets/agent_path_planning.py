@@ -669,12 +669,11 @@ class PathPlanning:
             exp_const=0.02##0.005 ## we need to think about the value of that constant
             box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
             
-            G,edges=self.flow_control_graph.extract_subgraph(box)#self.flow_control_graph.extract_subgraph(box)#copy.deepcopy(self.flow_control_graph.extract_subgraph(box))
+            G,edges=self.flow_control_graph.extract_subgraph(box)
             self.G=copy.deepcopy(G)
             self.edge_gdf=copy.deepcopy(edges)
         else:
             exp_const=0.02##0.005 ## we need to think about the value of that constant
-            #box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
             box=bbox(min(self.start_point.y,self.goal_point.y)-exp_const,min(self.start_point.x,self.goal_point.x)-exp_const,max(self.start_point.y,self.goal_point.y)+exp_const,max(self.start_point.x,self.goal_point.x)+exp_const) 
     
             G,edges=self.flow_control_graph.extract_subgraph(box)
@@ -1403,7 +1402,7 @@ class PathPlanning:
     ##edges_list is the list of the edge in which is every waypoint, each edge is defined as a tuple (u,v) where u,v are the osmnx indices of the nodes defineing the edge
     ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint     
     ##groups is the list of the group in which each waypoint belongs to         
-    def replan(self,changes_list,flow_control_graph,prev_node_osmnx_id,next_node_index,lat,lon):
+    def replan(self,changes_list,prev_node_osmnx_id,next_node_index,lat,lon):
         route=None
         turns=None
         groups=None
@@ -1540,7 +1539,7 @@ class PathPlanning:
     ##edges_list is the list of the edge in which is every waypoint, each edge is defined as a tuple (u,v) where u,v are the osmnx indices of the nodes defineing the edge
     ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint     
     ##groups is the list of the group in which each waypoint belongs to 
-    def replan_spawned(self,changes_list,flow_control_graph,prev_node_osmnx_id,next_node_index,lat,lon):
+    def replan_spawned(self,changes_list,prev_node_osmnx_id,next_node_index,lat,lon):
         route=None
         turns=None
         groups=None
