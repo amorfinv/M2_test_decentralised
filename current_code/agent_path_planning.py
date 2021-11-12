@@ -1453,7 +1453,8 @@ class PathPlanning:
             if prev_node_osmnx_id in self.edge_gdf.keys():
                 if next_node_index in self.edge_gdf[prev_node_osmnx_id].keys():
 
-                    if self.edge_gdf[prev_node_osmnx_id][next_node_index].speed<1:
+                    # Do not replan in high traffic if you have low priority, should the same happen when in loitering mission?
+                    if (self.edge_gdf[prev_node_osmnx_id][next_node_index].speed<1 and self.edge_gdf[prev_node_osmnx_id][next_node_index].speed!=0 and self.priority==3):# or self.edge_gdf[prev_node_osmnx_id][next_node_index].speed==0:
                         replan_bool=False
             
         if not replan_bool and change_list!=[]:
@@ -1558,8 +1559,7 @@ class PathPlanning:
         
 
         for change in changes_list:
-            
-            
+
             k=change[0]
             kk=change[1]
             if k==prev_node_osmnx_id and kk==next_node_index:
@@ -1590,8 +1590,10 @@ class PathPlanning:
             if prev_node_osmnx_id in self.edge_gdf.keys():
                 if next_node_index in self.edge_gdf[prev_node_osmnx_id].keys():
 
-                    if self.edge_gdf[prev_node_osmnx_id][next_node_index].speed<1:
+                    # Do not replan in high traffic if you have low priority, should the same happen when in loitering mission?
+                    if (self.edge_gdf[prev_node_osmnx_id][next_node_index].speed<1 and self.edge_gdf[prev_node_osmnx_id][next_node_index].speed!=0 and self.priority==3):# or self.edge_gdf[prev_node_osmnx_id][next_node_index].speed==0:
                         replan_bool=False
+
             
         if not replan_bool and change_list!=[]:
             self.update_changed_vertices(self.path,self.graph,edges_g,self.edge_gdf,True,change_list)
