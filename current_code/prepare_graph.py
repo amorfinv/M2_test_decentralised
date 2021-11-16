@@ -59,11 +59,19 @@ def main():
 
     # join lists into a dictionary with lat-lon as key and osmid as value
     node_dict = {}
+    constrained_node_dict = {}
     for idx , _ in enumerate(lat_list):
         lat_lon = format(lat_list[idx], '.8f') + '-' + format(lon_list[idx], '.8f')
         osmid = osmid_list[idx]
 
+        # dictionary of nodes with lat-lon as key and osmid as value for (streets)
         node_dict[lat_lon] = osmid
+
+        # dictionary of nodes with osmid as key and lat-lon as value for (geofence)
+        constrained_node_dict[int(osmid)] = (lat_list[idx], lon_list[idx])
+    # save constrained node dictionary to JSON
+    with open('airspace_design/constrained_node_dict.json', 'w') as fp:
+        json.dump(constrained_node_dict, fp, indent=4)
 
     # add open airspace grid nodes to node dictionary
     transformer = Transformer.from_crs('epsg:32633','epsg:4326')
