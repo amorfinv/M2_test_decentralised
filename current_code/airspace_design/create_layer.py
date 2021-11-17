@@ -32,6 +32,7 @@ def main():
 
     # extend the flight_dict to include heading ranges of open airspace
     flight_dict['headings'] = angle_ranges
+    flight_dict['angle_spacing'] = angle_spacing
 
     # create overall dictionary
     airspace_config = {'0': layers_0, '1': layers_1, 'open': layers_open}
@@ -105,12 +106,23 @@ def build_heading_airspace(flight_levels,  min_angle, max_angle, angle_spacing):
         angle_ranges = angle_ranges + angle_ranges[:len_flight_levels % len_angle_ranges]
 
     # create dictionary
-    height_dict = {}
+    height_dict_levels = {}
+    height_dict_ranges = {}
     for idx, level in enumerate(flight_levels):
-        height_dict[level] = f'{angle_ranges[idx]}'
+        height_dict_levels[level] = f'{angle_ranges[idx]}'
+        height_dict_ranges[level] = int(angle_ranges[idx].split('-')[0]) + angle_spacing / 2
+    
+    height_dict = {'ranges': height_dict_levels, 'center': height_dict_ranges}
     
     # reverse the dictionary and keep non-unique values
-    angle_dict = {v: [k for k, v2 in height_dict.items() if v2 == v] for v in set(height_dict.values())}
+    angle_dict_ranges = {v: [k for k, v2 in height_dict_levels.items() if v2 == v] for v in set(height_dict_levels.values())}
+
+    # create another dictionary similar to one above but with center of angle range
+    angle_dict_center = {}
+    for k, v in angle_dict_ranges.items():
+        angle_dict_center[int(k.split('-')[0]) + angle_spacing / 2] = v
+    
+    angle_dict = {'ranges': angle_dict_ranges, 'center': angle_dict_center}
 
     return height_dict, angle_dict, angle_ranges
 
