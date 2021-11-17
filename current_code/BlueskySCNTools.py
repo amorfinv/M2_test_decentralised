@@ -277,7 +277,7 @@ class BlueskySCNTools():
             if flight_intention[8]:
                 # get polygon coordianates from box
                 polygon = flight_intention[8:]
-                geocoords = polygon[2] + ' ' + polygon[0] + ' ' + polygon[2] + ' ' + polygon[1] + ' ' + polygon[3] + ' ' + polygon[1] + ' ' + polygon[3] + ' ' + polygon[0]
+                geocoords = polygon[2] + ' ' + polygon[0] + ' ' + polygon[3] + ' ' + polygon[0] + ' ' + polygon[3] + ' ' + polygon[1] + ' ' + polygon[2] + ' ' + polygon[1]
 
                 trafgen.append(('D'+str(ac_no), start_time, origin, destination, priority, geoduration, geocoords))
             else:
