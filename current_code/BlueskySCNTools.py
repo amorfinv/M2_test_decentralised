@@ -132,7 +132,10 @@ class BlueskySCNTools():
 
         
         qdr = self.qdrdist(lats[0], lons[0], lats[1], lons[1], 'qdr')
-        cre_text = f'CREM2 {drone_id} M600 {lats[0]} {lons[0]} {qdr} {alt} {start_speed} {priority} {geoduration} {geocoords}\n'
+        if geocoords:
+            cre_text = f'CREM2 {drone_id},M600,{lats[0]},{lons[0]},{qdr},{alt},{start_speed},{priority},{geoduration},{geocoords}\n'
+        else:
+            cre_text = f'CREM2 {drone_id},M600,{lats[0]},{lons[0]},{qdr},{alt},{start_speed},{priority},{geoduration},\n'
         lines.append(start_time_txt + cre_text)
         
         # # Then we need to for loop through all the lats
@@ -171,7 +174,10 @@ class BlueskySCNTools():
         #     prev_wpt_turn = turnbool[i]
         
         # Delete aircraft at destination waypoint
-        lines.append(start_time_txt + f'{drone_id} ATDIST {lats[-1]} {lons[-1]} {5/nm} DEL {drone_id}\n')
+        if geocoords:
+            lines.append(start_time_txt + f'{drone_id} ATDIST {lats[-1]} {lons[-1]} {5/nm} DELLOITER {drone_id}\n')
+        else:
+            lines.append(start_time_txt + f'{drone_id} ATDIST {lats[-1]} {lons[-1]} {5/nm} DEL {drone_id}\n')
         # Enable vnav and lnav
         lines.append(start_time_txt + lnav)
         lines.append(start_time_txt + vnav)
@@ -218,8 +224,8 @@ class BlueskySCNTools():
             filepath = filepath + '.scn'
         
         with open(filepath, 'w+') as f:
-            f.write('00:00:00>HOLD\n00:00:00>PAN 48.223775 16.337976\n00:00:00>ZOOM 20\n')
-            f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV2\n')
+            f.write('00:00:00>HOLD\n00:00:00>PAN 48.204011819028494 16.363471515762452\n00:00:00>ZOOM 15\n')
+            f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV2\n00:00:00>CDMETHOD M2STATEBASED\n')
             f.write(f'00:00:00>LOADPATH {pathplanfilename}\n')
             for drone_id in dictionary:
                 try:
