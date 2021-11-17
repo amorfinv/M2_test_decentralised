@@ -34,7 +34,7 @@ class BlueskySCNTools():
             self.layer_dict = json.load(filename)
         
     def Drone2Scn(self, drone_id, start_time, lats, lons, turnbool,alts = None, edges = None, group_num=None, next_turn = None, 
-                cruise_speed_constraint = True, start_speed = None,in_constrained=True, priority = 0):
+                cruise_speed_constraint = True, start_speed = None,in_constrained=True, priority = 1, geoduration = 0, geocoords = []):
         """Converts arrays to Bluesky scenario files. The first
         and last waypoints will be taken as the origin and 
         destination of the drone.
@@ -132,7 +132,7 @@ class BlueskySCNTools():
 
         
         qdr = self.qdrdist(lats[0], lons[0], lats[1], lons[1], 'qdr')
-        cre_text = f'CREM2 {drone_id} M600 {lats[0]} {lons[0]} {qdr} {alt} {start_speed} {priority}\n'
+        cre_text = f'CREM2 {drone_id} M600 {lats[0]} {lons[0]} {qdr} {alt} {start_speed} {priority} {geoduration} {geocoords}\n'
         lines.append(start_time_txt + cre_text)
         
         # # Then we need to for loop through all the lats
@@ -232,14 +232,54 @@ class BlueskySCNTools():
                     group_num = dictionary[drone_id]['stroke_group']
                     next_turn = dictionary[drone_id]['next_turn']
                     in_constrained = dictionary[drone_id]['airspace_type']
+                    priority = dictionary[drone_id]['priority']
+                    geoduration = dictionary[drone_id]['geoduration']
+                    geocoords = dictionary[drone_id]['geocoords']
                 except:
                     print('Key error. Make sure the dictionary is formatted correctly.')
                     return
                 
                 lines = self.Drone2Scn(drone_id, start_time, lats, lons, turnbool, alts, edges, group_num, next_turn, 
-                                      cruise_speed_constraint, start_speed,in_constrained)
+                                      cruise_speed_constraint, start_speed, in_constrained, priority, geoduration, geocoords)
                 f.write(''.join(lines))
-                
+
+    def Intention2Traf(self, flight_intention_list):
+        """Processes a flight intention dataframe into traffic
+
+        Args:
+            flight_intention_list (list): [description]
+        """
+
+        # read flight inention list to create trafgen list
+        trafgen = []
+        ac_no = 1
+        for flight_intention in flight_intention_list:
+
+            start_time = flight_intention[0].split(':')
+            start_time = int(start_time[0])*3600 + int(start_time[1])*60 + int(start_time[2])
+
+            origin = flight_intention[4].split(', ')
+            origin = [float(origin[0].replace('(', '')), float(origin[1].replace(')', ''))]
+
+            destination = flight_intention[5].split(', ')
+            destination = [float(destination[0].replace('(', '')), float(destination[1].replace(')', ''))]
+
+            priority = int(flight_intention[6])
+
+            geoduration = flight_intention[7]
+
+            if flight_intention[8]:
+                # get polygon coordianates from box
+                polygon = flight_intention[8:]
+                geocoords = polygon[2] + ' ' + polygon[0] + ' ' + polygon[2] + ' ' + polygon[1] + ' ' + polygon[3] + ' ' + polygon[1] + ' ' + polygon[3] + ' ' + polygon[0]
+
+                trafgen.append(('D'+str(ac_no), start_time, origin, destination, priority, geoduration, geocoords))
+            else:
+                trafgen.append(('D'+str(ac_no), start_time, origin, destination, priority, 0, []))
+
+            ac_no += 1
+        return trafgen
+
     def Graph2Traf(self, G, concurrent_ac, aircraft_vel, max_time, dt, min_dist, 
                    orig_nodes = None, dest_nodes = None):
         """Creates random traffic using the nodes of graph G as origins and

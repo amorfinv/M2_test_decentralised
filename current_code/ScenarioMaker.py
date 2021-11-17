@@ -13,6 +13,15 @@ import os
 import dill
 import json
 
+
+# read line by line of file
+flight_intention_list  = []
+with open('flight_intention.csv') as file:
+    for line in file:
+        line = line.strip()
+        line = line.split(';')
+        flight_intention_list.append(line)
+
 # Initialize stuff
 bst = BlueskySCNTools.BlueskySCNTools()
 
@@ -63,8 +72,11 @@ dest_nodes=origin_dest['destinations']
 #               33174086, 33345331]
 # =============================================================================
 
-generated_traffic = bst.Graph2Traf(G, concurrent_ac, aircraft_vel, max_time, 
-                                    dt, min_dist, orig_nodes, dest_nodes)
+# generated_traffic = bst.Graph2Traf(G, concurrent_ac, aircraft_vel, max_time, 
+#                                     dt, min_dist, orig_nodes, dest_nodes)
+
+generated_traffic = bst.Intention2Traf(flight_intention_list)
+
 print('Traffic generated!')
 
 # =============================================================================
@@ -89,6 +101,7 @@ for flight in generated_traffic:
     # First get the route and turns
     origin = flight[2]
     destination = flight[3]
+    print(origin, destination)
     plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[1], origin[0], destination[1], destination[0])
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
     print(turns)
@@ -117,6 +130,12 @@ for flight in generated_traffic:
         scenario_dict[flight[0]]['next_turn'] = next_turn
         #Add constarined airspace indicator
         scenario_dict[flight[0]]['airspace_type'] = in_constrained
+        #add priority
+        scenario_dict[flight[0]]['priority'] = flight[4]
+        # add geoduration
+        scenario_dict[flight[0]]['geoduration'] = flight[5]
+        # add geocoords
+        scenario_dict[flight[0]]['geocoords'] = flight[6]
     
     
 
