@@ -105,8 +105,11 @@ for flight in generated_traffic:
     # First get the route and turns
     origin = flight[2]
     destination = flight[3]
-
-    plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1])
+    
+    if flight[0] in loitering_edges_dict.keys():
+        plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],True,loitering_edges_dict[flight[0]])
+    else:
+        plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1])
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
 
     flight_plans_dict[flight[0]]=plan

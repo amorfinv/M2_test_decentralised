@@ -357,7 +357,7 @@ def compute_c(current,neigh,edges,speed):
             if current.group==neigh.group:
                 if edges[current.key_index][neigh.key_index].speed==0:
                     g=float('inf')
-                    print(" zero speed")
+                    #print(" zero speed")
     
                 else:
                     g=edges[current.key_index][neigh.key_index].length/min(edges[current.key_index][neigh.key_index].speed,speed)
@@ -583,7 +583,7 @@ def computeAngle(point1, point2):
 
 class PathPlanning:
     
-    def __init__(self,aircraft_type,priority,open_airspace_grid,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest):
+    def __init__(self,aircraft_type,priority,open_airspace_grid,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest,loitering=False,loitering_edges=[]):
         self.aircraft_type=aircraft_type
         self.start_index=None
         self.start_index_previous=None
@@ -602,6 +602,9 @@ class PathPlanning:
         self.route=[]
         self.turns=[]
         self.priority=priority # 1 for high, 2 for medium,3 for low priority
+        self.loitering=loitering
+        if self.loitering:
+            self.loitering_edges=loitering_edges
 
         self.start_point=Point(tuple((lon_start,lat_start)))
         self.goal_point=Point(tuple((lon_dest,lat_dest)))
@@ -1323,12 +1326,7 @@ class PathPlanning:
                 else:
                     turn_speed[i]=2
                     
-# =============================================================================
-#             if angle>5 and group_numbers[i-1]==-1:
-#                 ## if heading changes in open airspace set it as a trun to check for layer change in the navigation
-#                 ## those turns are not marked as turn points
-#                 turns[i-1]=1
-# =============================================================================
+
                 
             lat_prev=lat_cur
             lon_prev=lon_cur
@@ -1348,15 +1346,7 @@ class PathPlanning:
             else:
                 in_constrained.append(1)        
 
-# =============================================================================
-#         self.route_get=route
-#         self.turns_get=turns
-#         self.next_node_index_get=next_node_index
-#         self.turn_coords_get=turn_coords
-#         self.group_numbers_get=group_numbers
-#         self.in_constrained=in_constrained
-#         self.turn_speed=turn_speed
-# =============================================================================
+
 
         return route,turns,next_node_index,turn_coords,group_numbers,in_constrained,turn_speed
  
@@ -1426,11 +1416,17 @@ class PathPlanning:
             k=change[0]
             kk=change[1]
             if k==prev_node_osmnx_id and kk==next_node_index:
-                #if teh changes are on the current edge of the aircraft do nothing
-                if change[2]<1:
+                #if the current edge is set to 0 speed  or if high traffic geofenc eis set and you are not of high priority do nothing
+                if change[2]==0 or (change[2]>0 and change[2]<1 and self.priority<3):
                     ##If the current group is set to a zero speed geofence
                     replan_bool=False
                 continue
+            
+            if self.loitering:
+                #if you are a loitering mission do not take into account your own geofence
+                if (k,kk) in self.loitering_edges:
+                    continue
+            
             
             expanded=False
             if k in self.edge_gdf.keys():
@@ -1558,16 +1554,22 @@ class PathPlanning:
         replan_bool=True
         
 
+
         for change in changes_list:
 
             k=change[0]
             kk=change[1]
             if k==prev_node_osmnx_id and kk==next_node_index:
-                #if teh changes are on the current edge of the aircraft do nothing
-                if change[2]<1:
+                #if the current edge is set to 0 speed  or if high traffic geofenc eis set and you are not of high priority do nothing
+                if change[2]==0 or (change[2]>0 and change[2]<1 and self.priority<3):
                     ##If the current group is set to a zero speed geofence
                     replan_bool=False
                 continue
+            
+            if self.loitering:
+                #if you are a loitering mission do not take into account your own geofence
+                if (k,kk) in self.loitering_edges:
+                    continue
             
             expanded=False
             if k in self.edge_gdf.keys():
