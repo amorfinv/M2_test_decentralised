@@ -280,7 +280,7 @@ class BlueskySCNTools():
         for flight_intention in flight_intention_list:
           
             # get the starting time in seconds
-            start_time = flight_intention[0].removeprefix('\ufeff')
+            start_time = flight_intention[0][-8:]#.removeprefix('\ufeff')
             start_time = start_time.split(':')
             start_time = int(start_time[0])*3600 + int(start_time[1])*60 + int(start_time[2])
 
