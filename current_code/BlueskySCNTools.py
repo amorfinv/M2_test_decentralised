@@ -10,6 +10,9 @@ import osmnx as ox
 import networkx as nx
 import os 
 import json
+import rtree
+from shapely.geometry import Polygon, Point
+from shapely import affinity
 
 nm = 1852
 ft = 1/0.3048
@@ -249,42 +252,81 @@ class BlueskySCNTools():
                                       cruise_speed_constraint, start_speed, in_constrained, priority, geoduration, geocoords)
                 f.write(''.join(lines))
 
-    def Intention2Traf(self, flight_intention_list):
+    def Intention2Traf(self, flight_intention_list, edges):
         """Processes a flight intention dataframe into traffic
 
         Args:
             flight_intention_list (list): [description]
         """
+        # load the edges into an rtree
+        edges_gdf = edges.copy()
+        edge_dict = {}
+        idx_tree = rtree.index.Index()
+        i = 0
+        for index, row in edges_gdf.iterrows():
+            
+            geom = row.loc['geometry']
+            edge_dict[i] = (index[0], index[1])
+            idx_tree.insert(i, geom.bounds)
+
+            i += 1
 
         # read flight inention list to create trafgen list
         trafgen = []
         ac_no = 1
-        for flight_intention in flight_intention_list:
 
-            start_time = flight_intention[0].split(':')
+        loitering_edges_dict = {}
+
+        for flight_intention in flight_intention_list:
+          
+            # get the starting time in seconds
+            start_time = flight_intention[0].removeprefix('\ufeff')
+            start_time = start_time.split(':')
             start_time = int(start_time[0])*3600 + int(start_time[1])*60 + int(start_time[2])
 
-            origin = flight_intention[4].split(', ')
-            origin = [float(origin[0].replace('(', '')), float(origin[1].replace(')', ''))]
+            # get the origin location
+            origin_lon = float(flight_intention[4][2:])
+            origin_lat = float(flight_intention[5][1:-2])
+            origin = (origin_lon, origin_lat)
 
-            destination = flight_intention[5].split(', ')
-            destination = [float(destination[0].replace('(', '')), float(destination[1].replace(')', ''))]
+            # get the destination location
+            destination_lon = float(flight_intention[6][2:])
+            destination_lat = float(flight_intention[7][1:-2])
+            destination = (destination_lon, destination_lat)
 
-            priority = int(flight_intention[6])
+            # get the priority
+            priority = int(flight_intention[8])
 
-            geoduration = flight_intention[7]
+            # get the geoduration
+            geoduration = flight_intention[9]
+ 
+            # check if it has geocoords
+            if flight_intention[10]:
+                # get polygon coordianates from box and create into lat1 lon1 list
+                box = flight_intention[10:]
+                geocoords = box[2] + ' ' + box[0] + ' ' + box[3] + ' ' + box[0] + ' ' + box[3] + ' ' + box[1] + ' ' + box[2] + ' ' + box[1]
+                
+                # create shapely polygon
+                poly = Polygon([Point(float(box[0]), float(box[2])), Point(float(box[0]), float(box[3])), Point(float(box[1]), float(box[3])), Point(float(box[1]), float(box[2]))])
+                
+                # scale the polygon in centroid of origin by 1.5*
+                # poly = affinity.scale(poly, 1.5, 1.5, origin)
 
-            if flight_intention[8]:
-                # get polygon coordianates from box
-                polygon = flight_intention[8:]
-                geocoords = polygon[2] + ' ' + polygon[0] + ' ' + polygon[3] + ' ' + polygon[0] + ' ' + polygon[3] + ' ' + polygon[1] + ' ' + polygon[2] + ' ' + polygon[1]
+                # Add polygon to rtree
+                nearest_trial = list(idx_tree.intersection(poly.bounds))
+
+                list_intersecting_edges = [edge_dict[ii] for ii in nearest_trial]
+
+                # fill the loitering edges dict
+                loitering_edges_dict['D'+str(ac_no)] = list_intersecting_edges
 
                 trafgen.append(('D'+str(ac_no), start_time, origin, destination, priority, geoduration, geocoords))
             else:
                 trafgen.append(('D'+str(ac_no), start_time, origin, destination, priority, 0, []))
 
             ac_no += 1
-        return trafgen
+        
+        return trafgen, loitering_edges_dict
 
     def Graph2Traf(self, G, concurrent_ac, aircraft_vel, max_time, dt, min_dist, 
                    orig_nodes = None, dest_nodes = None):

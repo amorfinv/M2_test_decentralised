@@ -8,6 +8,7 @@ from time import time
 
 '''
 Prepare graph for height allocation genetic algorithm.
+layer_allocation column is for the height of the layer before the genetic algorithm.
 '''
 
 def main():

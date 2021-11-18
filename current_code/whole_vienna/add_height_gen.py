@@ -6,7 +6,9 @@ from time import time
 # use osmnx environment here
 
 '''
-Prepare graph for height allocation genetic algorithm.
+Add results from genome in height_allocation column
+layer_allocation is initial layer allocation based on cartesian. This is what is given to genetic algorithm.
+height_allocation is the result from genetic algorithm.
 '''
 
 def main():
