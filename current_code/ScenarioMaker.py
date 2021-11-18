@@ -19,7 +19,7 @@ flight_intention_list  = []
 with open('flight_intention.csv') as file:
     for line in file:
         line = line.strip()
-        line = line.split(';')
+        line = line.split(',')
         flight_intention_list.append(line)
 
 # Initialize stuff
@@ -38,7 +38,6 @@ print('Graph loaded!')
 #Load the open airspace grid
 input_file=open("open_airspace_grid.dill", 'rb')
 grid=dill.load(input_file)
-
 
 
 ##Initialise the flow control entity
@@ -75,9 +74,14 @@ dest_nodes=origin_dest['destinations']
 # generated_traffic = bst.Graph2Traf(G, concurrent_ac, aircraft_vel, max_time, 
 #                                     dt, min_dist, orig_nodes, dest_nodes)
 
-generated_traffic = bst.Intention2Traf(flight_intention_list)
-
+generated_traffic, loitering_edges_dict = bst.Intention2Traf(flight_intention_list, edges.copy())
 print('Traffic generated!')
+
+# create a loitering dill
+output_file=open(f"loitering_edges.dill", 'wb')
+dill.dump(loitering_edges_dict,output_file)
+output_file.close()
+print('Created loitering dill')
 
 # =============================================================================
 # lon_start=16.3304374
