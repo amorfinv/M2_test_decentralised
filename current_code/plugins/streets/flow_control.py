@@ -287,8 +287,7 @@ class street_graph:
         self.create_graph(G,edges_gdf)
         self.create_tree(G)
         self.G=G
-        self.nodes_2_edges_dict={}
-        self.create_nodes2edges_dict()
+
         
         # Open strokes.JSON as a dictionary
         with open('airspace_design/strokes.json', 'r') as filename:
@@ -305,30 +304,7 @@ class street_graph:
         for key in self.stroke_dict:
             self.modified_group[int(key)]=0 # 0 means low traffic, 1 medium traffic and 2 high traffic
 
-    def create_nodes2edges_dict(self):
-        omsnx_keys=list(self.G._node.keys())
-           
-    
-        for i in omsnx_keys:
-            edges=[]
-            for ch in self.nodes_graph[i].children:
-                edge=self.edges_graph[i][ch]
-                edge_str=str(edge.start_key)+"-"+str(edge.end_key)
-                edges.append(edge_str)   
-            for p in self.nodes_graph[i].parents:
-                edge=self.edges_graph[p][i]
-                edge_str=str(edge.start_key)+"-"+str(edge.end_key)
-                edges.append(edge_str)   
-            self.nodes_2_edges_dict[i]=edges    
-            
-    def compute_edges_from_nodes(self,nodes_list):
-        edges_list=[]
-        for n in nodes_list:
-            edges=self.nodes_2_edges_dict[n]
-            for edge in edges:
-                edges_list.append(edge)
-    
-        return list(dict.fromkeys(edges_list))
+
 
     ##Create a kd tree with the flow control nodes
     def create_tree(self,G):

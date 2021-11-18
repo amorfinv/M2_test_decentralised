@@ -34,9 +34,9 @@ graph=street_graph(G,edges)
 fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
 
 #plan = PathPlanning(graph,gdf,16.328936,48.221698 ,16.3436724,48.226886  )
-plan = PathPlanning(graph,gdf,16.3314843 ,48.221698 ,16.3335919,48.2293961)
+#plan = PathPlanning(graph,gdf,16.3314843 ,48.221698 ,16.3335919,48.2293961)
 #plan = PathPlanning(graph,gdf,16.343225, 48.2182985 ,16.3335919 ,48.2293961 )#d1
-#plan = PathPlanning(graph,gdf,16.3498014,48.2250679 ,16.3378102  ,48.2187331 )#d2
+plan = PathPlanning(graph,gdf,16.3498014,48.2250679 ,16.3378102  ,48.2187331 )#d2
 #plan = PathPlanning(graph,gdf,16.3314843 ,48.2208402 ,16.3392305  ,48.2176641)#d3
 
 seconds = time.time()
@@ -54,26 +54,24 @@ ax.scatter(x_list,y_list, color='b')
 ax.scatter(x_list[0],y_list[0], color='g')
 ax.scatter(x_list[len(x_list)-1],y_list[len(x_list)-1], color='r')
 
-id1=33345291 
-id2=251523470
-value=5.0
+id1=33345332
+id2=33144414
+value=0.0
 
-# =============================================================================
-# 
-# ax.scatter(G._node[id1]['x'],G._node[id1]['y'], color='r')
-# ax.scatter(G._node[id2]['x'],G._node[id2]['y'], color='r')
-# =============================================================================
+
+ax.scatter(G._node[id1]['x'],G._node[id1]['y'], color='r')
+ax.scatter(G._node[id2]['x'],G._node[id2]['y'], color='r')
 
 graph.edges_graph[id1][id2].speed=value
 
 change_list=[[id1,id2,value]]
 
 
-next_index=33144621
-prev_index=33144616
+next_index=378727
+prev_index=33302019
 #ax.scatter(G._node[next_index]['x'],G._node[next_index]['y'], color='r')
-lat= 48.2219805
-lon=16.3281112 
+lat= 48.221698
+lon=16.3314843
 
 
 # =============================================================================
@@ -103,24 +101,22 @@ lon=16.3281112
 # lon=16.3339504
 # =============================================================================
 
-# =============================================================================
-# print("replan")
-# 
-# seconds = time.time()
-# 
-# route,turns,edges,next_turn,groups=plan.replan(change_list,graph,prev_index,next_index,lat,lon)
-# s = time.time()
-# print(s-seconds)
-# 
-# x_list=[]
-# y_list=[]
-#     
-# for r in route:
-#     x_list.append(r[0])
-#     y_list.append(r[1])
-#     
-# ax.scatter(x_list,y_list, color='g')
-# =============================================================================
+print("replan")
+
+seconds = time.time()
+
+route,turns,edges,next_turn,groups=plan.replan(change_list,graph,prev_index,next_index,lat,lon)
+s = time.time()
+print(s-seconds)
+
+x_list=[]
+y_list=[]
+    
+for r in route:
+    x_list.append(r[0])
+    y_list.append(r[1])
+    
+ax.scatter(x_list,y_list, color='g')
 
 
 
