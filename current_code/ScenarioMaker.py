@@ -75,8 +75,8 @@ scenario_dict = dict()
 flight_plans_dict={}
 for flight in generated_traffic:
     # First get the route and turns
-    origin = flight[2]
-    destination = flight[3]
+    origin = flight[3]
+    destination = flight[4]
     
     if flight[0] in loitering_edges_dict.keys():
         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],True,loitering_edges_dict[flight[0]])
@@ -90,7 +90,9 @@ for flight in generated_traffic:
         # Create dictionary
         scenario_dict[flight[0]] = dict()
         # Add start time
-        scenario_dict[flight[0]]['start_time'] = flight[1]
+        scenario_dict[flight[0]]['start_time'] = flight[2]
+        # Add aircraft type
+        scenario_dict[flight[0]]['aircraft_type'] = 'M600'
         #Add lats
         scenario_dict[flight[0]]['lats'] = route[:,1]
         #Add lons
@@ -98,8 +100,10 @@ for flight in generated_traffic:
         #Add turnbool
         scenario_dict[flight[0]]['turnbool'] = turns
         #Add alts
-        #scenario_dict[flight[0]]['alts'] = route[:,2]
-        scenario_dict[flight[0]]['alts'] = []
+        scenario_dict[flight[0]]['alts'] = None
+        ## add start speed, If None then it is turnspeed
+        # scenario_dict[flight[0]]['start_speed'] = flight[5]
+        scenario_dict[flight[0]]['start_speed'] = None
 
         #Add active edges
         scenario_dict[flight[0]]['edges'] = edges
@@ -110,11 +114,11 @@ for flight in generated_traffic:
         #Add constarined airspace indicator
         scenario_dict[flight[0]]['airspace_type'] = in_constrained
         #add priority
-        scenario_dict[flight[0]]['priority'] = flight[4]
+        scenario_dict[flight[0]]['priority'] = flight[6]
         # add geoduration
-        scenario_dict[flight[0]]['geoduration'] = flight[5]
+        scenario_dict[flight[0]]['geoduration'] = flight[7]
         # add geocoords
-        scenario_dict[flight[0]]['geocoords'] = flight[6]
+        scenario_dict[flight[0]]['geocoords'] = flight[8]
     
     
 

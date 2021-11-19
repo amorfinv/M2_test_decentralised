@@ -36,7 +36,7 @@ class BlueskySCNTools():
         with open('airspace_design/layers.json', 'r') as filename:
             self.layer_dict = json.load(filename)
         
-    def Drone2Scn(self, drone_id, start_time, lats, lons, turnbool,alts = None, edges = None, group_num=None, next_turn = None, 
+    def Drone2Scn(self, drone_id, aircraft_type, start_time, lats, lons, turnbool,alts = None, edges = None, group_num=None, next_turn = None, 
                 cruise_speed_constraint = True, start_speed = None,in_constrained=True, priority = 1, geoduration = 0, geocoords = []):
         """Converts arrays to Bluesky scenario files. The first
         and last waypoints will be taken as the origin and 
@@ -46,6 +46,9 @@ class BlueskySCNTools():
         ----------
         drone_id : str
             The ID of the drone to be created
+        
+        aircraft_type : str
+            The type of aircraft to be created
             
         start_time : int [sec]
             The simulation time in seconds at which the drone starts its 
@@ -103,17 +106,18 @@ class BlueskySCNTools():
         active_turns = ['' if turn_node == -1 else f'{turn_node[0]} {turn_node[1]}' for turn_node in next_turn]
 
         # find starting altitude
-        height_type = self.edge_dict[active_edge[0]]['height_allocation']
-        flight_levels = self.layer_dict['info']['levels']
+        if alts is None:
+            height_type = self.edge_dict[active_edge[0]]['height_allocation']
+            flight_levels = self.layer_dict['info']['levels']
 
-        for flight_level in flight_levels:
-            level_type = self.layer_dict['config'][height_type]['levels'][f'{flight_level}'][0]
-            
-            # start at lowest altitude cruise layer
-            if level_type == 'C':
+            for flight_level in flight_levels:
+                level_type = self.layer_dict['config'][height_type]['levels'][f'{flight_level}'][0]
+                
+                # start at lowest altitude cruise layer
+                if level_type == 'C':
 
-                alt = f'{flight_level}'
-                break
+                    alts = f'{flight_level}'
+                    break
 
         # First, define some strings we will often be using
         trn = f'ADDWPT {drone_id} FLYTURN\n'
@@ -136,9 +140,9 @@ class BlueskySCNTools():
         
         qdr = self.qdrdist(lats[0], lons[0], lats[1], lons[1], 'qdr')
         if geocoords:
-            cre_text = f'CREM2 {drone_id},M600,{lats[0]},{lons[0]},{qdr},{alt},{start_speed},{priority},{geoduration},{geocoords}\n'
+            cre_text = f'CREM2 {drone_id},{aircraft_type},{lats[0]},{lons[0]},{qdr},{alts},{start_speed},{priority},{geoduration},{geocoords}\n'
         else:
-            cre_text = f'CREM2 {drone_id},M600,{lats[0]},{lons[0]},{qdr},{alt},{start_speed},{priority},{geoduration},\n'
+            cre_text = f'CREM2 {drone_id},{aircraft_type},{lats[0]},{lons[0]},{qdr},{alts},{start_speed},{priority},{geoduration},\n'
         lines.append(start_time_txt + cre_text)
         
         # # Then we need to for loop through all the lats
@@ -232,6 +236,7 @@ class BlueskySCNTools():
             f.write(f'00:00:00>LOADPATH {pathplanfilename}\n')
             for drone_id in dictionary:
                 try:
+                    aircraft_type = dictionary[drone_id]['aircraft_type']
                     start_time = dictionary[drone_id]['start_time']
                     lats = dictionary[drone_id]['lats']
                     lons = dictionary[drone_id]['lons']
@@ -248,8 +253,8 @@ class BlueskySCNTools():
                 except:
                     print('Key error. Make sure the dictionary is formatted correctly.')
                     return
-                
-                lines = self.Drone2Scn(drone_id, start_time, lats, lons, turnbool, alts, edges, group_num, next_turn, 
+
+                lines = self.Drone2Scn(drone_id, aircraft_type, start_time, lats, lons, turnbool, alts, edges, group_num, next_turn, 
                                       cruise_speed_constraint, start_speed, in_constrained, priority, geoduration, geocoords)
                 f.write(''.join(lines))
 
@@ -287,6 +292,9 @@ class BlueskySCNTools():
 
             # get aircraft type
             aircraft_type = flight_intention[2]
+            
+            # get last two entries of aicraft type for start_speed
+            start_speed = float(aircraft_type[-2:])
 
             # get the origin location
             origin_lon = float(flight_intention[4][2:])
@@ -324,9 +332,9 @@ class BlueskySCNTools():
                 # fill the loitering edges dict
                 loitering_edges_dict['D'+str(ac_no)] = list_intersecting_edges
 
-                trafgen.append(('D'+str(ac_no), start_time, origin, destination, priority, geoduration, geocoords))
+                trafgen.append(('D'+str(ac_no), aircraft_type, start_time, origin, destination, start_speed, priority, geoduration, geocoords))
             else:
-                trafgen.append(('D'+str(ac_no), start_time, origin, destination, priority, 0, []))
+                trafgen.append(('D'+str(ac_no), aircraft_type, start_time, origin, destination, start_speed, priority, 0, []))
 
             ac_no += 1
         
@@ -375,6 +383,9 @@ class BlueskySCNTools():
             # get the start speed
             start_speed = flight_intention['start_speed']
 
+            # get the altitude
+            altitude = flight_intention['altitude']
+
             # get the priority
             priority = flight_intention['priority']
 
@@ -398,9 +409,9 @@ class BlueskySCNTools():
                 # fill the loitering edges dict
                 loitering_edges_dict['D'+str(ac_no)] = list_intersecting_edges
 
-                trafgen.append(('D'+str(ac_no), start_time, origin, destination, start_speed, priority, geoduration, geocoords))
+                trafgen.append(('D'+str(ac_no), start_time, origin, destination, start_speed, altitude, priority, geoduration, geocoords))
             else:
-                trafgen.append(('D'+str(ac_no), start_time, origin, destination, start_speed, priority, 0, []))
+                trafgen.append(('D'+str(ac_no), start_time, origin, destination, start_speed, altitude, priority, 0, []))
 
             ac_no += 1
         
