@@ -370,6 +370,9 @@ class BlueskySCNTools():
             # get the starting time in seconds
             start_time = flight_intention['start_time']
 
+            # get aircraft type
+            aircraft_type = flight_intention['ac_type']
+
             # get the origin location
             origin_lon = flight_intention['origin'][1]
             origin_lat = flight_intention['origin'][0]
@@ -409,9 +412,9 @@ class BlueskySCNTools():
                 # fill the loitering edges dict
                 loitering_edges_dict['D'+str(ac_no)] = list_intersecting_edges
 
-                trafgen.append(('D'+str(ac_no), start_time, origin, destination, start_speed, altitude, priority, geoduration, geocoords))
+                trafgen.append(('D'+str(ac_no), aircraft_type, start_time, origin, destination, start_speed, altitude, priority, geoduration, geocoords))
             else:
-                trafgen.append(('D'+str(ac_no), start_time, origin, destination, start_speed, altitude, priority, 0, []))
+                trafgen.append(('D'+str(ac_no), aircraft_type, start_time, origin, destination, start_speed, altitude, priority, 0, []))
 
             ac_no += 1
         

@@ -27,39 +27,39 @@ center_dict = origin_destination_dict['center']
 ###############################################################################
 # # create an overtake scenario
 
-# test_scenario_name = 'overtake_scenario.scn'
-# path_plan_filename = 'overtake_scenario'
-# loitering_name = 'overtake_loitering'
+test_scenario_name = 'overtake_scenario.scn'
+path_plan_filename = 'overtake_scenario'
+loitering_name = 'overtake_loitering'
 
-# # put two aircraft at 30 ft, one is ac1 is at 20 kts and ac2 is at 30 kts
-# ac_1 = {'origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 0, 
-#         'priority': 1, 'start_speed': 20, 'altitude': 30,'geoduration': 0, 'geocoords': None}
+# put two aircraft at 30 ft, one is ac1 is at 20 kts and ac2 is at 30 kts
+ac_1 = {'ac_type': 'MP20','origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 0, 
+        'priority': 1, 'start_speed': 20, 'altitude': 30,'geoduration': 0, 'geocoords': None}
 
-# ac_2 = {'origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 10, 
-#         'priority': 1, 'start_speed': 30, 'altitude': 30, 'geoduration': 0, 'geocoords': None}
+ac_2 = {'ac_type': 'MP20','origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 10, 
+        'priority': 1, 'start_speed': 30, 'altitude': 30, 'geoduration': 0, 'geocoords': None}
 
-# flight_intention_list = [ac_1, ac_2]
+flight_intention_list = [ac_1, ac_2]
 # ################################################################################
 
 ###############################################################################
 # create an overtake scenario with an aircraft above
 
-test_scenario_name = 'overtake_scenario2.scn'
-path_plan_filename = 'overtake_scenario2'
-loitering_name = 'overtake_loitering2'
+# test_scenario_name = 'overtake_scenario2.scn'
+# path_plan_filename = 'overtake_scenario2'
+# loitering_name = 'overtake_loitering2'
 
-# put two aircraft at 30 ft, one is ac1 is at 20 kts and ac2 is at 30 kts
-ac_1 = {'origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 0, 
-        'priority': 1, 'start_speed': 20, 'altitude': 30,'geoduration': 0, 'geocoords': None}
+# # put two aircraft at 30 ft, one is ac1 is at 20 kts and ac2 is at 30 kts
+# ac_1 = {'ac_type': 'MP20', 'origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 0, 
+#         'priority': 1, 'start_speed': 20, 'altitude': 30,'geoduration': 0, 'geocoords': None}
 
-ac_2 = {'origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 10, 
-        'priority': 1, 'start_speed': 30, 'altitude': 30, 'geoduration': 0, 'geocoords': None}
+# ac_2 = {'ac_type': 'MP30', 'origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 10, 
+#         'priority': 1, 'start_speed': 30, 'altitude': 30, 'geoduration': 0, 'geocoords': None}
 
-# put third aircraft at 60 ft
-ac_3 = {'origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 10,
-        'priority': 1, 'start_speed': 30, 'altitude': 60, 'geoduration': 0, 'geocoords': None}
+# # put third aircraft at 60 ft
+# ac_3 = {'ac_type': 'MP30', 'origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 10,
+#         'priority': 1, 'start_speed': 30, 'altitude': 60, 'geoduration': 0, 'geocoords': None}
 
-flight_intention_list = [ac_1, ac_2, ac_3]
+# flight_intention_list = [ac_1, ac_2, ac_3]
 ###############################################################################
 
 # Initialize stuff
@@ -101,8 +101,8 @@ scenario_dict = dict()
 flight_plans_dict={}
 for flight in generated_traffic:
     # First get the route and turns
-    origin = flight[2]
-    destination = flight[3]
+    origin = flight[3]
+    destination = flight[4]
     
     if flight[0] in loitering_edges_dict.keys():
         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],True,loitering_edges_dict[flight[0]])
@@ -116,19 +116,19 @@ for flight in generated_traffic:
         # Create dictionary
         scenario_dict[flight[0]] = dict()
         # add aircraft type
-        # scenario_dict[flight[0]]['aircraft_type'] = flight[1]
+        scenario_dict[flight[0]]['aircraft_type'] = flight[1]
         # Add start time
-        scenario_dict[flight[0]]['start_time'] = flight[1]
+        scenario_dict[flight[0]]['start_time'] = flight[2]
         #Add lats
         scenario_dict[flight[0]]['lats'] = route[:,1]
         #Add lons
         scenario_dict[flight[0]]['lons'] = route[:,0]
         # get start speed
-        scenario_dict[flight[0]]['start_speed'] = flight[4]
+        scenario_dict[flight[0]]['start_speed'] = flight[5]
         #Add turnbool
         scenario_dict[flight[0]]['turnbool'] = turns
         #Add alts
-        scenario_dict[flight[0]]['alts'] = flight[5]
+        scenario_dict[flight[0]]['alts'] = flight[6]
         #Add active edges
         scenario_dict[flight[0]]['edges'] = edges
         #Add stroke group
@@ -138,11 +138,11 @@ for flight in generated_traffic:
         #Add constarined airspace indicator
         scenario_dict[flight[0]]['airspace_type'] = in_constrained
         #add priority
-        scenario_dict[flight[0]]['priority'] = flight[6]
+        scenario_dict[flight[0]]['priority'] = flight[7]
         # add geoduration
-        scenario_dict[flight[0]]['geoduration'] = flight[7]
+        scenario_dict[flight[0]]['geoduration'] = flight[8]
         # add geocoords
-        scenario_dict[flight[0]]['geocoords'] = flight[8]
+        scenario_dict[flight[0]]['geocoords'] = flight[9]
     
     
 
