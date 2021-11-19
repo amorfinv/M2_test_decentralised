@@ -235,6 +235,7 @@ class BlueskySCNTools():
                     start_time = dictionary[drone_id]['start_time']
                     lats = dictionary[drone_id]['lats']
                     lons = dictionary[drone_id]['lons']
+                    start_speed = dictionary[drone_id]['start_speed']
                     turnbool = dictionary[drone_id]['turnbool']
                     alts = dictionary[drone_id]['alts']
                     edges = dictionary[drone_id]['edges']
@@ -284,6 +285,9 @@ class BlueskySCNTools():
             start_time = start_time.split(':')
             start_time = int(start_time[0])*3600 + int(start_time[1])*60 + int(start_time[2])
 
+            # get aircraft type
+            aircraft_type = flight_intention[2]
+
             # get the origin location
             origin_lon = float(flight_intention[4][2:])
             origin_lat = float(flight_intention[5][1:-2])
@@ -323,6 +327,80 @@ class BlueskySCNTools():
                 trafgen.append(('D'+str(ac_no), start_time, origin, destination, priority, geoduration, geocoords))
             else:
                 trafgen.append(('D'+str(ac_no), start_time, origin, destination, priority, 0, []))
+
+            ac_no += 1
+        
+        return trafgen, loitering_edges_dict
+
+    def TestIntention2Traf(self, flight_intention_list, edges):
+        """Processes a custom flight intention list into traffic
+
+        Args:
+            flight_intention_list (list): [description]
+        """
+        # load the edges into an rtree
+        edges_gdf = edges.copy()
+        edge_dict = {}
+        idx_tree = rtree.index.Index()
+        i = 0
+        for index, row in edges_gdf.iterrows():
+            
+            geom = row.loc['geometry']
+            edge_dict[i] = (index[0], index[1])
+            idx_tree.insert(i, geom.bounds)
+
+            i += 1
+
+        # read flight inention list to create trafgen list
+        trafgen = []
+        ac_no = 1
+
+        loitering_edges_dict = {}
+
+        for flight_intention in flight_intention_list:
+
+            # get the starting time in seconds
+            start_time = flight_intention['start_time']
+
+            # get the origin location
+            origin_lon = flight_intention['origin'][1]
+            origin_lat = flight_intention['origin'][0]
+            origin = (origin_lon, origin_lat)
+
+            # get the destination location
+            destination_lon = flight_intention['destination'][1]
+            destination_lat = flight_intention['destination'][0]
+            destination = (destination_lon, destination_lat)
+
+            # get the start speed
+            start_speed = flight_intention['start_speed']
+
+            # get the priority
+            priority = flight_intention['priority']
+
+            # get the geoduration
+            geoduration = flight_intention['geoduration']
+ 
+            # check if it has geocoords TODO: fix this
+            if flight_intention['geocoords']:
+                # get polygon coordianates from box and create into lat1 lon1 list
+                box = flight_intention[10:]
+                geocoords = box[2] + ' ' + box[0] + ' ' + box[3] + ' ' + box[0] + ' ' + box[3] + ' ' + box[1] + ' ' + box[2] + ' ' + box[1]
+                
+                # create shapely polygon
+                poly = Polygon([Point(float(box[0]), float(box[2])), Point(float(box[0]), float(box[3])), Point(float(box[1]), float(box[3])), Point(float(box[1]), float(box[2]))])
+
+                # Add polygon to rtree
+                nearest_trial = list(idx_tree.intersection(poly.bounds))
+
+                list_intersecting_edges = [edge_dict[ii] for ii in nearest_trial]
+
+                # fill the loitering edges dict
+                loitering_edges_dict['D'+str(ac_no)] = list_intersecting_edges
+
+                trafgen.append(('D'+str(ac_no), start_time, origin, destination, start_speed, priority, geoduration, geocoords))
+            else:
+                trafgen.append(('D'+str(ac_no), start_time, origin, destination, start_speed, priority, 0, []))
 
             ac_no += 1
         
@@ -383,41 +461,41 @@ class BlueskySCNTools():
             The approximate length of the path.
     
         """
-# =============================================================================
-#         nodes = []
-# 
-#         for node in G.nodes:
-#             nodes.append((G.nodes[node]['y'], G.nodes[node]['x'], node))
-#             
-#         # Some parameters
-#         timestep = 0
-#         ac_no = 1
-#         start_time = 0
-#         
-#         trafgen = []
-#         trafdist = np.empty((0,2))
-#         
-#         # Check if origins or destinations were given, otherwise just stick to
-#         # randomly spawning in network.
-#         if orig_nodes == None:
-#             origins = nodes.copy()
-#         else:
-#             # Create the origins list
-#             origins = []
-#             for node in nodes:
-#                 if node[2] in orig_nodes:
-#                     origins.append(node)
-#                     
-#         # Do the same for destinations
-#         if dest_nodes == None:
-#             destinations = nodes.copy()
-#         else:
-#             # Create the origins list
-#             destinations = []
-#             for node in nodes:
-#                 if node[2] in dest_nodes:
-#                     destinations.append(node)  
-# =============================================================================
+        # =============================================================================
+        #         nodes = []
+        # 
+        #         for node in G.nodes:
+        #             nodes.append((G.nodes[node]['y'], G.nodes[node]['x'], node))
+        #             
+        #         # Some parameters
+        #         timestep = 0
+        #         ac_no = 1
+        #         start_time = 0
+        #         
+        #         trafgen = []
+        #         trafdist = np.empty((0,2))
+        #         
+        #         # Check if origins or destinations were given, otherwise just stick to
+        #         # randomly spawning in network.
+        #         if orig_nodes == None:
+        #             origins = nodes.copy()
+        #         else:
+        #             # Create the origins list
+        #             origins = []
+        #             for node in nodes:
+        #                 if node[2] in orig_nodes:
+        #                     origins.append(node)
+        #                     
+        #         # Do the same for destinations
+        #         if dest_nodes == None:
+        #             destinations = nodes.copy()
+        #         else:
+        #             # Create the origins list
+        #             destinations = []
+        #             for node in nodes:
+        #                 if node[2] in dest_nodes:
+        #                     destinations.append(node)  
+        # =============================================================================
           # Some parameters
         timestep = 0
         ac_no = 1
@@ -487,61 +565,6 @@ class BlueskySCNTools():
             
         return trafgen
 
-    def Paths2Traf(self, G, routes):
-        """Creates random traffic using the nodes of graph G as origins and
-        destinations.
-    
-        Parameters
-        ----------
-        G : graphml
-            OSMNX graph, can be created using create_graph.py
-        
-        routes : list
-            List of lists. Each list contains a certain path [origin_node, dest_node, speed, start_time]
-            
-        Output
-        ------
-        (ID, start_time, origin, destination, path_length)
-        
-        ID : str
-            The flight ID.
-            
-        start_time : int [s]
-            The simulation time at which the flight should start.
-            
-        origin : (lat,lon) [deg]
-            The origin of the flight.
-            
-        destination : (lat,lon) [deg]
-            The destination of the flight
-            
-        length : float [m]
-            The approximate length of the path.
-    
-        """
-        nodes = []
-
-        for node in G.nodes:
-            nodes.append((G.nodes[node]['y'], G.nodes[node]['x'], node))
-            
-        # Some parameters
-        ac_no = 1
-        trafgen = []        
-  
-        for route in routes:
-
-            origin_node = route[0]
-            dest_node = route[1]
-
-            origin = (G.nodes[origin_node]['y'], G.nodes[origin_node]['x'], route[0])
-            destination = (G.nodes[dest_node]['y'], G.nodes[dest_node]['x'], route[0])
-
-
-            trafgen.append(('D'+str(ac_no), route[3], origin, destination))
-            ac_no += 1
-        
-        return trafgen
-    
     def qdrdist(self, latd1, lond1, latd2, lond2, mode):
         """ Calculate bearing and distance, using WGS'84
             In:

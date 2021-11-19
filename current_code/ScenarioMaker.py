@@ -39,41 +39,13 @@ print('Graph loaded!')
 input_file=open("open_airspace_grid.dill", 'rb')
 grid=dill.load(input_file)
 
-
 ##Initialise the flow control entity
 graph=street_graph(G,edges) 
-
 
 # path planning file TODO: match scenario name
 path_plan_filename = 'Path_Planning'
 
-# Step 2: Generate traffic from it
-concurrent_ac = 5
-aircraft_vel = 12 # [m/s]
-max_time = 60 # [s]
-dt = 10
-min_dist = 1000 # [m]
-cruise_speed_constraint = True
-
-with open('origin_destination.json', 'r') as filename:
-            origin_dest = json.load(filename)
-            
-orig_nodes=origin_dest['origins']    
-dest_nodes=origin_dest['destinations']   
-     
-# =============================================================================
-# orig_nodes = [30696015, 3155094143, 33345321,  25280685, 1119870220, 33302019,
-#               33144416, 378696, 33143911, 264055537, 33144706, 33144712, 
-#               33144719, 92739749]
-# 
-# dest_nodes = [291088171,  60957703, 30696019, 392251, 33301346, 26405238, 
-#               3963787755, 33345333, 378699, 33144821, 264061926, 33144695,
-#               33174086, 33345331]
-# =============================================================================
-
-# generated_traffic = bst.Graph2Traf(G, concurrent_ac, aircraft_vel, max_time, 
-#                                     dt, min_dist, orig_nodes, dest_nodes)
-
+# Step 2: Generate traffic from the flight intention file
 generated_traffic, loitering_edges_dict = bst.Intention2Traf(flight_intention_list, edges.copy())
 print('Traffic generated!')
 
@@ -151,7 +123,7 @@ print('All paths created!')
     
 # Step 4: Create scenario file from dictionary
 bst.Dict2Scn(r'Test_Scenario.scn', 
-              scenario_dict, path_plan_filename, cruise_speed_constraint)
+              scenario_dict, path_plan_filename)
 
 print('Scenario file created!')
 
@@ -169,8 +141,3 @@ output_file.close()
 #output_file.close()
 
 print("Flight plans and search graphs saved!")
-    
-##example of loading the flight plans
-#input_file=open("Path_Planning.dill", 'rb')
-#p=dill.load(input_file)
-
