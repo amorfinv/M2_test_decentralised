@@ -35,7 +35,7 @@ loitering_name = 'overtake_loitering'
 ac_1 = {'ac_type': 'MP20','origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 0, 
         'priority': 1, 'start_speed': 20, 'altitude': 30,'geoduration': 0, 'geocoords': None}
 
-ac_2 = {'ac_type': 'MP20','origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 10, 
+ac_2 = {'ac_type': 'MP30','origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 10, 
         'priority': 1, 'start_speed': 30, 'altitude': 30, 'geoduration': 0, 'geocoords': None}
 
 flight_intention_list = [ac_1, ac_2]
