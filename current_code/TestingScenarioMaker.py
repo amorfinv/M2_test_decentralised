@@ -76,8 +76,12 @@ gdf=ox.graph_to_gdfs(G, nodes=False, fill_edge_geometry=True)
 print('Graph loaded!')
 
 #Load the open airspace grid
-input_file=open("open_airspace_grid.dill", 'rb')
-grid=dill.load(input_file)
+use_open_grid=True#False
+if use_open_grid:
+    input_file=open("open_airspace_grid.dill", 'rb')
+    grid=dill.load(input_file)
+else:
+    grid=[]
 
 ##Initialise the flow control entity
 graph=street_graph(G,edges) 

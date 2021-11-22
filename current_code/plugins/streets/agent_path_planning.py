@@ -617,11 +617,21 @@ class PathPlanning:
         elif self.aircraft_type==2:
             self.speed_max=15.43 # 30 knots
             
-        for i in range(len(self.open_airspace_grid.grid)):
-            p=copy.deepcopy(self.open_airspace_grid.grid[i])
-   
-            y = np.array([[p.p0[0], p.p0[1]], [p.p1[0], p.p1[1]], [p.p2[0] ,p.p2[1]], [p.p3[0], p.p3[1]]])
-            self.open_airspace_cells.append([y,i])
+        ############ TODO delete that after testing   
+        if open_airspace_grid==[]:
+            self.start_in_open=False
+            self.dest_in_open=False
+            no_grid=True
+        ############
+        else:
+            no_grid=False
+                
+                
+            for i in range(len(self.open_airspace_grid.grid)):
+                p=copy.deepcopy(self.open_airspace_grid.grid[i])
+       
+                y = np.array([[p.p0[0], p.p0[1]], [p.p1[0], p.p1[1]], [p.p2[0] ,p.p2[1]], [p.p3[0], p.p3[1]]])
+                self.open_airspace_cells.append([y,i])
 
 
         if self.start_in_open:
@@ -691,39 +701,40 @@ class PathPlanning:
         self.graph=[]
 
         transformer = Transformer.from_crs('epsg:32633', 'epsg:4326')
-        #Add open airspace nodes to graph
-        for i in range(len(self.open_airspace_grid.grid)):
-           cell=self.open_airspace_grid.grid[i]
-           group=-1
-           x=cell.center_x
-           y=cell.center_y
-           p=transformer.transform(x,y)
-           lon=p[1]
-           lat=p[0]
-           key=cell.key_index
-           dict_tmp={}
-           dict_tmp[0]=i
-           self.os_keys_dict_pred[key]=dict_tmp
-           self.os_keys_dict_succ[key]=dict_tmp
-           node=Node(key,lon,lat,i,group)
-           node.open_airspace=True
-           node.cell=CellNode(cell)
-           node.x_cartesian=cell.center_x
-           node.y_cartesian=cell.center_y
-           for j in cell.neighbors:
-               node.children.append(j)
-
-           self.graph.append(node)
+        if not no_grid:
+            #Add open airspace nodes to graph
+            for i in range(len(self.open_airspace_grid.grid)):
+               cell=self.open_airspace_grid.grid[i]
+               group=-1
+               x=cell.center_x
+               y=cell.center_y
+               p=transformer.transform(x,y)
+               lon=p[1]
+               lat=p[0]
+               key=cell.key_index
+               dict_tmp={}
+               dict_tmp[0]=i
+               self.os_keys_dict_pred[key]=dict_tmp
+               self.os_keys_dict_succ[key]=dict_tmp
+               node=Node(key,lon,lat,i,group)
+               node.open_airspace=True
+               node.cell=CellNode(cell)
+               node.x_cartesian=cell.center_x
+               node.y_cartesian=cell.center_y
+               for j in cell.neighbors:
+                   node.children.append(j)
+    
+               self.graph.append(node)
+                
             
-        
-           
-        for node in self.graph:      
-            neighboors=copy.deepcopy(node.children)
-            node.children=[]
-            for i in neighboors:
-                key=self.os_keys_dict_succ[i][0]
-                node.children.append(key)
-                node.parents.append(key)
+               
+            for node in self.graph:      
+                neighboors=copy.deepcopy(node.children)
+                node.children=[]
+                for i in neighboors:
+                    key=self.os_keys_dict_succ[i][0]
+                    node.children.append(key)
+                    node.parents.append(key)
 
 
         ##Add constrained nodes to graph
