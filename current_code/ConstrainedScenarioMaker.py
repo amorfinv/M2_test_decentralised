@@ -2,6 +2,9 @@
 """
 Created on Thu Jun  3 11:47:30 2021
 @author: andub
+
+NOTE: If open airspace grid is empty then do not give 
+origin and destination coordinates in open airspace
 """
 from datetime import time
 import osmnx as ox
@@ -94,7 +97,7 @@ gdf=ox.graph_to_gdfs(G, nodes=False, fill_edge_geometry=True)
 print('Graph loaded!')
 
 #Load the open airspace grid
-use_open_grid=True#False
+use_open_grid=False#False
 if use_open_grid:
     input_file=open("open_airspace_grid.dill", 'rb')
     grid=dill.load(input_file)
