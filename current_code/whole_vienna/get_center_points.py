@@ -39,8 +39,14 @@ def main():
     # delete edges smaller than 60 meters
     edges = edges.loc[edges['length'] > 60]
 
+    # convert to crs 32633
+    edges = edges.to_crs(epsg=32633)
+
     # get midpoint of edges
-    center_points = edges['geometry'].apply(lambda line_geom: line_geom.interpolate(0.5, normalized=True))
+    center_points = gpd.GeoDataFrame(edges['geometry'].apply(lambda line_geom: line_geom.interpolate(0.5, normalized=True)))
+
+    # add id to center_points
+    center_points['id'] = range(len(center_points))
 
     # save to file
     center_points.to_file(path.join(gis_data_path, 'center_points.gpkg'), driver='GPKG')

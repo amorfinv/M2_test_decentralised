@@ -33,10 +33,10 @@ def main():
 
     # read center
     center_locations = gpd.read_file("whole_vienna/gis/center_points.gpkg")
-
+    center_locations = center_locations.to_crs(epsg=4326)
+    
     # read graph
-    index_center = list(center_locations.index.values)
-    index_center = [int(i) for i in index_center]
+    index_center = list(center_locations['id'])
 
     lat_list = center_locations['geometry'].y.tolist()
     lon_list = center_locations['geometry'].x.tolist()
