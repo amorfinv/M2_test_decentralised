@@ -27,18 +27,18 @@ center_dict = origin_destination_dict['center']
 ###############################################################################
 # # create an overtake scenario
 
-test_scenario_name = 'overtake_scenario.scn'
-path_plan_filename = 'overtake_scenario'
-loitering_name = 'overtake_loitering'
+# test_scenario_name = 'overtake_scenario.scn'
+# path_plan_filename = 'overtake_scenario'
+# loitering_name = 'overtake_loitering'
 
-# put two aircraft at 30 ft, one is ac1 is at 20 kts and ac2 is at 30 kts
-ac_1 = {'ac_type': 'MP20','origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 0, 
-        'priority': 1, 'start_speed': 20, 'altitude': 30,'geoduration': 0, 'geocoords': None}
+# # put two aircraft at 30 ft, one is ac1 is at 20 kts and ac2 is at 30 kts
+# ac_1 = {'ac_type': 'MP20','origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 0, 
+#         'priority': 1, 'start_speed': 20, 'altitude': 30,'geoduration': 0, 'geocoords': None}
 
-ac_2 = {'ac_type': 'MP30','origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 10, 
-        'priority': 1, 'start_speed': 30, 'altitude': 30, 'geoduration': 0, 'geocoords': None}
+# ac_2 = {'ac_type': 'MP30','origin': center_dict['475'], 'destination': center_dict['318'], 'start_time': 10, 
+#         'priority': 1, 'start_speed': 30, 'altitude': 30, 'geoduration': 0, 'geocoords': None}
 
-flight_intention_list = [ac_1, ac_2]
+# flight_intention_list = [ac_1, ac_2]
 # ################################################################################
 
 ###############################################################################
@@ -60,6 +60,24 @@ flight_intention_list = [ac_1, ac_2]
 #         'priority': 1, 'start_speed': 30, 'altitude': 60, 'geoduration': 0, 'geocoords': None}
 
 # flight_intention_list = [ac_1, ac_2, ac_3]
+###############################################################################
+
+###############################################################################
+# create an overtake scenario with an aircraft above
+
+test_scenario_name = 't_scenario.scn'
+path_plan_filename = 't_scenario'
+loitering_name = 't_loitering'
+
+# First aircraft will not turn. 
+ac_1 = {'ac_type': 'MP20', 'origin': center_dict['4315'], 'destination': center_dict['4102'], 'start_time': 0, 
+        'priority': 1, 'start_speed': 20, 'altitude': 90,'geoduration': 0, 'geocoords': None}
+
+# Second aircraft will turn. TODO:alter start time so that they intersect
+ac_2 = {'ac_type': 'MP20', 'origin': center_dict['4131'], 'destination': center_dict['4102'], 'start_time': 20, 
+        'priority': 1, 'start_speed': 20, 'altitude': 30, 'geoduration': 0, 'geocoords': None}
+
+flight_intention_list = [ac_1, ac_2]
 ###############################################################################
 
 # Initialize stuff
