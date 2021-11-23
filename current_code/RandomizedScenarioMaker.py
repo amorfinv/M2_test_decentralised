@@ -20,7 +20,8 @@ import json
 import geopandas as gpd
 from shapely.geometry import Point
 
-scenario_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)),'custom_scenarios')
+###############################################################################
+# Get smaller subset of destinations
 
 ## import a polygon of a smaller area
 poly_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)),'whole_vienna/gis/')
@@ -54,10 +55,11 @@ with open('airspace_design/layers.json', 'r') as filename:
     layer_dict = json.load(filename)
 
 # get flight levels of airspace
-flight_levels = ['info']['levels']
+flight_levels = layer_dict['info']['levels']
 
 ###############################################################################
 # create a random scenario
+scenario_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)),'custom_scenarios')
 
 test_scenario_name = 'random_scenario.scn'
 path_plan_filename = 'random_scenario'
