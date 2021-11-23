@@ -421,7 +421,8 @@ class BlueskySCNTools():
         return trafgen, loitering_edges_dict
 
     def Graph2Traf(self, G, concurrent_ac, aircraft_vel, max_time, dt, min_dist, 
-                   orig_nodes = None, dest_nodes = None):
+                   orig_coords = None, dest_coords = None, ac_types = None, 
+                   priority_list = None):
         """Creates random traffic using the nodes of graph G as origins and
         destinations.
     
@@ -447,14 +448,18 @@ class BlueskySCNTools():
             The minimum distance a mission should have. This filters out the
             very short missions. 
             
-        orig_nodes : list
-            List of nodes to serve as the origin nodes. If not given, origin
-            nodes will be taken randomly from existing ones.
+        orig_coords : list
+            List of lons and list of lats coordinates of origin locations.
             
-        dest_nodes : list
-            List of nodes to serve as destination nodes. If not given, destination
-            nodes will be taken randomly from existing ones.
-            
+        dest_coords : list
+            List of lons and list of lats coordinates of destination locations.
+        
+        ac_types : list
+            List of aircraft types.
+
+        priority_list : list
+            List of priorities.
+
         Output
         ------
         (ID, start_time, origin, destination, path_length)
@@ -475,42 +480,11 @@ class BlueskySCNTools():
             The approximate length of the path.
     
         """
-        # =============================================================================
-        #         nodes = []
-        # 
-        #         for node in G.nodes:
-        #             nodes.append((G.nodes[node]['y'], G.nodes[node]['x'], node))
-        #             
-        #         # Some parameters
-        #         timestep = 0
-        #         ac_no = 1
-        #         start_time = 0
-        #         
-        #         trafgen = []
-        #         trafdist = np.empty((0,2))
-        #         
-        #         # Check if origins or destinations were given, otherwise just stick to
-        #         # randomly spawning in network.
-        #         if orig_nodes == None:
-        #             origins = nodes.copy()
-        #         else:
-        #             # Create the origins list
-        #             origins = []
-        #             for node in nodes:
-        #                 if node[2] in orig_nodes:
-        #                     origins.append(node)
-        #                     
-        #         # Do the same for destinations
-        #         if dest_nodes == None:
-        #             destinations = nodes.copy()
-        #         else:
-        #             # Create the origins list
-        #             destinations = []
-        #             for node in nodes:
-        #                 if node[2] in dest_nodes:
-        #                     destinations.append(node)  
-        # =============================================================================
-          # Some parameters
+        # get nearest nodes with osmnx
+        orig_nodes = ox.nearest_nodes(G, orig_coords[0], orig_coords[1])
+        dest_nodes = ox.nearest_nodes(G, dest_coords[0], dest_coords[1])
+        
+        # Some parameters
         timestep = 0
         ac_no = 1
         start_time = 0
@@ -545,13 +519,14 @@ class BlueskySCNTools():
             while decrement_me > 0:
                 # Pick a random node from possible_origins
                 idx_origin = random.randint(0, len(possible_origins)-1)
-                origin = possible_origins[idx_origin]
+                orig_node = possible_origins[idx_origin]
+                origin = (G.nodes[orig_node]['y'], G.nodes[orig_node]['x'])
+         
                 # Do the same thing for destination
                 idx_dest = random.randint(0, len(possible_destinations)-1)
-                destination = possible_destinations[idx_dest]
-                # Let's see how close they are
-                orig_node = ox.distance.nearest_nodes(G, origin[1], origin[0])
-                target_node = ox.distance.nearest_nodes(G, destination[1], destination[0])
+                target_node = possible_destinations[idx_dest]
+                destination = (G.nodes[target_node]['y'], G.nodes[target_node]['x'])
+
                 #try:
                 if 0:
                     length = nx.shortest_path_length(G=G, source=orig_node, target=target_node, weight='length')
@@ -568,7 +543,19 @@ class BlueskySCNTools():
                 # Remove destinations and origins
                 possible_origins.pop(idx_origin)
                 possible_destinations.pop(idx_dest)
+
+                # select and add aircraft type randomly
+                aircraft_type = random.choice(ac_types)
+
+                # start speed is last two entries of aircraft_type
+                start_speed = aircraft_type[-2]
+
+                # select priority rand
+                priority = random.choice(priority_list)
+
                 # Append the new aircraft
+                trafgen.append(('D'+str(ac_no), aircraft_type, start_time, origin, destination, start_speed, 30, priority, 0, []))
+
                 trafgen.append(('D'+str(ac_no), start_time, origin, destination, length))
                 trafdist = np.vstack([trafdist, ['D'+str(ac_no),  length]])
                 ac_no += 1
@@ -577,7 +564,7 @@ class BlueskySCNTools():
             timestep += 1
             start_time += dt
             
-        return trafgen
+        return trafgen, {}
 
     def qdrdist(self, latd1, lond1, latd2, lond2, mode):
         """ Calculate bearing and distance, using WGS'84
