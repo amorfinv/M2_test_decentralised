@@ -1,22 +1,18 @@
-import os
-from platform import node
-from networkx.classes.function import degree
 import osmnx as ox
 import geopandas as gpd
-import networkx as nx
-from osmnx.projection import project_gdf
-from osmnx.utils_graph import graph_from_gdfs
-from shapely.geometry.point import Point
+from shapely.geometry import Point, LineString, MultiLineString
 import graph_funcs
 from os import path
-import math
-import numpy as np
 from shapely.geometry import LineString, MultiLineString
-from shapely import ops
-import pandas as pd
-import collections
-from momepy import COINS
 
+"""
+Code takes geometry of street and returns a simplified version of it.
+It looks at the bearing difference between two line segments and
+if the difference is less than the threshold then it removes that point
+from the line.
+
+THIS IS THE FINAL GRAPH
+"""
 def main():
     # working path
     gis_data_path = 'gis'
@@ -27,21 +23,37 @@ def main():
     # convert to gdgs
     nodes, edges = ox.graph_to_gdfs(G)
 
-    # simplify street linestring geometry. 
+    # simplify street linestring geometry. Select 1.5 degrees
     angle_threshold = 1.5
     edges_simplified = simplify_street_geometry(edges, 'angle', angle_threshold)
 
     # convert back to graph and save
-    G = graph_from_gdfs(nodes, edges_simplified)
+    G = ox.graph_from_gdfs(nodes, edges_simplified)
 
     ox.save_graphml(G, filepath=path.join(gis_data_path, 'layer_heights_simplified.graphml'))
 
     ox.save_graph_geopackage(G, filepath=path.join(gis_data_path, 'layer_heights_simplified.gpkg'), directed=True)
 
 def simplify_street_geometry(edges, sim_type = 'shapely', angle_threshold = 1):
+    """
+    Simplify street geometry.
 
-    from shapely.geometry import Point, LineString, MultiLineString
-
+    Parameters
+    ----------
+    edges : GeoDataFrame
+        Edges of the graph.
+    sim_type : str
+        Type of simplification.
+        'shapely' - use shapely simplification.
+        'angle' - use angle simplification.
+    angle_threshold : float
+        Angle threshold.
+    
+    Returns
+    -------
+    edges_simplified : GeoDataFrame
+        Simplified edges.
+    """
     edges_gdf = edges.copy()
 
     if sim_type == 'shapely':
@@ -66,6 +78,15 @@ def simplify_street_geometry(edges, sim_type = 'shapely', angle_threshold = 1):
 def simplify_geometry(line_geometry, angle_threshold):
     """
     Simplify geometry with angle
+
+    Parameters
+    ----------
+    line_geometry : LineString
+        Line geometry.
+    angle_threshold : float
+        Angle threshold.
+
+    Returns
     """
 
     points_to_remove = True
@@ -110,6 +131,19 @@ def simplify_geometry(line_geometry, angle_threshold):
 
 
 def angles_from_list_points(list_points):
+    """
+    Calculate angles from list of points.
+
+    Parameters
+    ----------
+    list_points : list
+        List of points.
+
+    Returns
+    -------
+    angles : list
+        List of angles.
+    """
     angles = []
     for i in range(len(list_points)-2):
         line_segment_1 = LineString([list_points[i], list_points[i+1]]).coords
