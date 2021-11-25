@@ -520,22 +520,21 @@ class BlueskySCNTools():
                 # Pick a random node from possible_origins
                 idx_origin = random.randint(0, len(possible_origins)-1)
                 orig_node = possible_origins[idx_origin]
-                origin = (G.nodes[orig_node]['y'], G.nodes[orig_node]['x'])
+                origin = (G.nodes[orig_node]['x'], G.nodes[orig_node]['y'])
          
                 # Do the same thing for destination
                 idx_dest = random.randint(0, len(possible_destinations)-1)
                 target_node = possible_destinations[idx_dest]
-                destination = (G.nodes[target_node]['y'], G.nodes[target_node]['x'])
+                destination = (G.nodes[target_node]['x'], G.nodes[target_node]['y'])
 
                 #try:
-                if 0:
+                try:
                     length = nx.shortest_path_length(G=G, source=orig_node, target=target_node, weight='length')
-                else:
-                    length=2000
-                #except:
+    
+                except:
                     # There is no solution to get from one node to the other
-                    #print('No path found for these two waypoints. Trying again.')
-                    #continue
+                    print('No path found for these two waypoints. Trying again.')
+                    continue
                 
                 if length < min_dist:
                     # Distance is too short, try again
@@ -548,7 +547,7 @@ class BlueskySCNTools():
                 aircraft_type = random.choice(ac_types)
 
                 # start speed is last two entries of aircraft_type
-                start_speed = aircraft_type[-2]
+                start_speed = int(aircraft_type[-2:])
 
                 # select priority rand
                 priority = random.choice(priority_list)
@@ -556,7 +555,7 @@ class BlueskySCNTools():
                 # Append the new aircraft
                 trafgen.append(('D'+str(ac_no), aircraft_type, start_time, origin, destination, start_speed, 30, priority, 0, []))
 
-                trafgen.append(('D'+str(ac_no), start_time, origin, destination, length))
+                # trafgen.append(('D'+str(ac_no), start_time, origin, destination, length))
                 trafdist = np.vstack([trafdist, ['D'+str(ac_no),  length]])
                 ac_no += 1
                 decrement_me -= 1  

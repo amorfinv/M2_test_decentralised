@@ -68,8 +68,6 @@ print('Created loitering dill')
 # print("planned")
 # =============================================================================
 
-aircraft_type=1
-priority=1
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
 flight_plans_dict={}
@@ -77,6 +75,9 @@ for flight in generated_traffic:
     # First get the route and turns
     origin = flight[3]
     destination = flight[4]
+
+    priority = flight[7]
+    aircraft_type = 1 if flight[1] == 'MP20' else 2
     
     if flight[0] in loitering_edges_dict.keys():
         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],True,loitering_edges_dict[flight[0]])
@@ -100,7 +101,7 @@ for flight in generated_traffic:
         #Add turnbool
         scenario_dict[flight[0]]['turnbool'] = turns
         #Add alts
-        scenario_dict[flight[0]]['alts'] = None
+        scenario_dict[flight[0]]['alts'] = 0
         ## add start speed, If None then it is turnspeed
         # scenario_dict[flight[0]]['start_speed'] = flight[5]
         scenario_dict[flight[0]]['start_speed'] = None

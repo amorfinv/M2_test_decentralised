@@ -97,12 +97,9 @@ gdf=ox.graph_to_gdfs(G, nodes=False, fill_edge_geometry=True)
 print('Graph loaded!')
 
 #Load the open airspace grid
-use_open_grid=False#False
-if use_open_grid:
-    input_file=open("open_airspace_grid.dill", 'rb')
-    grid=dill.load(input_file)
-else:
-    grid=[]
+input_file=open("open_airspace_grid.dill", 'rb')
+grid=dill.load(input_file)
+input_file.close()
 
 ##Initialise the flow control entity
 graph=street_graph(G,edges) 
@@ -119,8 +116,6 @@ output_file.close()
 print('Created loitering dill')
 
 
-aircraft_type=1
-priority=1
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
 flight_plans_dict={}
@@ -128,6 +123,9 @@ for flight in generated_traffic:
     # First get the route and turns
     origin = flight[3]
     destination = flight[4]
+
+    priority = flight[7]
+    aircraft_type = 1 if flight[1] == 'MP20' else 2
     
     if flight[0] in loitering_edges_dict.keys():
         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],True,loitering_edges_dict[flight[0]])
