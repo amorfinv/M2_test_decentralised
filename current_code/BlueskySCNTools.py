@@ -137,8 +137,23 @@ class BlueskySCNTools():
         if not start_speed:
             start_speed = turn_speed
 
-        
+
+        # check if the first and second waypoints are the same
+        if lats[0] == lats[1] and lons[0] == lons[1]:
+            print('First and second waypoints are the same')
+            lats = np.delete(lats, 0)
+            lons = np.delete(lons, 0)
+            next_turn.pop(0)
+            turnbool.pop(0)
+            edges.pop(0)
+            group_num.pop(0)
+            in_constrained.pop(0)
+
+        print(lats[0], lons[0])
+        print(lats[1], lons[1])
         qdr = self.qdrdist(lats[0], lons[0], lats[1], lons[1], 'qdr')
+        print(qdr)
+        print('------------------------------------------------------')
         if geocoords:
             cre_text = f'CREM2 {drone_id},{aircraft_type},{lats[0]},{lons[0]},{qdr},{alts},{start_speed},{priority},{geoduration},{geocoords}\n'
         else:
