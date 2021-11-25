@@ -10,9 +10,11 @@ import osmnx as ox
 import networkx as nx
 import os 
 import json
+from pygeos.measurement import length
 import rtree
 from shapely.geometry import Polygon, Point
 from shapely import affinity
+from pyproj import Transformer, transformer
 
 nm = 1852
 ft = 1/0.3048
@@ -136,24 +138,9 @@ class BlueskySCNTools():
         # Let's calculate its required heading.
         if not start_speed:
             start_speed = turn_speed
-
-
-        # check if the first and second waypoints are the same
-        if lats[0] == lats[1] and lons[0] == lons[1]:
-            print('First and second waypoints are the same')
-            lats = np.delete(lats, 0)
-            lons = np.delete(lons, 0)
-            next_turn.pop(0)
-            turnbool.pop(0)
-            edges.pop(0)
-            group_num.pop(0)
-            in_constrained.pop(0)
-
-        print(lats[0], lons[0])
-        print(lats[1], lons[1])
+        
         qdr = self.qdrdist(lats[0], lons[0], lats[1], lons[1], 'qdr')
-        print(qdr)
-        print('------------------------------------------------------')
+
         if geocoords:
             cre_text = f'CREM2 {drone_id},{aircraft_type},{lats[0]},{lons[0]},{qdr},{alts},{start_speed},{priority},{geoduration},{geocoords}\n'
         else:
@@ -535,25 +522,25 @@ class BlueskySCNTools():
                 # Pick a random node from possible_origins
                 idx_origin = random.randint(0, len(possible_origins)-1)
                 orig_node = possible_origins[idx_origin]
-                origin = (G.nodes[orig_node]['x'], G.nodes[orig_node]['y'])
-         
+                origin = (orig_coords[0][idx_origin], orig_coords[1][idx_origin])       
+
                 # Do the same thing for destination
                 idx_dest = random.randint(0, len(possible_destinations)-1)
                 target_node = possible_destinations[idx_dest]
-                destination = (G.nodes[target_node]['x'], G.nodes[target_node]['y'])
+                destination = (dest_coords[0][idx_dest], dest_coords[1][idx_dest])
 
-                #try:
-                try:
-                    length = nx.shortest_path_length(G=G, source=orig_node, target=target_node, weight='length')
-    
-                except:
-                    # There is no solution to get from one node to the other
-                    print('No path found for these two waypoints. Trying again.')
-                    continue
+                # transformer
+                transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+                origin_utm = transformer.transform(origin[1], origin[0])
+                destination_utm = transformer.transform(destination[1], destination[0])
+
                 
+                # get euclidean distance betweem origin and destination
+                length = np.sqrt((origin_utm[0]-destination_utm[0])**2 + (origin_utm[1]-destination_utm[1])**2)
                 if length < min_dist:
-                    # Distance is too short, try again
+                    # Distance is too short, try again                    
                     continue
+
                 # Remove destinations and origins
                 possible_origins.pop(idx_origin)
                 possible_destinations.pop(idx_dest)

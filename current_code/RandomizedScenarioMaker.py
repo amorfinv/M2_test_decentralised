@@ -85,7 +85,7 @@ concurrent_ac = 4
 aircraft_vel = 12 # [m/s]
 max_time = 600 # [s]
 dt = 10
-min_dist = 1000 # [m]
+min_dist = 1500 # [m]
 ac_types = ['MP20', 'MP30']
 priority_list = [1, 2, 3]
 
