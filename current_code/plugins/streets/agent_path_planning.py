@@ -10,7 +10,6 @@ import numpy as np
 import math
 import copy
 from shapely.geometry import Point
-import time
 from pyproj import  Transformer
 
 from plugins.streets.flow_control import street_graph,bbox
@@ -19,7 +18,6 @@ from plugins.streets.open_airspace_grid import Cell, open_airspace
 ##########
 ##Functions for finding the cell of a point in open airspace
 def index_2d(myList, v):
-    
     test=[]
     for i in range(len(myList)):
         test.append(myList[i][1])
@@ -31,7 +29,6 @@ def check_where(p,min_x_ind,cells):
     x=p[0]
     y=p[1]
 
-    
     many=[i for i in min_x_ind if i[0] <= x and i[1]>=x] 
     which=[]
     for i in range(len(many)):
@@ -39,19 +36,14 @@ def check_where(p,min_x_ind,cells):
  
     canditade_cells=[]
     for i in which:
-
         canditade_cells.append(cells[index_2d(cells,min_x_ind[i][3])])
 
     wh=-1
     for i in range(len(canditade_cells)):
-   
         mn=np.argmin(canditade_cells[i][0], axis=0)
         mx=np.argmax(canditade_cells[i][0], axis=0)
 
-        
-
         if canditade_cells[i][0][mn[1]][1] <=y and canditade_cells[i][0][mx[1]][1]>=y : 
-            
             wh=i
             break
     if wh !=-1:
@@ -62,14 +54,12 @@ def check_where(p,min_x_ind,cells):
     return winner
     
 def sort_cells_x(cells):
-  
     min_x_ind=[]
     for i in range(len(cells)):
         mn=np.argmin(cells[i][0], axis=0)
         mx=np.argmax(cells[i][0], axis=0)
         min_x_ind.append([cells[i][0][mn[0]][0],cells[i][0][mx[0]][0],i,cells[i][1]])
         
-    #print(sorted(min_x_ind,key=lambda x: (x[1])))
     return min_x_ind
 ##########################
 
@@ -273,12 +263,10 @@ class Node:
         self.x_cartesian=None
         self.y_cartesian=None
 
-
         #the parents(predessecors) and children(successor) of the node expressed as lists containing their indexes in the graph 
         self.parents=[]
         self.children=[]
         
-        #self.f=0.0
         self.g=float('inf')
         self.rhs=float('inf')
         self.key=[0.0,0.0]
@@ -332,13 +320,12 @@ def eucledean_distance(p1,p2):
 
 def heuristic(current, goal,speed):
     if current.open_airspace or goal.open_airspace:
-        #h=( math.sqrt((current.x_cartesian-goal.x_cartesian)*(current.x_cartesian-goal.x_cartesian)+(current.y_cartesian-goal.y_cartesian)*(current.y_cartesian-goal.y_cartesian)))/current.av_speed_horizontal
         h=eucledean_distance(current, goal)/speed
     else:
         h=(abs(current.x_cartesian-goal.x_cartesian)+abs(current.y_cartesian-goal.y_cartesian))/min(current.av_speed_horizontal,speed)
 
     if current.group!=goal.group:
-        h=h+25
+        h=h+9.144/current.av_speed_vertical
     return h
 
 
@@ -346,13 +333,11 @@ def heuristic(current, goal,speed):
 def compute_c(current,neigh,edges,speed):
     g=1
     if current.open_airspace  or neigh.open_airspace:
-         #g=( math.sqrt((current.x_cartesian-neigh.x_cartesian)*(current.x_cartesian-neigh.x_cartesian)+(current.y_cartesian-neigh.y_cartesian)*(current.y_cartesian-neigh.y_cartesian)))/current.speed
          g=eucledean_distance(current,neigh)/speed
     else:
         if(current.group!=neigh.group):
-            g=25#abs(neigh.z-current.z)/current.av_speed_vertical
+            g=9.144/current.av_speed_vertical
         else:
-            #g=(abs(neigh.x-current.x)+abs(neigh.y-current.y))*2/(current.speed/current.density+neigh.speed/neigh.density)
             #check if the group is changing (the drone needs to turn)
             if current.group==neigh.group:
                 if edges[current.key_index][neigh.key_index].speed==0:
@@ -384,15 +369,12 @@ def update_vertex(path,node):
             path.queue[path.queue.index(id_in_queue[0])]=path.queue[-1]
             path.queue.pop()
             heapq.heapify(path.queue)
-            #node.expanded=True
             heapq.heappush(path.queue, (node.key[0],node.key[1],node.index,node))
             
     elif node.g!=node.rhs and (not node.inQueue):
         #Insert
         node.inQueue=True
-        #node.h=heuristic(node, path.start,path.speed)
         node.key=calculateKey(node, path.start, path)
-        #node.expanded=True
         heapq.heappush(path.queue, (node.key[0],node.key[1],node.index,node))
         
     elif node.g==node.rhs and node.inQueue: 
@@ -410,7 +392,7 @@ def update_vertex(path,node):
 
           
 ##Compute the shortest path using D* Lite
-##returns flase if no path was found
+##returns false if no path was found
 def compute_shortest_path(path,graph,edges):
 
     path.start.key=calculateKey(path.start, path.start, path)
@@ -591,18 +573,20 @@ class PathPlanning:
         self.goal_index=None
         self.goal_index_next=None
         self.dest_in_open=True
-        self.open_airspace_grid=open_airspace_grid#open_airspace_grid#copy.deepcopy(open_airspace_grid)
-        self.flow_control_graph=copy.deepcopy(flow_control_graph)#flow_control_graph#copy.deepcopy(flow_control_graph)
-        self.gdf=gdf#copy.deepcopy(gdf)
-        self.G = None#G
+        self.open_airspace_grid=open_airspace_grid
+        self.flow_control_graph=copy.deepcopy(flow_control_graph)
+        self.gdf=gdf
+        self.G = None
         self.edge_gdf=None
         self.path=None
         self.os_keys_dict_succ={}
         self.os_keys_dict_pred={}
         self.route=[]
         self.turns=[]
-        self.priority=priority # 1 for high, 2 for medium,3 for low priority
+        self.priority=priority # 4,3,2,1 in decreasing priority
         self.loitering=loitering
+        
+        
         if self.loitering:
             self.loitering_edges=loitering_edges
 
@@ -617,21 +601,14 @@ class PathPlanning:
         elif self.aircraft_type==2:
             self.speed_max=15.43 # 30 knots
             
-        ############ TODO delete that after testing   
-        if open_airspace_grid==[]:
-            self.start_in_open=False
-            self.dest_in_open=False
-            no_grid=True
-        ############
-        else:
-            no_grid=False
+
                 
                 
-            for i in range(len(self.open_airspace_grid.grid)):
-                p=copy.deepcopy(self.open_airspace_grid.grid[i])
+        for i in range(len(self.open_airspace_grid.grid)):
+            p=copy.deepcopy(self.open_airspace_grid.grid[i])
        
-                y = np.array([[p.p0[0], p.p0[1]], [p.p1[0], p.p1[1]], [p.p2[0] ,p.p2[1]], [p.p3[0], p.p3[1]]])
-                self.open_airspace_cells.append([y,i])
+            y = np.array([[p.p0[0], p.p0[1]], [p.p1[0], p.p1[1]], [p.p2[0] ,p.p2[1]], [p.p3[0], p.p3[1]]])
+            self.open_airspace_cells.append([y,i])
 
 
         if self.start_in_open:
@@ -672,21 +649,21 @@ class PathPlanning:
         
         
             
-        if self.goal_index_next==self.start_index or self.goal_index==self.start_index:
+        if self.goal_index_next==self.start_index and self.goal_index==self.start_index_previous:
             print("same goal to start index")
             
             
         #find the area of interest based on teh start and goal point
         ##TODO: tune the exp_const
         if not self.start_in_open and not self.dest_in_open:
-            exp_const=0.02##0.005 ## we need to think about the value of that constant
+            exp_const=0.02##0.005 
             box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
             
             G,edges=self.flow_control_graph.extract_subgraph(box)
             self.G=copy.deepcopy(G)
             self.edge_gdf=copy.deepcopy(edges)
         else:
-            exp_const=0.02##0.005 ## we need to think about the value of that constant
+            exp_const=0.02##0.005 
             box=bbox(min(self.start_point.y,self.goal_point.y)-exp_const,min(self.start_point.x,self.goal_point.x)-exp_const,max(self.start_point.y,self.goal_point.y)+exp_const,max(self.start_point.x,self.goal_point.x)+exp_const) 
     
             G,edges=self.flow_control_graph.extract_subgraph(box)
@@ -694,51 +671,68 @@ class PathPlanning:
             self.edge_gdf=copy.deepcopy(edges)
             
         
-        del self.flow_control_graph #empty these, we do no tneed it any more
+        del self.flow_control_graph #empty these, we do not need it any more
         del self.gdf
 
         #Create the graph
         self.graph=[]
+        connected2open=False
+        omsnx_keys_list=list(self.G.keys())
 
         transformer = Transformer.from_crs('epsg:32633', 'epsg:4326')
-        if not no_grid:
-            #Add open airspace nodes to graph
-            for i in range(len(self.open_airspace_grid.grid)):
-               cell=self.open_airspace_grid.grid[i]
-               group=-1
-               x=cell.center_x
-               y=cell.center_y
-               p=transformer.transform(x,y)
-               lon=p[1]
-               lat=p[0]
-               key=cell.key_index
-               dict_tmp={}
-               dict_tmp[0]=i
-               self.os_keys_dict_pred[key]=dict_tmp
-               self.os_keys_dict_succ[key]=dict_tmp
-               node=Node(key,lon,lat,i,group)
-               node.open_airspace=True
-               node.cell=CellNode(cell)
-               node.x_cartesian=cell.center_x
-               node.y_cartesian=cell.center_y
-               for j in cell.neighbors:
-                   node.children.append(j)
-    
-               self.graph.append(node)
-                
-            
+        #Add open airspace nodes to graph
+        for i in range(len(self.open_airspace_grid.grid)):
+           cell=self.open_airspace_grid.grid[i]
+           group=-1
+           x=cell.center_x
+           y=cell.center_y
+           p=transformer.transform(x,y)
+           lon=p[1]
+           lat=p[0]
+           key=cell.key_index
+           dict_tmp={}
+           dict_tmp[0]=i
+           self.os_keys_dict_pred[key]=dict_tmp
+           self.os_keys_dict_succ[key]=dict_tmp
+           node=Node(key,lon,lat,i,group)
+           node.open_airspace=True
+           node.cell=CellNode(cell)
+           node.x_cartesian=cell.center_x
+           node.y_cartesian=cell.center_y
+           for j in cell.neighbors:
+               node.children.append(j)
                
-            for node in self.graph:      
-                neighboors=copy.deepcopy(node.children)
-                node.children=[]
-                for i in neighboors:
-                    key=self.os_keys_dict_succ[i][0]
-                    node.children.append(key)
-                    node.parents.append(key)
+           if not connected2open:
+               for k in cell.entry_list:
+                   if k in omsnx_keys_list:
+                       connected2open=True
+                       break
+           if not connected2open:
+               for k in cell.exit_list:
+                   if k in omsnx_keys_list:
+                       connected2open=True
+                       break
+
+           self.graph.append(node)
+            
+        
+           
+        for node in self.graph:      
+            neighboors=copy.deepcopy(node.children)
+            node.children=[]
+            for i in neighboors:
+                key=self.os_keys_dict_succ[i][0]
+                node.children.append(key)
+                node.parents.append(key)
 
 
+        ##If there is no open airspace cell coneccted to the extracted constarined do not use open
+        if not connected2open:
+            self.graph=[]
+            self.os_keys_dict_succ={}
+            self.os_keys_dict_pred={}
         ##Add constrained nodes to graph
-        omsnx_keys_list=list(self.G.keys())
+        
         transformer = Transformer.from_crs( 'epsg:4326','epsg:32633')
              
         
@@ -828,6 +822,7 @@ class PathPlanning:
                            self.os_keys_dict_succ[key]=dict
                         
            if ii==0:
+               ##try that : continue
                 node=Node(key,lon,lat,i+new_nodes_counter+graph_len,-1)
                 p=transformer.transform(lat,lon)
                 node.x_cartesian,node.y_cartesian =p[0],p[1]
@@ -926,10 +921,15 @@ class PathPlanning:
         
 
     ##Function handling the path planning process
-    ##Retruns: route
-    ##route is the list of waypoints (x,y,alittude)     
+    ##Retruns: route,turns,edges_list,next_turn_point,groups,in_constrained,turn_speed
+    ##route is the list of waypoints (lon,lat)
+    ##turns is the list of booleans indicating for every waypoint if it is a turn
+    ##edges_list is the list of the edges
+    ##next_turn_point is a list containing the coord of every point that is a turn point
+    ##groups is the list of the group in which each waypoint belongs to
+    ##in_constrained is the list of booleans indicating for every waypoint if it is in constarined airspace
+    ##turn_speed is teh list if speed to be used if the waypoint is a turning waypoint
     def plan(self):
-
         start_id=self.os_keys_dict_pred[self.start_index][self.start_index_previous]
         goal_id=self.os_keys_dict_succ[self.goal_index][self.goal_index_next]
         
@@ -1004,11 +1004,13 @@ class PathPlanning:
     
     ##Function to export the route based on the D* search graph
     ##Retruns: route,turns,next_node_index,turn_coord,groups
-    ##route is the list of waypoints (lat,lon,alittude)
+    ##route is the list of waypoints (lon,lat)
     ##turns is the list of booleans indicating for every waypoint if it is a turn
     ##next_node_index is the list of the next osmnx node for every waypoint
     ##turn_coord is a list containing the coord of every point that is a turn point
-    ##groups is the list of the group in which each waypoint belongs to
+    ##groups_numbers is the list of the group in which each waypoint belongs to
+    ##in_constrained is the list of booleans indicating for every waypoint if it is in constarined airspace
+    ##turn_speed is teh list if speed to be used if the waypoint is a turning waypoint
     def get_path(self,path,graph, edges,edges_old=None,change=False,change_list=[]):
 
         route_centers=[]
@@ -1052,10 +1054,6 @@ class PathPlanning:
                         path.start.rhs=float('inf')## not sure for that
 
                 update_vertex(path, c[0])
-                
-
-                #path.start.g=float('inf')## not sure for that
-                #path.start.rhs=float('inf')## not sure for that
                 
                 edges_old[c[0].key_index][c[1].key_index].speed=edges[c[0].key_index][c[1].key_index].speed
             path_found=compute_shortest_path(path,graph,edges_old)
@@ -1396,13 +1394,16 @@ class PathPlanning:
                 
                 edges_old[c[0].key_index][c[1].key_index].speed=edges[c[0].key_index][c[1].key_index].speed   
  
+    
     ##Function handling the replanning process, called when flow control is updated
-    ##Retruns: route,turns,edges_list,next_turn_point,groups
-    ##route is the list of waypoints (lat,lon,alittude)
+    ##Returns: route,turns,edges_list,next_turn_point,groups,in_constrained,turn_speed
+    ##route is the list of waypoints (lon,lat)
     ##turns is the list of booleans indicating for every waypoint if it is a turn
-    ##edges_list is the list of the edge in which is every waypoint, each edge is defined as a tuple (u,v) where u,v are the osmnx indices of the nodes defineing the edge
-    ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint     
-    ##groups is the list of the group in which each waypoint belongs to         
+    ##edges_list is the list of the edges
+    ##next_turn_point is a list containing the coord of every point that is a turn point
+    ##groups is the list of the group in which each waypoint belongs to
+    ##in_constrained is the list of booleans indicating for every waypoint if it is in constarined airspace
+    ##turn_speed is teh list if speed to be used if the waypoint is a turning waypoint        
     def replan(self,changes_list,prev_node_osmnx_id,next_node_index,lat,lon):
         route=None
         turns=None
@@ -1541,12 +1542,14 @@ class PathPlanning:
         return [],[],[],[],[],[],[]
       
     ##Function handling the replanning process, called when aircraft is spawned
-    ##Retruns: route,turns,edges_list,next_turn_point,groups
-    ##route is the list of waypoints (lat,lon,alittude)
+    ##Returns: route,turns,edges_list,next_turn_point,groups,in_constrained,turn_speed
+    ##route is the list of waypoints (lon,lat)
     ##turns is the list of booleans indicating for every waypoint if it is a turn
-    ##edges_list is the list of the edge in which is every waypoint, each edge is defined as a tuple (u,v) where u,v are the osmnx indices of the nodes defineing the edge
-    ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint     
-    ##groups is the list of the group in which each waypoint belongs to 
+    ##edges_list is the list of the edges
+    ##next_turn_point is a list containing the coord of every point that is a turn point
+    ##groups is the list of the group in which each waypoint belongs to
+    ##in_constrained is the list of booleans indicating for every waypoint if it is in constarined airspace
+    ##turn_speed is teh list if speed to be used if the waypoint is a turning waypoint  
     def replan_spawned(self,changes_list,prev_node_osmnx_id,next_node_index,lat,lon):
         route=None
         turns=None
