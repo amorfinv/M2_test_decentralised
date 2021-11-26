@@ -10,7 +10,7 @@ import osmnx as ox
 import networkx as nx
 import os 
 import json
-from pygeos.measurement import length
+#from pygeos.measurement import length
 import rtree
 from shapely.geometry import Polygon, Point
 from shapely import affinity

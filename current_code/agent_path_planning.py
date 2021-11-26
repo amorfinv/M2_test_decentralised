@@ -4,6 +4,11 @@ Created on Tue Oct 12 10:51:03 2021
 
 @author: nipat
 """
+###############################
+#This values made get_path to stack!!!!!!!!!!!!!!!!!
+#origin=[16.342228782395118,48.263495892875554]
+#destination=[16.381609676387115,48.16806791791769  ]##
+##############################
 
 import heapq
 import numpy as np
@@ -953,7 +958,7 @@ class PathPlanning:
 
             os_id2=indices_nodes[0]
             cnt=0
-            for i in range(0,len(indices_nodes)):
+            for i in range(0,len(indices_nodes)-1):
                 
                     
                 if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
@@ -967,13 +972,23 @@ class PathPlanning:
                     os_id2=indices_nodes[i]
                     if i>0 and groups[i]==-1 and groups[i-1]==-1:
                         os_id1=0
+                        
+                if i>0 and groups[i]!=-1 and groups[i-1]==-1:
+                    #print(i)
+                    os_id2=indices_nodes[i]
+                    del edges_list[-1]
+                    #continue
             for j in range(cnt):
                 edges_list.append((os_id1,os_id2))
-
+                
+            if self.goal_index_next!=0:
+                edges_list.append((self.goal_index,self.goal_index_next))
+            else:
+                edges_list.append((0,self.goal_index))
                 
             cnt=0
             for i in range(len(turns)):
-                if turns[i] and in_constrained[i]:
+                if turns[i]:# and in_constrained[i]:
                     next_turn_point.append(turn_coord[cnt])
                     cnt=cnt+1
                 else:
@@ -1079,8 +1094,16 @@ class PathPlanning:
         group_numbers.append(path.start.group)
         route_centers.append(tmp)
         turns.append(0)
+        
+        if path.start.open_airspace:
+            next_node_index.append(self.start_index)
+            tmp=(self.start_point.x,self.start_point.y)
+            group_numbers.append(path.start.group)
+            #route_centers.append(tmp)
+            turns.append(0)
 
-        if not path.start.open_airspace:     
+        if not path.start.open_airspace and (0 not in self.os_keys_dict_pred[self.start_index_previous].keys()):    
+
             linestring=edges[self.start_index_previous][self.start_index].geometry
             coords = list(linestring.coords)
             for c in range(len(coords)-1):
@@ -1106,6 +1129,7 @@ class PathPlanning:
         
         selected_nodes_index=[]
         selected_nodes_index.append(path.start.index)
+
         
         while path.start.key_index!=path.goal.key_index :
             
@@ -1146,18 +1170,32 @@ class PathPlanning:
                             turns.append(0)
 
                 if current_node.key_index!=path.goal.key_index or not current_node.open_airspace:
+
                     next_node_index.append(current_node.key_index)
                     tmp=(current_node.lon,current_node.lat) #the next node
-                    group_numbers.append(current_node.group)
                     route_centers.append(tmp)
-                    turns.append(0)  
+                    
+                    group_numbers.append(current_node.group)
+                    turns.append(0) 
+# =============================================================================
+#                     if not current_node.open_airspace and  path.start.open_airspace:
+#                         group_numbers.pop()
+#                         turns.pop()
+# =============================================================================
                     
                     if current_node.group==-1 and not in_open_airspace:
+
                         airspace_transitions.append(len(group_numbers)-1)
                         in_open_airspace=True
                     elif current_node.group!=-1 and  in_open_airspace:
+
                         airspace_transitions.append(len(group_numbers)-1)
                         in_open_airspace=False
+                        #next_node_index.append(current_node.key_index)
+                        tmp=(current_node.lon,current_node.lat) #the next node
+                        #group_numbers.append(current_node.group)
+                        route_centers.append(tmp)
+                        #turns.append(0) 
                 
    
             path.start=current_node
@@ -1194,7 +1232,8 @@ class PathPlanning:
             in_open_airspace=False
         
         delete_indices=[]
-        
+
+
         if len(airspace_transitions)==0:
             route=route_centers
         else:
@@ -1216,7 +1255,8 @@ class PathPlanning:
 
             
             
-            for j in range(len(next_node_index)-2):
+            for j in range(len(next_node_index)-1): 
+                
                 if j+1>airspace_transitions[open_i+1]:
                     if open_i+2<len(airspace_transitions):
                         open_i=open_i+2
@@ -1229,32 +1269,41 @@ class PathPlanning:
                         p2=transformer2.transform(p2[1],p2[0])
 
     
-                if  group_numbers[j+1]!=-1: 
-                    route.append(route_centers[j+1])
+                if  group_numbers[j]!=-1 and j!=0: 
+                    route.append(route_centers[j])
+
+
+
                 else:
                     if j==0 and  group_numbers[j]!=-1:
                         i=self.start_index_previous
                     elif group_numbers[j]!=-1:
-                        i=next_node_index[j]
+                        i=next_node_index[j-1]
                     else:
                         i=0
     
-                    ii=next_node_index[j+1]
+                    ii=next_node_index[j]
+
 
                     node1=self.graph[self.os_keys_dict_pred[ii][i]]
 
-                    if group_numbers[j+1]!=-1 or group_numbers[j+2]!=-1:
-                        i=next_node_index[j+1]
+                    if group_numbers[j]!=-1 or group_numbers[j+1]!=-1:
+                        i=next_node_index[j]
                     else:
                         i=0
                     
-                    ii=next_node_index[j+2]
+                    ii=next_node_index[j+1]
                     
-                    if group_numbers[j+2]!=-1:
+                    
+                    if group_numbers[j]==-1 and group_numbers[j+1]!=-1:
                         delete_indices.append(j+1)
-                        
+
+                    if group_numbers[j+1]!=-1 or next_node_index[j+1]==next_node_index[j]: ##That should be deleted
+
                         continue
-    
+                    
+
+
                     node2=self.graph[self.os_keys_dict_pred[ii][i]]
                     
                     
@@ -1266,6 +1315,7 @@ class PathPlanning:
                         ymin=max(node1.cell.p2[1],node2.cell.p1[1])
                         ymax=min(node1.cell.p3[1],node2.cell.p0[1])
                         edge=[[node1.cell.p2[0],ymin],[node1.cell.p2[0],ymax]]
+
 
 
                     pp1=find_closest_point_on_linesegment(edge,p1)
@@ -1285,15 +1335,20 @@ class PathPlanning:
               
                     tmp=(lon,lat)
                     route.append(tmp)
+
+
                     
             route.append(route_centers[len(route_centers)-1])
             
         for i in range(len(delete_indices)):
+
+            
             j=delete_indices[len(delete_indices)-1-i]
             del group_numbers[j]
             del turns[j]
-            del route_centers[j]
-            del next_node_index[j-1] #TODO : fix that
+
+            
+
             
         ##Check for turn points
         lat_prev=self.start_point.x
@@ -1305,7 +1360,8 @@ class PathPlanning:
         #speed to 5 knots for turning angles between 45 and 90 degrees
         #speed to 2 knots for turning angles larger tha 90 degrees
 
-        for i in range(len(group_numbers)-2):
+###############################Retriev taht to previous state!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        for i in range(len(group_numbers)-3):#for i in range(len(group_numbers)-2):
             lat_cur=route[i][0]
             lon_cur=route[i][1]
             lat_next=route[i+1][0]
@@ -1341,7 +1397,7 @@ class PathPlanning:
         turns[0]=0
 
         for g,i in enumerate(group_numbers):
-            if i==-1 or ( g>0 and group_numbers[g-1]==-1)or ( g<len(group_numbers)-1 and group_numbers[g+1]==-1):
+            if i==-1 :#or ( g>0 and group_numbers[g-1]==-1)or ( g<len(group_numbers)-1 and group_numbers[g+1]==-1):
                 in_constrained.append(0)
             else:
                 in_constrained.append(1)        
@@ -1398,7 +1454,7 @@ class PathPlanning:
         groups=None
         edges_list=None
         next_turn_point=None
-        
+
         self.start_point=Point(tuple((lon,lat)))
         
         edges_g=copy.deepcopy(self.edge_gdf)
@@ -1471,7 +1527,6 @@ class PathPlanning:
             self.start_index=next_node_index
             self.start_index_previous=prev_node_osmnx_id
 
-                
             ##call get path
             route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed=self.get_path(self.path,self.graph,edges_g,self.edge_gdf,True,change_list)
             self.path.origin_node_index=start_id
@@ -1483,7 +1538,7 @@ class PathPlanning:
 
                 os_id2=indices_nodes[0]
                 cnt=0
-                for i in range(0,len(indices_nodes)):
+                for i in range(0,len(indices_nodes)-1):
                     
                         
                     if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
@@ -1497,9 +1552,18 @@ class PathPlanning:
                         os_id2=indices_nodes[i]
                         if i>0 and groups[i]==-1 and groups[i-1]==-1:
                             os_id1=0
-
+                            
+                    if i>0 and groups[i]!=-1 and groups[i-1]==-1:
+                        os_id2=indices_nodes[i]
+                        del edges_list[-1]
+                        #continue
                 for j in range(cnt):
                     edges_list.append((os_id1,os_id2))
+                
+                if self.goal_index_next!=0:
+                    edges_list.append((self.goal_index,self.goal_index_next))
+                else:
+                    edges_list.append((0,self.goal_index))
 
                             
                 cnt=0
@@ -1537,11 +1601,13 @@ class PathPlanning:
     ##next_turn_point teh coordinates in (lat,lon) of the next turn waypoint     
     ##groups is the list of the group in which each waypoint belongs to 
     def replan_spawned(self,changes_list,prev_node_osmnx_id,next_node_index,lat,lon):
+
         route=None
         turns=None
         groups=None
         edges_list=None
         next_turn_point=None
+
         
         self.start_point=Point(tuple((lon,lat)))
         
@@ -1611,11 +1677,12 @@ class PathPlanning:
             start_node=self.graph[start_id] 
             self.path.start=start_node
             
+# =============================================================================
+#             self.start_index=next_node_index
+#             self.start_index_previous=prev_node_osmnx_id
+# =============================================================================
 
-            self.start_index=next_node_index
-            self.start_index_previous=prev_node_osmnx_id
 
-                
             ##call get path
             route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed=self.get_path(self.path,self.graph,edges_g,self.edge_gdf,True,change_list)
             self.path.origin_node_index=start_id
@@ -1627,7 +1694,7 @@ class PathPlanning:
 
                 os_id2=indices_nodes[0]
                 cnt=0
-                for i in range(0,len(indices_nodes)):
+                for i in range(0,len(indices_nodes)-1):
                     
                         
                     if indices_nodes[i]==-1 or indices_nodes[i]==os_id2:
@@ -1641,8 +1708,18 @@ class PathPlanning:
                         os_id2=indices_nodes[i]
                         if i>0 and groups[i]==-1 and groups[i-1]==-1:
                             os_id1=0
+                            
+                    if i>0 and groups[i]!=-1 and groups[i-1]==-1:
+                        os_id2=indices_nodes[i]
+                        del edges_list[-1]
+                        #continue
                 for j in range(cnt):
                     edges_list.append((os_id1,os_id2))
+                    
+                if self.goal_index_next!=0:
+                    edges_list.append((self.goal_index,self.goal_index_next))
+                else:
+                    edges_list.append((0,self.goal_index))
     
                             
                 cnt=0
