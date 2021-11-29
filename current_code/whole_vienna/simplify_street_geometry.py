@@ -18,7 +18,7 @@ def main():
     gis_data_path = 'gis'
 
     # Load MultiDigraph from create_graph.py
-    G = ox.load_graphml(filepath=path.join(gis_data_path, 'layer_heights.graphml'))
+    G = ox.load_graphml(filepath=path.join(gis_data_path, 'layer_heights_connected.graphml'))
 
     # convert to gdgs
     nodes, edges = ox.graph_to_gdfs(G)

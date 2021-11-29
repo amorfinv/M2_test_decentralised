@@ -48,6 +48,9 @@ def main():
     # add id to center_points
     center_points['id'] = range(len(center_points))
 
+    # convert back to 4326
+    center_points = center_points.to_crs(epsg=4326)
+
     # save to file
     center_points.to_file(path.join(gis_data_path, 'center_points.gpkg'), driver='GPKG')
 
