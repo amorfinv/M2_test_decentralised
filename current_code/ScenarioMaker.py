@@ -67,6 +67,9 @@ print('Created loitering dill')
 # 
 # print("planned")
 # =============================================================================
+fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
+
+
 
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
@@ -87,6 +90,14 @@ for flight in generated_traffic:
 
     flight_plans_dict[flight[0]]=plan
     if route!=[]:
+        x_list=[]
+        y_list=[]
+            
+        for r in route:
+            x_list.append(r[0])
+            y_list.append(r[1])
+            
+        ax.scatter(x_list,y_list, color='b')
         route = np.array(route)
         # Create dictionary
         scenario_dict[flight[0]] = dict()
