@@ -24,21 +24,21 @@ def main():
     # convert to gdgs
     nodes, edges = ox.graph_to_gdfs(G)
 
-    # run coins
-    print('Number of waypoints in original geometry:')
-    coins_obj = COINS(edges)
-    coins_obj.stroke_gdf()
-    print('------------------------------------')
+    # # run coins
+    # print('Number of waypoints in original geometry:')
+    # coins_obj = COINS(edges)
+    # coins_obj.stroke_gdf()
+    # print('------------------------------------')
 
     # simplify street linestring geometry. Select 1.5 degrees
     angle_threshold = 1.5
     edges_simplified = simplify_street_geometry(edges, 'angle', angle_threshold)
 
-    # run coins
-    print('Number of waypoints in angle simplified geometry:')
-    coins_obj = COINS(edges_simplified)
-    coins_obj.stroke_gdf()
-    print('------------------------------------')
+    # # run coins
+    # print('Number of waypoints in angle simplified geometry:')
+    # coins_obj = COINS(edges_simplified)
+    # coins_obj.stroke_gdf()
+    # print('------------------------------------')
 
     # first convert to a projected crs
     edges_simplified = edges_simplified.to_crs(epsg=32633)
@@ -50,9 +50,9 @@ def main():
     # convert back to epsg 4326
     edges_simplified = edges_simplified.to_crs(epsg=4326)
    
-    print('Number of waypoints in distance simplified geometry:')
-    coins_obj = COINS(edges_simplified)
-    coins_obj.stroke_gdf()
+    # print('Number of waypoints in distance simplified geometry:')
+    # coins_obj = COINS(edges_simplified)
+    # coins_obj.stroke_gdf()
 
     # convert back to graph and save
     G = ox.graph_from_gdfs(nodes, edges_simplified)

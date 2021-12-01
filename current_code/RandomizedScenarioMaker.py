@@ -72,7 +72,7 @@ bst = BlueskySCNTools.BlueskySCNTools()
 # Step 1: Import the graph we will be using
 dir_path = os.path.dirname(os.path.realpath(__file__))
 graph_path = dir_path.replace('current_code', 
-          'current_code/whole_vienna/gis/layer_heights_simplified.graphml')
+          'current_code/whole_vienna/gis/layer_heights_simplified_2.graphml')
 G = ox.io.load_graphml(graph_path)
 
 edges = ox.graph_to_gdfs(G)[1]
