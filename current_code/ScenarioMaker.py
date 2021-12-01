@@ -37,6 +37,7 @@ print('Graph loaded!')
 
 #Load the open airspace grid
 input_file=open("open_airspace_grid.dill", 'rb')
+#input_file=open("open_airspace_grid_updated.dill", 'rb')##for 3d path planning
 grid=dill.load(input_file)
 
 ##Initialise the flow control entity
