@@ -430,6 +430,7 @@ def compute_shortest_path(path,graph,edges):
         k_old=top_key(path.queue)
         current_node=path.queue[0][3]#get the node with the highest priority
         current_node.expanded=True
+
         
         k_new=calculateKey(current_node, path.start, path)
         
@@ -829,6 +830,7 @@ class PathPlanning:
 
                 self.os_keys_dict_succ[key]=i+new_nodes_counter+graph_len
                 self.os_keys_dict_pred[key]=i+new_nodes_counter+graph_len
+
                 #print("No succ or pred: "+str(key))
 
                         
@@ -936,7 +938,11 @@ class PathPlanning:
         x_goal=goal_node.lon
         y_goal=goal_node.lat
          
-        
+        #print(self.start_index,self.start_index_previous)
+        #print(self.goal_index,self.goal_index_next)
+        #print(start_id)
+        #print(goal_id)
+       
         
         self.path=Path(start_node,goal_node,self.speed_max)
         
@@ -1130,6 +1136,7 @@ class PathPlanning:
         selected_nodes_index=[]
         selected_nodes_index.append(path.start.index)
 
+        #print(path.start.g)
         
         while path.start.key_index!=path.goal.key_index :
             
@@ -1147,6 +1154,8 @@ class PathPlanning:
                     
                     
             if current_node.index in selected_nodes_index:
+                print(selected_nodes_index)
+                print(current_node.index)
                 print("get_path stack !! Please report this!")
                 break
                 

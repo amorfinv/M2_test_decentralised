@@ -248,11 +248,13 @@ def get_nearest_edge(gdf, point):
 
     edges_with_distances = sorted(edges_with_distances, key=lambda x: x[1])
     closest_edge_to_point = edges_with_distances[0][0]
+    print("distance",edges_with_distances[0][1])
 
     geometry, u, v = closest_edge_to_point
+    distance=edges_with_distances[0][1]
 
 
-    return geometry, u, v
+    return geometry, u, v,distance
 
 
 class CellNode:
@@ -631,38 +633,51 @@ class PathPlanning:
 
 
         if self.start_in_open:
-            transformer = Transformer.from_crs('epsg:4326','epsg:32633')
-            p=transformer.transform(lat_start,lon_start)
-            min_x_ind=sort_cells_x(self.open_airspace_cells)
-            winner=check_where(p,min_x_ind,self.open_airspace_cells)
-            if winner==-1:
-                self.start_in_open=False
-                point=(lat_start,lon_start)
-                geometry, u, v=get_nearest_edge(self.gdf, point)
+            point=(lat_start,lon_start)
+            geometry, u, v,distance=get_nearest_edge(self.gdf, point)
+            if distance<0.00001:
                 self.start_index=v
                 self.start_index_previous=u
             else:
-                open_start=winner[1]
-                self.start_index=self.open_airspace_grid.grid[open_start].key_index
-                self.start_index_previous=0
+                
+                transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+                p=transformer.transform(lat_start,lon_start)
+                min_x_ind=sort_cells_x(self.open_airspace_cells)
+                winner=check_where(p,min_x_ind,self.open_airspace_cells)
+                if winner==-1:
+                    self.start_in_open=False
+                    #point=(lat_start,lon_start)
+                    #geometry, u, v,distance=get_nearest_edge(self.gdf, point)
+                    self.start_index=v
+                    self.start_index_previous=u
+                else:
+                    open_start=winner[1]
+                    self.start_index=self.open_airspace_grid.grid[open_start].key_index
+                    self.start_index_previous=0
 
 
         
         if self.dest_in_open:
-            transformer = Transformer.from_crs('epsg:4326','epsg:32633')
-            p=transformer.transform(lat_dest,lon_dest)
-            min_x_ind=sort_cells_x(self.open_airspace_cells)
-            winner=check_where(p,min_x_ind,self.open_airspace_cells)
-            if winner==-1:
-                self.dest_in_open=False
-                point=(lat_dest,lon_dest)
-                geometry, u, v=get_nearest_edge(self.gdf, point)
+            point=(lat_dest,lon_dest)
+            geometry, u, v,distance=get_nearest_edge(self.gdf, point)
+            if distance<0.00001:
                 self.goal_index=u
                 self.goal_index_next=v
             else:
-                open_goal=winner[1]
-                self.goal_index=self.open_airspace_grid.grid[open_goal].key_index
-                self.goal_index_next=0
+                transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+                p=transformer.transform(lat_dest,lon_dest)
+                min_x_ind=sort_cells_x(self.open_airspace_cells)
+                winner=check_where(p,min_x_ind,self.open_airspace_cells)
+                if winner==-1:
+                    self.dest_in_open=False
+                    #point=(lat_dest,lon_dest)
+                    #geometry, u, v,distance=get_nearest_edge(self.gdf, point)
+                    self.goal_index=u
+                    self.goal_index_next=v
+                else:
+                    open_goal=winner[1]
+                    self.goal_index=self.open_airspace_grid.grid[open_goal].key_index
+                    self.goal_index_next=0
 
         del self.open_airspace_cells
         
