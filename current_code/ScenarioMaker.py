@@ -76,6 +76,7 @@ scenario_dict = dict()
 flight_plans_dict={}
 for flight in generated_traffic:
     # First get the route and turns
+    print(flight[0])
     origin = flight[3]
     destination = flight[4]
 
@@ -87,6 +88,8 @@ for flight in generated_traffic:
     else:
         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1])
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
+    if len(route)!=len(edges):
+        print("unequal lens",len(route),len(edges))
 
     flight_plans_dict[flight[0]]=plan
     if route!=[]:
