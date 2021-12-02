@@ -142,9 +142,9 @@ class BlueskySCNTools():
         qdr = self.qdrdist(lats[0], lons[0], lats[1], lons[1], 'qdr')
 
         if geocoords:
-            cre_text = f'CREM2 {drone_id},{aircraft_type},{lats[0]},{lons[0]},{qdr},{alts},{start_speed},{priority},{geoduration},{geocoords}\n'
+            cre_text = f'QUEUEM2 {drone_id},{aircraft_type},{lats[0]},{lons[0]},{qdr},{alts},{start_speed},{priority},{geoduration},{geocoords}\n'
         else:
-            cre_text = f'CREM2 {drone_id},{aircraft_type},{lats[0]},{lons[0]},{qdr},{alts},{start_speed},{priority},{geoduration},\n'
+            cre_text = f'QUEUEM2 {drone_id},{aircraft_type},{lats[0]},{lons[0]},{qdr},{alts},{start_speed},{priority},{geoduration},\n'
         lines.append(start_time_txt + cre_text)
         
         # # Then we need to for loop through all the lats
