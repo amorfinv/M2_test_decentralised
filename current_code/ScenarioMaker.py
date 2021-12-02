@@ -13,15 +13,6 @@ import os
 import dill
 import json
 
-
-# read line by line of file
-flight_intention_list  = []
-with open('flight_intention.csv') as file:
-    for line in file:
-        line = line.strip()
-        line = line.split(',')
-        flight_intention_list.append(line)
-
 # Initialize stuff
 bst = BlueskySCNTools.BlueskySCNTools()
 
@@ -43,8 +34,16 @@ grid=dill.load(input_file)
 ##Initialise the flow control entity
 graph=street_graph(G,edges) 
 
+# read line by line of file
+flight_intention_list  = []
+with open('flight_intention.csv') as file:
+    for line in file:
+        line = line.strip()
+        line = line.split(',')
+        flight_intention_list.append(line)
+
 # path planning file TODO: match scenario name
-path_plan_filename = 'Path_Planning'
+path_plan_filename = 'Path_Planning_One'
 
 # Step 2: Generate traffic from the flight intention file
 generated_traffic, loitering_edges_dict = bst.Intention2Traf(flight_intention_list, edges.copy())
@@ -139,7 +138,7 @@ for flight in generated_traffic:
 print('All paths created!')
     
 # Step 4: Create scenario file from dictionary
-bst.Dict2Scn(r'Test_Scenario.scn', 
+bst.Dict2Scn(r'Test_Scenario_One.scn', 
               scenario_dict, path_plan_filename)
 
 print('Scenario file created!')

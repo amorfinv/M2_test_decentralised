@@ -1245,11 +1245,10 @@ class PathPlanning:
             turns.append(0)  
 
         if in_open_airspace:
-            airspace_transitions.append(len(group_numbers)-1)
+            airspace_transitions.append(len(route_centers)-1)
             in_open_airspace=False
         
         delete_indices=[]
-
 
         if len(airspace_transitions)==0:
             route=route_centers
