@@ -691,9 +691,10 @@ class PathPlanning:
             self.G=copy.deepcopy(G)
             self.edge_gdf=copy.deepcopy(edges)
         else:
-            exp_const=0.02##0.005 
+            exp_const=0.03##0.005 
             box=bbox(min(self.start_point.y,self.goal_point.y)-exp_const,min(self.start_point.x,self.goal_point.x)-exp_const,max(self.start_point.y,self.goal_point.y)+exp_const,max(self.start_point.x,self.goal_point.x)+exp_const) 
-    
+           #box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
+          
             G,edges=self.flow_control_graph.extract_subgraph(box)
             self.G=copy.deepcopy(G)
             self.edge_gdf=copy.deepcopy(edges)
@@ -860,8 +861,8 @@ class PathPlanning:
                 node.x_cartesian,node.y_cartesian =p[0],p[1]
                 self.graph.append(node)
 
-                self.os_keys_dict_succ[key]=i+new_nodes_counter+graph_len
-                self.os_keys_dict_pred[key]=i+new_nodes_counter+graph_len
+                #self.os_keys_dict_succ[key]=i+new_nodes_counter+graph_len
+                #self.os_keys_dict_pred[key]=i+new_nodes_counter+graph_len
 
                 #print("No succ or pred: "+str(key))
 
@@ -978,6 +979,7 @@ class PathPlanning:
             return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
 
         start_id=self.os_keys_dict_pred[self.start_index][self.start_index_previous]
+        print(self.goal_index,self.goal_index_next)
         goal_id=self.os_keys_dict_succ[self.goal_index][self.goal_index_next]
         
         start_node=self.graph[start_id] 
