@@ -684,14 +684,15 @@ class PathPlanning:
         #find the area of interest based on teh start and goal point
         ##TODO: tune the exp_const
         if not self.start_in_open and not self.dest_in_open:
-            exp_const=0.02##0.005 
+            exp_const=0.002##0.005 
             box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
             
             G,edges=self.flow_control_graph.extract_subgraph(box)
             self.G=copy.deepcopy(G)
             self.edge_gdf=copy.deepcopy(edges)
         else:
-            exp_const=0.03##0.005 
+            print('asdfsgd')
+            exp_const=0.003##0.005 
             box=bbox(min(self.start_point.y,self.goal_point.y)-exp_const,min(self.start_point.x,self.goal_point.x)-exp_const,max(self.start_point.y,self.goal_point.y)+exp_const,max(self.start_point.x,self.goal_point.x)+exp_const) 
            #box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
           

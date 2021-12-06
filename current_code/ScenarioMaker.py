@@ -12,6 +12,7 @@ from plugins.streets.open_airspace_grid import Cell, open_airspace
 import os
 import dill
 import json
+import sys
 
 # Initialize stuff
 bst = BlueskySCNTools.BlueskySCNTools()
@@ -36,14 +37,14 @@ graph=street_graph(G,edges)
 
 # read line by line of file
 flight_intention_list  = []
-with open('flight_intention.csv') as file:
+with open('flight_intention_big.csv') as file:
     for line in file:
         line = line.strip()
         line = line.split(',')
         flight_intention_list.append(line)
 
 # path planning file TODO: match scenario name
-path_plan_filename = 'Path_Planning_One'
+path_plan_filename = 'Path_Planning_Big'
 
 # Step 2: Generate traffic from the flight intention file
 generated_traffic, loitering_edges_dict = bst.Intention2Traf(flight_intention_list, edges.copy())
@@ -67,7 +68,7 @@ print('Created loitering dill')
 # 
 # print("planned")
 # =============================================================================
-fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
+# fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
 
 
 
@@ -92,6 +93,35 @@ for flight in generated_traffic:
         print("unequal lens",len(route),len(edges))
 
     flight_plans_dict[flight[0]]=plan
+    print(sys.getsizeof(plan.graph))
+    print(sys.getsizeof(plan.aircraft_type))
+    print(sys.getsizeof(plan.start_index_previous))
+    print(sys.getsizeof(plan.start_index))
+    print(sys.getsizeof(plan.start_in_open))
+    print(sys.getsizeof(plan.goal_index))
+    print(sys.getsizeof(plan.goal_index_next))
+    print(sys.getsizeof(plan.dest_in_open))
+    print(sys.getsizeof(plan.edge_gdf))
+    print(sys.getsizeof(plan.path))
+    print(sys.getsizeof(plan.os_keys_dict_succ))
+    print(sys.getsizeof(plan.os_keys_dict_pred))
+    print(sys.getsizeof(plan.route))
+    print(sys.getsizeof(plan.turns))
+    print(sys.getsizeof(plan.priority))
+    print(sys.getsizeof(plan.loitering))
+    print(sys.getsizeof(plan.in_same_cell))
+    print(sys.getsizeof(plan.init_succesful))
+    print(sys.getsizeof(plan.start_point))
+    print(sys.getsizeof(plan.goal_point))
+    print(sys.getsizeof(plan.route))
+    print(sys.getsizeof(plan.turns))
+    print(sys.getsizeof(plan.edges_list))
+    print(sys.getsizeof(plan.next_turn_point))
+    print(sys.getsizeof(plan.groups))
+    print(sys.getsizeof(plan.in_constrained))
+    print(sys.getsizeof(plan.turn_speed))
+    print(ccccccccc)
+    
     if route!=[]:
         x_list=[]
         y_list=[]
@@ -100,7 +130,7 @@ for flight in generated_traffic:
             x_list.append(r[0])
             y_list.append(r[1])
             
-        ax.scatter(x_list,y_list, color='b')
+        # ax.scatter(x_list,y_list, color='b')
         route = np.array(route)
         # Create dictionary
         scenario_dict[flight[0]] = dict()
@@ -141,7 +171,7 @@ for flight in generated_traffic:
 print('All paths created!')
     
 # Step 4: Create scenario file from dictionary
-bst.Dict2Scn(r'Test_Scenario_One.scn', 
+bst.Dict2Scn(r'Test_Scenario_Big.scn', 
               scenario_dict, path_plan_filename)
 
 print('Scenario file created!')
