@@ -6,11 +6,12 @@ from airspace_design.entry_exit import entry_nodes, exit_nodes
 import dill
 from pyproj import Transformer,Proj, transform
 
+# TODO: still need to correctly name the edge ids
 
 def main():
 
     # read in data
-    graph_path = 'whole_vienna/gis/layer_heights.graphml'
+    graph_path = 'whole_vienna/gis/renamed_graph.graphml'
     G = ox.io.load_graphml(graph_path)
 
     # read in airspace grid dill from parent directory

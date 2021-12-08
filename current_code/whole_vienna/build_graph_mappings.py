@@ -48,8 +48,8 @@ def main():
             if idx < len_successors:
                 edge_succesors_array[node, idx] = successors[idx]
             else:
-                # choose 5000 because there are less than 5000 nodes in the graph
-                edge_succesors_array[node, idx] = 5000
+                # choose 5000 because there are less than 10000 nodes or edges in the graph
+                edge_succesors_array[node, idx] = 10000
 
     # get the edge_id to uv mapping
     edge_to_uv_array = np.array([(index[0], index[1])for index in edges.index.values], dtype='uint16,uint16')
