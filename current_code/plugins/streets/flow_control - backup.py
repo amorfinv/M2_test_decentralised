@@ -299,10 +299,6 @@ class street_graph:
     def __init__(self,G,edges_gdf,open_airspace_grid):
         self.nodes_graph={}
         self.edges_graph={}
-        self.edges_current_speed={}
-        self.edges_previous_speed={}
-        self.edges_init_speed={}
-    
         self.modified={} # TODO : that should probably be deleted
         self.high_traffic_groups=[]
         self.medium_traffic_groups=[]
@@ -419,19 +415,6 @@ class street_graph:
                     tt[key]=0
                     self.modified[p]=tt
             self.nodes_graph[key]=node
-            
-        for k in self.edges_graph.keys():
-            for i,kk in enumerate(self.edges_graph[k].keys()):
-                if i==0:
-                    tt={}
-                    tt[kk]=self.edges_graph[k][kk].max_speed
-                    self.edges_current_speed[k]=tt
-                    self.edges_previous_speed[k]=tt
-                    self.edges_init_speed[k]=tt
-                else:
-                    self.edges_current_speed[k][kk]=self.edges_graph[k][kk].max_speed
-                    self.edges_previous_speed[k][kk]=self.edges_graph[k][kk].max_speed
-                    self.edges_init_speed[k][kk]=self.edges_graph[k][kk].max_speed
         
 
     ##Get the nearest node of a point (x,y) 

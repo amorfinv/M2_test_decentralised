@@ -96,7 +96,7 @@ for flight in generated_traffic:
     else:
         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1])
     print(asizeof.asizeof(plan.graph))
-    print(asizeof.asizeof(plan.edge_gdf))
+    #print(asizeof.asizeof(plan.edge_gdf))
     print(asizeof.asizeof(plan.turns))
     #print(asizeof.asizeof(plan.os_keys_dict_pred))
     print(asizeof.asizeof(plan.os_keys2_indices))
@@ -109,7 +109,7 @@ for flight in generated_traffic:
         print("unequal lens",len(route),len(edges))
 
     print(asizeof.asizeof(plan.graph))
-    print(asizeof.asizeof(plan.edge_gdf))
+    #print(asizeof.asizeof(plan.edge_gdf))
     print(asizeof.asizeof(plan.turns))
     #print(asizeof.asizeof(plan.os_keys_dict_pred))
     print(asizeof.asizeof(plan.os_keys2_indices))

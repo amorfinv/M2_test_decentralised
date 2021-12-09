@@ -366,11 +366,11 @@ def compute_c(current,neigh,edges_speed,flow_graph,speed,graph):
         else:
             #check if the group is changing (the drone needs to turn)
             if graph.groups_list[current]==graph.groups_list[neigh]:
-                if edges_speed[str(graph.key_indices_list[current])+'-'+str(graph.key_indices_list[neigh])]==0:
+                if edges_speed[graph.key_indices_list[current]][graph.key_indices_list[neigh]]==0:
                     g=float('inf')
     
                 else:
-                    g=flow_graph.edges_graph[graph.key_indices_list[current]][graph.key_indices_list[neigh]].length/min(edges_speed[str(graph.key_indices_list[current])+'-'+str(graph.key_indices_list[neigh])],speed)
+                    g=flow_graph.edges_graph[graph.key_indices_list[current]][graph.key_indices_list[neigh]].length/min(edges_speed[graph.key_indices_list[current]][graph.key_indices_list[neigh]],speed)
     return g    
 
 ##Return the top key of the queue 
@@ -1018,6 +1018,7 @@ class PathPlanning:
         
         del self.open_airspace_grid
         del self.G
+        del self.edge_gdf
         self.graph=SearchGraph(key_indices_list,groups_list,parents_list,children_list,g_list,rhs_list,key_list,inQueue_list,expanded_list)
         self.os_keys2_indices = np.ones([len(os_keys2_indices),len(max(os_keys2_indices,key = lambda x: len(x)))],dtype=np.uint64)*65535# TODO :that should be uint 32 or unit 16 with the new osmids from andres
         for i,j in enumerate(os_keys2_indices):
@@ -1104,7 +1105,7 @@ class PathPlanning:
         
         initialise(self.path,self.flow_graph)
         
-        path_found=compute_shortest_path(self.path,self.graph,self.edge_gdf,self.flow_graph)
+        path_found=compute_shortest_path(self.path,self.graph,self.flow_graph.edges_init_speed,self.flow_graph)
         print(path_found)
         
         route=[]
@@ -1114,7 +1115,7 @@ class PathPlanning:
         indices_nodes=[]
         #turn_indices=[]
         if path_found:
-            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed,init_groups=self.get_path(self.path,self.graph,self.edge_gdf,self.flow_graph.edges_graph)
+            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed,init_groups=self.get_path(self.path,self.graph,self.flow_graph.edges_init_speed,self.flow_graph.edges_graph)
 
             
             os_id1=self.start_index_previous
@@ -1561,7 +1562,7 @@ class PathPlanning:
 
         return route,turns,next_node_index,turn_coords,group_numbers,in_constrained,turn_speed,init_groups
  
-    def update_changed_vertices(self,path,graph,edges_speed,edges,edges_old=None,change=False,change_list=[]):
+    def update_changed_vertices(self,path,graph,edges_speed,edges,edges_old,change=True,change_list=[]):
         
         if change: #Scan for changes
         ##replan
@@ -1627,7 +1628,7 @@ class PathPlanning:
 
         self.start_point=Point(tuple((lon,lat)))
         
-        edges_g=copy.deepcopy(self.edge_gdf)
+
         ## check for changes in the aircrafts subgraph if any
         cnt=0
         expanded=False
@@ -1657,27 +1658,6 @@ class PathPlanning:
             
             
             expanded=False
-# =============================================================================
-#             key=str(k)+'-'+str(kk)
-#             if key in self.edge_gdf.keys():
-#                 edges_g[key].speed=change[2]
-#                 cnt=cnt+1
-#                 tmp=[]
-#                 ind_list=self.graph.parents_list[self.os_keys_dict_pred[str(kk)+'-'+str(k)]]
-#                 for p in ind_list:
-#                     if self.graph.key_indices_list[p]==k:
-#                         ind=p
-#                         break
-#                 if self.graph.expanded_list[ind]:
-#                     expanded=True
-#                 tmp.append(ind)
-#                 ind=self.os_keys_dict_pred[str(kk)+'-'+str(k)]
-#                 if self.graph.expanded_list[ind]:
-#                     expanded=True
-#                 tmp.append(ind)
-#                 if expanded:
-#                     change_list.append(tmp)
-# =============================================================================
 
         for i in self.os_keys2_indices:
             key=i[0]
@@ -1709,15 +1689,15 @@ class PathPlanning:
 
               
         if prev_node_osmnx_id!=0 and replan_bool:
-            if (str(prev_node_osmnx_id)+'-'+str(next_node_index)) in self.edge_gdf.keys():
 
                 # Do not replan in high traffic if you have low priority, should the same happen when in loitering mission?
-                if (self.edge_gdf[str(prev_node_osmnx_id)+'-'+str(next_node_index)]<1 and self.edge_gdf[str(prev_node_osmnx_id)+'-'+str(next_node_index)]!=0 and self.priority==3):# or self.edge_gdf[prev_node_osmnx_id][next_node_index].speed==0:
-                    replan_bool=False
+                #TODO check if teh second condition is not needed
+            if (self.flow_graph.edges_current_speed[str(prev_node_osmnx_id)+'-'+str(next_node_index)]<1 and self.flow_graph.edges_current_speed[str(prev_node_osmnx_id)+'-'+str(next_node_index)]!=0 and self.priority==3):# or self.edge_gdf[prev_node_osmnx_id][next_node_index].speed==0:
+                replan_bool=False
             
         if not replan_bool and change_list!=[]:
-            self.update_changed_vertices(self.path,self.graph,edges_g,self.edge_gdf,True,change_list)
-            self.edge_gdf=copy.deepcopy(edges_g)
+            self.update_changed_vertices(self.path,self.graph,self.flow_graph.edges_current_speed,self.flow_graph.edges_graph,self.flow_graph.edges_previous_speed,True,change_list)
+
             
         if cnt>0 and change_list!=[] and replan_bool:
             
@@ -1756,7 +1736,7 @@ class PathPlanning:
             self.start_index_previous=prev_node_osmnx_id
 
             ##call get path
-            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed,init_groups=self.get_path(self.path,self.graph,edges_g,self.flow_graph.edges_graph,self.edge_gdf,True,change_list)
+            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed,init_groups=self.get_path(self.path,self.graph,self.flow_graph.edges_current_speed,self.flow_graph.edges_graph,self.flow_graph.edges_previous_speed,True,change_list)
             self.path.origin_node_index=start_id
              
             if route != None :
@@ -1800,8 +1780,7 @@ class PathPlanning:
                         next_turn_point.append(turn_coord[cnt])
                                 
                 del indices_nodes[0]
-                        
-                self.edge_gdf=copy.deepcopy(edges_g)
+
                             
                 self.route=np.array(route,dtype=np.float64)
                 self.turns=np.array(turns,dtype=np.uint8) 
@@ -1811,9 +1790,6 @@ class PathPlanning:
                 self.in_constrained=np.array(in_constrained,dtype=np.uint8)
                 self.turn_speed=np.array(turn_speed,dtype=np.float64)
                 return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
-            
-        elif cnt>0:
-            self.edge_gdf=copy.deepcopy(edges_g)
             
 
         return [],[],[],[],[],[],[]
@@ -1848,7 +1824,7 @@ class PathPlanning:
         
         self.start_point=Point(tuple((lon,lat)))
         
-        edges_g=copy.deepcopy(self.edge_gdf)
+
         ## check for changes in the aircrafts subgraph if any
         cnt=0
         expanded=False
@@ -1875,28 +1851,7 @@ class PathPlanning:
                 if (k,kk) in self.loitering_edges:
                     continue
             
-            expanded=False
-# =============================================================================
-#             key=str(k)+'-'+str(kk)
-#             if key in self.edge_gdf.keys():
-#                 edges_g[key].speed=change[2]
-#                 cnt=cnt+1
-#                 tmp=[]
-#                 ind_list=self.parents_list[self.os_keys_dict_pred[str(kk)+'-'+str(k)]]
-#                 for p in ind_list:
-#                     if self.graph[p].key_index==k:
-#                         ind=p
-#                         break
-#                 if self.graph.expanded_list[ind]:
-#                     expanded=True
-#                 tmp.append(ind)
-#                 ind=self.os_keys_dict_pred[str(kk)+'-'+str(k)]
-#                 if self.graph.expanded_list[ind]:
-#                     expanded=True
-#                 tmp.append(ind)
-#                 if expanded:
-#                     change_list.append(tmp)
-# =============================================================================
+        expanded=False
         for i in self.os_keys2_indices:
             key=i[0]
             while key in k_list:
@@ -1926,16 +1881,14 @@ class PathPlanning:
 
                 
         if prev_node_osmnx_id!=0 and replan_bool:
-            if (str(prev_node_osmnx_id)+'-'+str(next_node_index)) in self.edge_gdf.keys():
 
                    # Do not replan in high traffic if you have low priority, should the same happen when in loitering mission?
-                if (self.edge_gdf[str(prev_node_osmnx_id)+'-'+str(next_node_index)]<1 and self.edge_gdf[str(prev_node_osmnx_id)+'-'+str(next_node_index)]!=0 and self.priority==3):# or self.edge_gdf[prev_node_osmnx_id][next_node_index].speed==0:
-                    replan_bool=False
+            if (self.flow_graph.edges_current_speed[str(prev_node_osmnx_id)+'-'+str(next_node_index)]<1 and self.flow_graph.edges_current_speed[str(prev_node_osmnx_id)+'-'+str(next_node_index)]!=0 and self.priority==3):# or self.edge_gdf[prev_node_osmnx_id][next_node_index].speed==0:
+                replan_bool=False
 
             
         if not replan_bool and change_list!=[]:
-            self.update_changed_vertices(self.path,self.graph,edges_g,self.edge_gdf,True,change_list)
-            self.edge_gdf=copy.deepcopy(edges_g)
+            self.update_changed_vertices(self.path,self.graph,self.flow_graph.edges_current_speed,self.flow_graph.edges_graph,self.flow_graph.edges_init_speed,True,change_list)
             
         if cnt>0 and change_list!=[] and replan_bool:
             
@@ -1976,7 +1929,7 @@ class PathPlanning:
 
 
             ##call get path
-            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed,init_groups=self.get_path(self.path,self.graph,edges_g,self.flow_graph.edges_graph,self.edge_gdf,True,change_list)
+            route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed,init_groups=self.get_path(self.path,self.graph,self.flow_graph.edges_current_speed,self.flow_graph.edges_graph,self.flow_graph.edges_init_speed,True,change_list)
             self.path.origin_node_index=start_id
              
             if route != None :
@@ -2020,7 +1973,6 @@ class PathPlanning:
                                 
                 del indices_nodes[0]
                         
-                self.edge_gdf=copy.deepcopy(edges_g)
                             
                 self.route=np.array(route,dtype=np.float64)
                 self.turns=np.array(turns,dtype=np.uint8) 
@@ -2031,8 +1983,6 @@ class PathPlanning:
                 self.turn_speed=np.array(turn_speed,dtype=np.float64)
                 return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
             
-        elif cnt>0:
-            self.edge_gdf=copy.deepcopy(edges_g)
             
 
         return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
