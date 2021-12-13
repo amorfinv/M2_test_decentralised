@@ -594,11 +594,11 @@ def computeAngle(point1, point2):
 
 class SearchGraph:
     def __init__(self,key_indices_list,groups_list,parents_list,children_list,g_list,rhs_list,key_list,inQueue_list,expanded_list):
-        self.key_indices_list=np.array(key_indices_list,dtype=np.uint64) # TODO :that should be uint 32 or unit 16 with the new osmids from andres
+        self.key_indices_list=np.array(key_indices_list,dtype=np.uint16)
         self.groups_list=np.array(groups_list,dtype=np.uint16)
 
-        self.g_list=np.array(g_list,dtype=np.float64)
-        self.rhs_list=np.array(rhs_list,dtype=np.float64)
+        self.g_list=np.array(g_list,dtype=np.float16) ##TODO: Make sure that uint16 here does not create problems
+        self.rhs_list=np.array(rhs_list,dtype=np.float16)
         self.key_list=np.array(key_list,dtype=np.float64)
         self.inQueue_list=np.array(inQueue_list,dtype=np.bool8)
         self.expanded_list=np.array(expanded_list,dtype=np.bool8)
@@ -611,8 +611,7 @@ class SearchGraph:
         self.children_list = np.ones([len(children_list),len(max(children_list,key = lambda x: len(x)))],dtype=np.uint16)*65535
         for i,j in enumerate(children_list):
             self.children_list[i][0:len(j)] =j
-        #self.parents_list=np.array(parents_list,dtype=np.uint64)
-        #self.children_list=np.array(children_list,dtype=np.uint64)
+
         
 class PathPlanning:
     
@@ -631,7 +630,7 @@ class PathPlanning:
         self.G = None
         self.edge_gdf={} # TODO do that is a smarter way
         self.path=None
-        #self.os_keys_dict_pred={} # do that numpy uint16
+
         
         self.route=[]
         self.turns=[]
@@ -1020,7 +1019,7 @@ class PathPlanning:
         del self.G
         del self.edge_gdf
         self.graph=SearchGraph(key_indices_list,groups_list,parents_list,children_list,g_list,rhs_list,key_list,inQueue_list,expanded_list)
-        self.os_keys2_indices = np.ones([len(os_keys2_indices),len(max(os_keys2_indices,key = lambda x: len(x)))],dtype=np.uint64)*65535# TODO :that should be uint 32 or unit 16 with the new osmids from andres
+        self.os_keys2_indices = np.ones([len(os_keys2_indices),len(max(os_keys2_indices,key = lambda x: len(x)))],dtype=np.uint16)*65535
         for i,j in enumerate(os_keys2_indices):
             self.os_keys2_indices[i][0:len(j)] =j
   

@@ -21,17 +21,20 @@ bst = BlueskySCNTools.BlueskySCNTools()
 # Step 1: Import the graph we will be using
 dir_path = os.path.dirname(os.path.realpath(__file__))
 graph_path = dir_path.replace('current_code', 
-          'current_code/whole_vienna/gis/layer_heights_simplified.graphml')
+          'current_code/whole_vienna/gis/renamed_graph.graphml')
 G = ox.io.load_graphml(graph_path)
 #G = ox.io.load_graphml('processed_graph.graphml')
 edges = ox.graph_to_gdfs(G)[1]
 gdf=ox.graph_to_gdfs(G, nodes=False, fill_edge_geometry=True)
 print('Graph loaded!')
 
+
+
 #Load the open airspace grid
-input_file=open("open_airspace_grid.dill", 'rb')
+input_file=open("renamed_open_airspace_grid.dill", 'rb')
 #input_file=open("open_airspace_grid_updated.dill", 'rb')##for 3d path planning
 grid=dill.load(input_file)
+
 
 ##Initialise the flow control entity
 graph=street_graph(G,edges,grid) 
@@ -228,10 +231,19 @@ list2dill=[]
 list2dill.append(flight_plans_dict)
 list2dill.append(graph)
 
+
+del flight_plans_dict['D1'].flow_graph
 ##Dill the flight_plans_dict
 output_file=open(f"{path_plan_filename}.dill", 'wb')
-dill.dump(list2dill,output_file)
+dill.dump(flight_plans_dict['D1'],output_file)
 output_file.close()
+
+# =============================================================================
+# ##Dill the flight_plans_dict
+# output_file=open(f"{path_plan_filename}.dill", 'wb')
+# dill.dump(list2dill,output_file)
+# output_file.close()
+# =============================================================================
 
 #output_file=open("G-multigraph.dill", 'wb')
 #dill.dump(G,output_file)
