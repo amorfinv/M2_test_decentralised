@@ -597,8 +597,8 @@ class SearchGraph:
         self.key_indices_list=np.array(key_indices_list,dtype=np.uint16)
         self.groups_list=np.array(groups_list,dtype=np.uint16)
 
-        self.g_list=np.array(g_list,dtype=np.float16) ##TODO: Make sure that uint16 here does not create problems
-        self.rhs_list=np.array(rhs_list,dtype=np.float16)
+        self.g_list=np.array(g_list,dtype=np.float32) ##TODO: Make sure that uint16 here does not create problems
+        self.rhs_list=np.array(rhs_list,dtype=np.float32)
         self.key_list=np.array(key_list,dtype=np.float64)
         self.inQueue_list=np.array(inQueue_list,dtype=np.bool8)
         self.expanded_list=np.array(expanded_list,dtype=np.bool8)
@@ -665,6 +665,7 @@ class PathPlanning:
             if distance<0.00001:
                 self.start_index=v
                 self.start_index_previous=u
+                self.start_in_open=False
             else:
                 
                 transformer = Transformer.from_crs('epsg:4326','epsg:32633')
@@ -690,6 +691,7 @@ class PathPlanning:
             if distance<0.00001:
                 self.goal_index=u
                 self.goal_index_next=v
+                self.dest_in_open=False
             else:
                 transformer = Transformer.from_crs('epsg:4326','epsg:32633')
                 p=transformer.transform(lat_dest,lon_dest)
@@ -724,8 +726,8 @@ class PathPlanning:
         #find the area of interest based on teh start and goal point
         ##TODO: tune the exp_const
         if not self.start_in_open and not self.dest_in_open:
-            exp_const=0.005#0.02##0.005 
-            lats=[lat_start,lat_dest,self.flow_graph.nodes_graph[self.start_index].lat,self.flow_graph.nodes_graph[self.goal_index].lat]
+            exp_const=0.01#0.005#0.02##0.005 
+            lats=[lat_start,lat_dest,self.flow_graph.nodes_graph[self.start_index].lat,self.flow_graph.nodes_graph[self.start_index_previous].lat,self.flow_graph.nodes_graph[self.goal_index].lat,self.flow_graph.nodes_graph[self.goal_index_next].lat]
             lons=[lon_start,lon_dest,self.flow_graph.nodes_graph[self.start_index].lon,self.flow_graph.nodes_graph[self.goal_index].lon]
             box=bbox(min(lats)-exp_const,min(lons)-exp_const,max(lats)+exp_const,max(lons)+exp_const) 
             
@@ -738,13 +740,42 @@ class PathPlanning:
 
         else:
             print('open')
-            exp_const=0.03#0.03##0.005 
+            exp_const=0.01#0.05#0.03##0.005 
             lats=[lat_start,lat_dest,self.flow_graph.nodes_graph[self.start_index].lat,self.flow_graph.nodes_graph[self.goal_index].lat]
             lons=[lon_start,lon_dest,self.flow_graph.nodes_graph[self.start_index].lon,self.flow_graph.nodes_graph[self.goal_index].lon]
+            if self.start_in_open:
+                for n in self.flow_graph.nodes_graph[self.start_index].parents:
+                    lats.append(self.flow_graph.nodes_graph[n].lat)
+                    lons.append(self.flow_graph.nodes_graph[n].lon)
+                for n in self.flow_graph.nodes_graph[self.start_index].children:
+                    lats.append(self.flow_graph.nodes_graph[n].lat)
+                    lons.append(self.flow_graph.nodes_graph[n].lon)
+                for n in self.flow_graph.nodes_graph[self.start_index].cell.entry_list:
+                    lats.append(self.flow_graph.nodes_graph[n].lat)
+                    lons.append(self.flow_graph.nodes_graph[n].lon)    
+                for n in self.flow_graph.nodes_graph[self.start_index].cell.exit_list:
+                    lats.append(self.flow_graph.nodes_graph[n].lat)
+                    lons.append(self.flow_graph.nodes_graph[n].lon)  
+            else:
+                lats.append(self.flow_graph.nodes_graph[self.start_index_previous].lat)
+                lons.append(self.flow_graph.nodes_graph[self.start_index_previous].lon)
+            if self.dest_in_open:
+                for n in self.flow_graph.nodes_graph[self.goal_index].parents:
+                    lats.append(self.flow_graph.nodes_graph[n].lat)
+                    lons.append(self.flow_graph.nodes_graph[n].lon)
+                for n in self.flow_graph.nodes_graph[self.goal_index].children:
+                    lats.append(self.flow_graph.nodes_graph[n].lat)
+                    lons.append(self.flow_graph.nodes_graph[n].lon)
+                for n in self.flow_graph.nodes_graph[self.goal_index].cell.entry_list:
+                    lats.append(self.flow_graph.nodes_graph[n].lat)
+                    lons.append(self.flow_graph.nodes_graph[n].lon)    
+                for n in self.flow_graph.nodes_graph[self.goal_index].cell.exit_list:
+                    lats.append(self.flow_graph.nodes_graph[n].lat)
+                    lons.append(self.flow_graph.nodes_graph[n].lon)  
+            else:
+                lats.append(self.flow_graph.nodes_graph[self.goal_index_next].lat)
+                lons.append(self.flow_graph.nodes_graph[self.goal_index_next].lon)                
             box=bbox(min(lats)-exp_const,min(lons)-exp_const,max(lats)+exp_const,max(lons)+exp_const) 
-            
-            #box=bbox(min(self.start_point.y,self.goal_point.y)-exp_const,min(self.start_point.x,self.goal_point.x)-exp_const,max(self.start_point.y,self.goal_point.y)+exp_const,max(self.start_point.x,self.goal_point.x)+exp_const) 
-           #box=bbox(min(lat_start,lat_dest)-exp_const,min(lon_start,lon_dest)-exp_const,max(lat_start,lat_dest)+exp_const,max(lon_start,lon_dest)+exp_const) 
           
             G,edges=self.flow_control_graph.extract_subgraph(box)
             self.G=copy.deepcopy(G)
@@ -1072,27 +1103,35 @@ class PathPlanning:
         for i in self.os_keys2_indices:
             key=i[0]
             if key==self.start_index:
-                for ii in i[1:]:
-                    if ii==65535:
-                        break
-                    for p in self.graph.parents_list[ii]:
-                        if p ==65535:
+                if self.start_index_previous==0:
+                    start_id=i[1]
+                else:
+                    for ii in i[1:]:
+                        if ii==65535:
                             break
-                        if self.start_index_previous==self.graph.key_indices_list[p]:
-                            start_id=ii
+                        for p in self.graph.parents_list[ii]:
+                            if p ==65535:
+                                break
+                            if self.start_index_previous==self.graph.key_indices_list[p]:
+                                start_id=ii
+                                break
+                        if start_id !=None:
                             break
-                    if start_id !=None:
-                        break
             if key==self.goal_index:
-                for ii in i[1:]:
-                    for ch in self.graph.children_list[ii]:
-                        if ch==65535:
+                if self.goal_index_next==0:
+                    goal_id=i[1]  
+                else:
+                    for ii in i[1:]:
+                        if ii==65535:
                             break
-                        if self.goal_index_next==self.graph.key_indices_list[ch]:
-                            goal_id=ii  
-                            break
-                    if goal_id !=None:
-                        break                        
+                        for ch in self.graph.children_list[ii]:
+                            if ch==65535:
+                                break
+                            if self.goal_index_next==self.graph.key_indices_list[ch]:
+                                goal_id=ii  
+                                break
+                        if goal_id !=None:
+                            break                        
             if start_id !=None and goal_id !=None:
                 break
             
@@ -1712,6 +1751,10 @@ class PathPlanning:
             for i in self.os_keys2_indices:
                 key=i[0]
                 if key==self.start_index:
+                    if self.start_index_previous==0:
+                        start_id=i[1]
+                        break
+                    
                     for ii in i[1:]:
                         if ii==65535:
                             break
@@ -1904,6 +1947,9 @@ class PathPlanning:
             for i in self.os_keys2_indices:
                 key=i[0]
                 if key==self.start_index:
+                    if self.start_index_previous==0:
+                        start_id=i[1]
+                        break                    
                     for ii in i[1:]:
                         if ii==65535:
                             break

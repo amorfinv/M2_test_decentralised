@@ -73,7 +73,7 @@ print('Created loitering dill')
 # print("planned")
 # =============================================================================
 fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
-
+s=0
 
 plan=None
 # Step 3: Loop through traffic, find path, add to dictionary
@@ -83,7 +83,9 @@ flight_plans_dict={}
 sizes=[]
 for flight in generated_traffic:
     cnt=cnt+1
-    if cnt>1 :
+
+
+    if cnt>50 :
         break #stop at 20 aircrafts or change that
         
     # First get the route and turns
@@ -98,13 +100,15 @@ for flight in generated_traffic:
         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],True,loitering_edges_dict[flight[0]])
     else:
         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1])
-    print(asizeof.asizeof(plan.graph))
-    #print(asizeof.asizeof(plan.edge_gdf))
-    print(asizeof.asizeof(plan.turns))
-    #print(asizeof.asizeof(plan.os_keys_dict_pred))
-    print(asizeof.asizeof(plan.os_keys2_indices))
-    print(asizeof.asizeof(plan))
-    print(asizeof.asizeof(graph))
+# =============================================================================
+#     print(asizeof.asizeof(plan.graph))
+#     #print(asizeof.asizeof(plan.edge_gdf))
+#     print(asizeof.asizeof(plan.turns))
+#     #print(asizeof.asizeof(plan.os_keys_dict_pred))
+#     print(asizeof.asizeof(plan.os_keys2_indices))
+#     print(asizeof.asizeof(plan))
+#     print(asizeof.asizeof(graph))
+# =============================================================================
     
     flight_plans_dict[flight[0]]=plan
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
@@ -112,13 +116,12 @@ for flight in generated_traffic:
         print("unequal lens",len(route),len(edges))
 
     print(asizeof.asizeof(plan.graph))
-    #print(asizeof.asizeof(plan.edge_gdf))
-    print(asizeof.asizeof(plan.turns))
-    #print(asizeof.asizeof(plan.os_keys_dict_pred))
+    #print(asizeof.asizeof(plan.turns))
     print(asizeof.asizeof(plan.os_keys2_indices))
-    print(asizeof.asizeof(plan))
-    print(asizeof.asizeof(graph))    
-    sizes.append(asizeof.asizeof(plan))
+    print(asizeof.asizeof(plan)-asizeof.asizeof(graph))
+    s=s+asizeof.asizeof(plan)-asizeof.asizeof(graph)
+    #print(asizeof.asizeof(graph))    
+    #sizes.append(asizeof.asizeof(plan))
     flight_plans_dict[flight[0]]=plan
 
 
@@ -218,7 +221,7 @@ for flight in generated_traffic:
     
     
 
-    
+print("total size",s)    
 print('All paths created!')
     
 # Step 4: Create scenario file from dictionary
