@@ -7,6 +7,7 @@ from os import path
 import numpy as np
 import pandas as pd
 from pympler import asizeof
+import json
 
 """
 Code renames the graph nodes and edges ids to be consecutive integers starting from 0.
@@ -50,6 +51,16 @@ def rename_ids(nodes, edges):
     # make a dictionary of old node indices and new indices
     old_to_new_nodes = dict(zip(old_node_indices, new_node_indices))
 
+    new_node_indices1 = list(range(0, len(old_node_indices)))
+
+    old_node_indices1 = list(nodes_gdf.index)
+
+    old_to_new_nodes1 = dict(zip(old_node_indices, new_node_indices1))
+
+    # save this dictionary to a json
+    with open(path.join('gis', 'old_to_new_nodes.json'), 'w') as f:
+        json.dump(old_to_new_nodes1, f)
+    
     # drop the old index
     nodes_gdf.reset_index(drop=True, inplace=True)
 
