@@ -99,15 +99,7 @@ for flight in generated_traffic:
         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.01,True,loitering_edges_dict[flight[0]])
     else:
         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1])
-# =============================================================================
-#     print(asizeof.asizeof(plan.graph))
-#     #print(asizeof.asizeof(plan.edge_gdf))
-#     print(asizeof.asizeof(plan.turns))
-#     #print(asizeof.asizeof(plan.os_keys_dict_pred))
-#     print(asizeof.asizeof(plan.os_keys2_indices))
-#     print(asizeof.asizeof(plan))
-#     print(asizeof.asizeof(graph))
-# =============================================================================
+
     
     flight_plans_dict[flight[0]]=plan
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()

@@ -1738,34 +1738,50 @@ class PathPlanning:
             
             
             expanded=False
+            
+##########################
+            result = np.where(self.os_keys2_indices ==k)
+            rr=np.where(result[1] ==0)
+            for ii in self.os_keys2_indices[result[0][rr]][0][1:]:
+                if ii==65535:
+                    break
+                for p in self.graph.children_list[ii]:
+                    if p ==65535:
+                           break
+                    if kk==self.graph.key_indices_list[p]:
+                           change_list.append([ii,p])
+                           break
+###########    
 
-        for i in self.os_keys2_indices:
-            key=i[0]
-            while key in k_list:
-                ind=k_list.index(key)
-                kk=changes_list[k_list.index(key)]
-                b=False
-                for ii in i[1:]:
-                    if ii==65535:
-                        break
-                    for ch in self.graph.children_list[ii]:
-                        if ch==65535:
-                            break
-                        if kk==self.graph.key_indices_list[ch]:
-                            if self.graph.expanded_list[ch] or self.graph.expanded_list[ii]:
-                                change_list.append([ii,ch])
-                                b=True
-
-                            break
-                    if b:
-                        break
-                    
-                del k_list[ind]
-                del changes_list[ind]
-
-            if len(k_list)==0:
-                break
-                
+# =============================================================================
+#         for i in self.os_keys2_indices:
+#             key=i[0]
+#             while key in k_list:
+#                 ind=k_list.index(key)
+#                 kk=changes_list[k_list.index(key)]
+#                 b=False
+#                 for ii in i[1:]:
+#                     if ii==65535:
+#                         break
+#                     for ch in self.graph.children_list[ii]:
+#                         if ch==65535:
+#                             break
+#                         if kk==self.graph.key_indices_list[ch]:
+#                             if self.graph.expanded_list[ch] or self.graph.expanded_list[ii]:
+#                                 change_list.append([ii,ch])
+#                                 b=True
+# 
+#                             break
+#                     if b:
+#                         break
+#                     
+#                 del k_list[ind]
+#                 del changes_list[ind]
+# 
+#             if len(k_list)==0:
+#                 break
+#                 
+# =============================================================================
 
               
         if prev_node_osmnx_id!=0 and replan_bool:
@@ -1788,29 +1804,52 @@ class PathPlanning:
 #                 prev_node_osmnx_id =0
 #                 start_id=self.os_keys_dict_pred[str(next_node_index)+'-'+str(prev_node_osmnx_id)]
 # =============================================================================
-                
+ ############## 
             start_id=None
-            for i in self.os_keys2_indices:
-                key=i[0]
-                if key==self.start_index:
-                    if self.start_index_previous==0:
-                        start_id=i[1]
+            result = np.where(self.os_keys2_indices ==self.start_index)
+            rr=np.where(result[1] ==0)
+            if self.start_index_previous==0:
+                start_id=self.os_keys2_indices[result[0][rr]][0][1]
+            else:
+                for ii in self.os_keys2_indices[result[0][rr]][0][1:]:
+                    if ii==65535:
                         break
-                    
-                    for ii in i[1:]:
-                        if ii==65535:
+                    for p in self.graph.parents_list[ii]:
+                        if p ==65535:
                             break
-                        for p in self.graph.parents_list[ii]:
-                            if p ==65535:
-                                break
-                            if self.start_index_previous==self.graph.key_indices_list[p]:
-                                start_id=ii
-                                break
-                        if start_id !=None:
-                            break                      
-                if start_id !=None :
-                    break
-            
+                        if self.start_index_previous==self.graph.key_indices_list[p]:
+                            start_id=ii
+                            break
+                    if start_id !=None:
+                        break
+  #####################################            
+# =============================================================================
+#             start_id=None
+#             for i in self.os_keys2_indices:
+#                 key=i[0]
+#                 if key==self.start_index:
+#                     if self.start_index_previous==0:
+#                         start_id=i[1]
+#                         break
+#                     
+#                     for ii in i[1:]:
+#                         if ii==65535:
+#                             break
+#                         for p in self.graph.parents_list[ii]:
+#                             if p ==65535:
+#                                 break
+#                             if self.start_index_previous==self.graph.key_indices_list[p]:
+#                                 start_id=ii
+#                                 break
+#                         if start_id !=None:
+#                             break                      
+#                 if start_id !=None :
+#                     break
+# =============================================================================
+ 
+
+        
+ 
                 
             start_node=start_id
             self.path.start=start_node
@@ -1934,35 +1973,49 @@ class PathPlanning:
                 #if you are a loitering mission do not take into account your own geofence
                 if (k,kk) in self.loitering_edges:
                     continue
-            
-        expanded=False
-        for i in self.os_keys2_indices:
-            key=i[0]
-            while key in k_list:
-                ind=k_list.index(key)
-                kk=changes_list[k_list.index(key)]
-                b=False
-                for ii in i[1:]:
-                    if ii==65535:
-                        break
-                    for ch in self.graph.children_list[ii]:
-                        if ch==65535:
-                            break
-                        if kk==self.graph.key_indices_list[ch]:
-                            if self.graph.expanded_list[ch] or self.graph.expanded_list[ii]:
-                                change_list.append([ii,ch])
-                                b=True
-
-                            break
-                    if b:
-                        break
-                    
-                del k_list[ind]
-                del changes_list[ind]
-
-            if len(k_list)==0:
-                break 
-
+######################
+            result = np.where(self.os_keys2_indices ==k)
+            rr=np.where(result[1] ==0)
+            for ii in self.os_keys2_indices[result[0][rr]][0][1:]:
+                if ii==65535:
+                    break
+                for p in self.graph.children_list[ii]:
+                    if p ==65535:
+                           break
+                    if kk==self.graph.key_indices_list[p]:
+                           change_list.append([ii,p])
+                           break
+#######################
+# =============================================================================
+#         expanded=False
+#         for i in self.os_keys2_indices:
+#             key=i[0]
+#             while key in k_list:
+#                 ind=k_list.index(key)
+#                 kk=changes_list[k_list.index(key)]
+#                 b=False
+#                 for ii in i[1:]:
+#                     if ii==65535:
+#                         break
+#                     for ch in self.graph.children_list[ii]:
+#                         if ch==65535:
+#                             break
+#                         if kk==self.graph.key_indices_list[ch]:
+#                             if self.graph.expanded_list[ch] or self.graph.expanded_list[ii]:
+#                                 change_list.append([ii,ch])
+#                                 b=True
+# 
+#                             break
+#                     if b:
+#                         break
+#                     
+#                 del k_list[ind]
+#                 del changes_list[ind]
+# 
+#             if len(k_list)==0:
+#                 break 
+# 
+# =============================================================================
                 
         if prev_node_osmnx_id!=0 and replan_bool:
 
@@ -1985,26 +2038,48 @@ class PathPlanning:
 #             start_node=self.flow_graph.nodes_graph[self.graph[start_id].key_index]
 #             
 # =============================================================================
+
+#########################
             start_id=None
-            for i in self.os_keys2_indices:
-                key=i[0]
-                if key==self.start_index:
-                    if self.start_index_previous==0:
-                        start_id=i[1]
-                        break                    
-                    for ii in i[1:]:
-                        if ii==65535:
+            result = np.where(self.os_keys2_indices ==self.start_index)
+            rr=np.where(result[1] ==0)
+            if self.start_index_previous==0:
+                start_id=self.os_keys2_indices[result[0][rr]][0][1]
+            else:
+                for ii in self.os_keys2_indices[result[0][rr]][0][1:]:
+                    if ii==65535:
+                        break
+                    for p in self.graph.parents_list[ii]:
+                        if p ==65535:
                             break
-                        for p in self.graph.parents_list[ii]:
-                            if p ==65535:
-                                break
-                            if self.start_index_previous==self.graph.key_indices_list[p]:
-                                start_id=ii
-                                break
-                        if start_id !=None:
-                            break                      
-                if start_id !=None :
-                    break
+                        if self.start_index_previous==self.graph.key_indices_list[p]:
+                            start_id=ii
+                            break
+                    if start_id !=None:
+                        break
+#####################
+# =============================================================================
+#            start_id=None
+#             for i in self.os_keys2_indices:
+#                 key=i[0]
+#                 if key==self.start_index:
+#                     if self.start_index_previous==0:
+#                         start_id=i[1]
+#                         break                    
+#                     for ii in i[1:]:
+#                         if ii==65535:
+#                             break
+#                         for p in self.graph.parents_list[ii]:
+#                             if p ==65535:
+#                                 break
+#                             if self.start_index_previous==self.graph.key_indices_list[p]:
+#                                 start_id=ii
+#                                 break
+#                         if start_id !=None:
+#                             break                      
+#                 if start_id !=None :
+#                     break
+# =============================================================================
                 
             start_node=start_id
             self.path.start=start_node
