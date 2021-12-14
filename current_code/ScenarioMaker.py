@@ -84,7 +84,9 @@ for flight in generated_traffic:
     cnt=cnt+1
 
 
-    if cnt>50 :
+    if cnt!=4:
+        continue
+    if cnt>5:#0 :
         break #stop at 20 aircrafts or change that
         
     # First get the route and turns

@@ -340,11 +340,10 @@ def heuristic(current, goal,speed,flow_graph,graph):
     cc=flow_graph.nodes_graph[graph.key_indices_list[current]]
     gg=flow_graph.nodes_graph[graph.key_indices_list[goal]]
     av_speed_vertical=1.0
-    av_speed_horizontal=10.0
     if cc.open_airspace or gg.open_airspace:
         h=eucledean_distance(cc, gg)/speed
     else:
-        h=(abs(cc.x_cartesian-gg.x_cartesian)+abs(cc.y_cartesian-gg.y_cartesian))/min(av_speed_horizontal,speed)
+        h=(abs(cc.x_cartesian-gg.x_cartesian)+abs(cc.y_cartesian-gg.y_cartesian))/speed
 
     if graph.groups_list[current]!=graph.groups_list[goal]:
         h=h+9.144/av_speed_vertical
