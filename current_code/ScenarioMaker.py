@@ -29,7 +29,6 @@ gdf=ox.graph_to_gdfs(G, nodes=False, fill_edge_geometry=True)
 print('Graph loaded!')
 
 
-
 #Load the open airspace grid
 input_file=open("renamed_open_airspace_grid.dill", 'rb')
 #input_file=open("open_airspace_grid_updated.dill", 'rb')##for 3d path planning
@@ -112,7 +111,7 @@ for flight in generated_traffic:
     
     flight_plans_dict[flight[0]]=plan
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
-    if route==[]:
+    if route==[]: ##TODO convert that to a while and 
         #No path was found
         if flight[0] in loitering_edges_dict.keys():
             plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.03,True,loitering_edges_dict[flight[0]])
@@ -126,10 +125,10 @@ for flight in generated_traffic:
     if len(route)!=len(edges):
         print("unequal lens",len(route),len(edges))
 
-    print(asizeof.asizeof(plan.graph))
+    #print(asizeof.asizeof(plan.graph))
     #print(asizeof.asizeof(plan.turns))
-    print(asizeof.asizeof(plan.os_keys2_indices))
-    print(asizeof.asizeof(plan)-asizeof.asizeof(graph))
+    #print(asizeof.asizeof(plan.os_keys2_indices))
+    print("size",asizeof.asizeof(plan)-asizeof.asizeof(graph))
     s=s+asizeof.asizeof(plan)-asizeof.asizeof(graph)
     #print(asizeof.asizeof(graph))    
     #sizes.append(asizeof.asizeof(plan))

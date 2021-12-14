@@ -662,7 +662,7 @@ class PathPlanning:
         if self.start_in_open:
             point=(lat_start,lon_start)
             geometry, u, v,distance=get_nearest_edge(self.gdf, point)
-            if distance<0.00001:
+            if distance<0.00000001:
                 self.start_index=v
                 self.start_index_previous=u
                 self.start_in_open=False
@@ -688,7 +688,7 @@ class PathPlanning:
         if self.dest_in_open:
             point=(lat_dest,lon_dest)
             geometry, u, v,distance=get_nearest_edge(self.gdf, point)
-            if distance<0.00001:
+            if distance<0.00000001:
                 self.goal_index=u
                 self.goal_index_next=v
                 self.dest_in_open=False
@@ -1100,40 +1100,79 @@ class PathPlanning:
            
         start_id=None
         goal_id=None
-        for i in self.os_keys2_indices:
-            key=i[0]
-            if key==self.start_index:
-                if self.start_index_previous==0:
-                    start_id=i[1]
-                else:
-                    for ii in i[1:]:
-                        if ii==65535:
-                            break
-                        for p in self.graph.parents_list[ii]:
-                            if p ==65535:
-                                break
-                            if self.start_index_previous==self.graph.key_indices_list[p]:
-                                start_id=ii
-                                break
-                        if start_id !=None:
-                            break
-            if key==self.goal_index:
-                if self.goal_index_next==0:
-                    goal_id=i[1]  
-                else:
-                    for ii in i[1:]:
-                        if ii==65535:
-                            break
-                        for ch in self.graph.children_list[ii]:
-                            if ch==65535:
-                                break
-                            if self.goal_index_next==self.graph.key_indices_list[ch]:
-                                goal_id=ii  
-                                break
-                        if goal_id !=None:
-                            break                        
-            if start_id !=None and goal_id !=None:
-                break
+        
+        ##########
+        
+        result = np.where(self.os_keys2_indices ==self.start_index)
+        rr=np.where(result[1] ==0)
+        if self.start_index_previous==0:
+            start_id=self.os_keys2_indices[result[0][rr]][0][1]
+        else:
+            for ii in self.os_keys2_indices[result[0][rr]][0][1:]:
+                if ii==65535:
+                    break
+                for p in self.graph.parents_list[ii]:
+                    if p ==65535:
+                        break
+                    if self.start_index_previous==self.graph.key_indices_list[p]:
+                        start_id=ii
+                        break
+                if start_id !=None:
+                    break
+        result = np.where(self.os_keys2_indices ==self.goal_index)
+        rr=np.where(result[1] ==0)
+        if self.goal_index_next==0:
+            goal_id=self.os_keys2_indices[result[0][rr]][0][1]
+        else:
+            for ii in self.os_keys2_indices[result[0][rr]][0][1:]:
+                if ii==65535:
+                    break
+                for p in self.graph.children_list[ii]:
+                    if p ==65535:
+                        break
+                    if self.goal_index_next==self.graph.key_indices_list[p]:
+                        goal_id=ii
+                        break
+                if goal_id !=None:
+                    break 
+        #########
+        
+# =============================================================================
+#         for i in self.os_keys2_indices:
+#             key=i[0]
+#             if key==self.start_index:
+#                 if self.start_index_previous==0:
+#                     start_id=i[1]
+#                 else:
+#                     for ii in i[1:]:
+#                         if ii==65535:
+#                             break
+#                         for p in self.graph.parents_list[ii]:
+#                             if p ==65535:
+#                                 break
+#                             if self.start_index_previous==self.graph.key_indices_list[p]:
+#                                 start_id=ii
+#                                 break
+#                         if start_id !=None:
+#                             break
+#             if key==self.goal_index:
+#                 if self.goal_index_next==0:
+#                     goal_id=i[1]  
+#                 else:
+#                     for ii in i[1:]:
+#                         if ii==65535:
+#                             break
+#                         for ch in self.graph.children_list[ii]:
+#                             if ch==65535:
+#                                 break
+#                             if self.goal_index_next==self.graph.key_indices_list[ch]:
+#                                 goal_id=ii  
+#                                 break
+#                         if goal_id !=None:
+#                             break                        
+#             if start_id !=None and goal_id !=None:
+#                 break
+# =============================================================================
             
         start_node=start_id
         goal_node=goal_id
@@ -1201,11 +1240,11 @@ class PathPlanning:
         del indices_nodes[0]
                     
         self.route=np.array(route,dtype=np.float64)
-        self.turns=np.array(turns,dtype=np.uint8) 
+        self.turns=np.array(turns,dtype=np.bool8) 
         self.edges_list=np.array(edges_list) 
         self.next_turn_point=next_turn_point
         self.groups=np.array(groups,dtype=np.uint16)
-        self.in_constrained=np.array(in_constrained,dtype=np.uint8)
+        self.in_constrained=np.array(in_constrained,dtype=np.bool8)
         self.turn_speed=np.array(turn_speed,dtype=np.float64)
         
         return route,turns,edges_list,next_turn_point,groups,in_constrained,turn_speed
@@ -1594,7 +1633,7 @@ class PathPlanning:
         turns[0]=False
 
         for g,i in enumerate(group_numbers):
-            if i==-1 :#or ( g>0 and group_numbers[g-1]==-1)or ( g<len(group_numbers)-1 and group_numbers[g+1]==-1):
+            if i==2000 :#or ( g>0 and group_numbers[g-1]==-1)or ( g<len(group_numbers)-1 and group_numbers[g+1]==-1):
                 in_constrained.append(False)
             else:
                 in_constrained.append(True)        
@@ -1733,7 +1772,7 @@ class PathPlanning:
 
                 # Do not replan in high traffic if you have low priority, should the same happen when in loitering mission?
                 #TODO check if teh second condition is not needed
-            if (self.flow_graph.edges_current_speed[str(prev_node_osmnx_id)+'-'+str(next_node_index)]<1 and self.flow_graph.edges_current_speed[str(prev_node_osmnx_id)+'-'+str(next_node_index)]!=0 and self.priority==3):# or self.edge_gdf[prev_node_osmnx_id][next_node_index].speed==0:
+            if (self.flow_graph.edges_current_speed[prev_node_osmnx_id][next_node_index]<1 and self.flow_graph.edges_current_speed[prev_node_osmnx_id][next_node_index]!=0 and self.priority==3):# or self.edge_gdf[prev_node_osmnx_id][next_node_index].speed==0:
                 replan_bool=False
             
         if not replan_bool and change_list!=[]:
@@ -1828,11 +1867,11 @@ class PathPlanning:
 
                             
                 self.route=np.array(route,dtype=np.float64)
-                self.turns=np.array(turns,dtype=np.uint8) 
+                self.turns=np.array(turns,dtype=np.bool8) 
                 self.edges_list=np.array(edges_list) 
                 self.next_turn_point=next_turn_point
                 self.groups=np.array(groups,dtype=np.uint16)
-                self.in_constrained=np.array(in_constrained,dtype=np.uint8)
+                self.in_constrained=np.array(in_constrained,dtype=np.bool8)
                 self.turn_speed=np.array(turn_speed,dtype=np.float64)
                 return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
             
@@ -1928,7 +1967,7 @@ class PathPlanning:
         if prev_node_osmnx_id!=0 and replan_bool:
 
                    # Do not replan in high traffic if you have low priority, should the same happen when in loitering mission?
-            if (self.flow_graph.edges_current_speed[str(prev_node_osmnx_id)+'-'+str(next_node_index)]<1 and self.flow_graph.edges_current_speed[str(prev_node_osmnx_id)+'-'+str(next_node_index)]!=0 and self.priority==3):# or self.edge_gdf[prev_node_osmnx_id][next_node_index].speed==0:
+            if (self.flow_graph.edges_current_speed[prev_node_osmnx_id][next_node_index]<1 and self.flow_graph.edges_current_speed[prev_node_osmnx_id][next_node_index]!=0 and self.priority==3):# or self.edge_gdf[prev_node_osmnx_id][next_node_index].speed==0:
                 replan_bool=False
 
             
@@ -2023,11 +2062,11 @@ class PathPlanning:
                         
                             
                 self.route=np.array(route,dtype=np.float64)
-                self.turns=np.array(turns,dtype=np.uint8) 
+                self.turns=np.array(turns,dtype=np.bool8) 
                 self.edges_list=np.array(edges_list) 
                 self.next_turn_point=next_turn_point
                 self.groups=np.array(groups,dtype=np.uint16)
-                self.in_constrained=np.array(in_constrained,dtype=np.uint8)
+                self.in_constrained=np.array(in_constrained,dtype=np.bool8)
                 self.turn_speed=np.array(turn_speed,dtype=np.float64)
                 return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
             
