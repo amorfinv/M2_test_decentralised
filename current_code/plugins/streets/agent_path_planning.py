@@ -615,7 +615,7 @@ class SearchGraph:
         
 class PathPlanning:
     
-    def __init__(self,aircraft_type,priority,open_airspace_grid,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest,loitering=False,loitering_edges=[]):
+    def __init__(self,aircraft_type,priority,open_airspace_grid,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest,exp_const=0.01,loitering=False,loitering_edges=[]):
         self.aircraft_type=aircraft_type
         self.start_index=None
         self.start_index_previous=None
@@ -726,7 +726,7 @@ class PathPlanning:
         #find the area of interest based on teh start and goal point
         ##TODO: tune the exp_const
         if not self.start_in_open and not self.dest_in_open:
-            exp_const=0.01#0.005#0.02##0.005 
+            #exp_const=0.01#0.005#0.02##0.005 
             lats=[lat_start,lat_dest,self.flow_graph.nodes_graph[self.start_index].lat,self.flow_graph.nodes_graph[self.start_index_previous].lat,self.flow_graph.nodes_graph[self.goal_index].lat,self.flow_graph.nodes_graph[self.goal_index_next].lat]
             lons=[lon_start,lon_dest,self.flow_graph.nodes_graph[self.start_index].lon,self.flow_graph.nodes_graph[self.goal_index].lon]
             box=bbox(min(lats)-exp_const,min(lons)-exp_const,max(lats)+exp_const,max(lons)+exp_const) 
@@ -740,7 +740,7 @@ class PathPlanning:
 
         else:
             print('open')
-            exp_const=0.01#0.05#0.03##0.005 
+            #exp_const=0.01#0.05#0.03##0.005 
             lats=[lat_start,lat_dest,self.flow_graph.nodes_graph[self.start_index].lat,self.flow_graph.nodes_graph[self.goal_index].lat]
             lons=[lon_start,lon_dest,self.flow_graph.nodes_graph[self.start_index].lon,self.flow_graph.nodes_graph[self.goal_index].lon]
             if self.start_in_open:
@@ -1155,6 +1155,9 @@ class PathPlanning:
         if path_found:
             route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed,init_groups=self.get_path(self.path,self.graph,self.flow_graph.edges_init_speed,self.flow_graph.edges_graph)
 
+            if route==[]:
+                #No path was found
+                return [],[],[],[],[],[],[]
             
             os_id1=self.start_index_previous
 
@@ -1347,7 +1350,7 @@ class PathPlanning:
                 print(selected_nodes_index)
                 print(current_node)
                 print("get_path stack !! Please report this!")
-                break
+                return [],[],[],[],[],[],[],[]
                 
             selected_nodes_index.append(current_node)
             

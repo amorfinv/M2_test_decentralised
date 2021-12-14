@@ -97,7 +97,7 @@ for flight in generated_traffic:
     aircraft_type = 1 if flight[1] == 'MP20' else 2
     
     if flight[0] in loitering_edges_dict.keys():
-        plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],True,loitering_edges_dict[flight[0]])
+        plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.01,True,loitering_edges_dict[flight[0]])
     else:
         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1])
 # =============================================================================
@@ -112,6 +112,17 @@ for flight in generated_traffic:
     
     flight_plans_dict[flight[0]]=plan
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
+    if route==[]:
+        #No path was found
+        if flight[0] in loitering_edges_dict.keys():
+            plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.03,True,loitering_edges_dict[flight[0]])
+        else:
+            plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.03)
+
+        
+        flight_plans_dict[flight[0]]=plan
+        route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
+        
     if len(route)!=len(edges):
         print("unequal lens",len(route),len(edges))
 
@@ -123,57 +134,6 @@ for flight in generated_traffic:
     #print(asizeof.asizeof(graph))    
     #sizes.append(asizeof.asizeof(plan))
     flight_plans_dict[flight[0]]=plan
-
-
-    
-# =============================================================================
-#     print("size",asizeof.asizeof(plan.graph))
-#     print("size",asizeof.asizeof(plan.edge_gdf))
-#     print("size",asizeof.asizeof(plan.os_keys_dict_pred))
-# =============================================================================
-
-# =============================================================================
-# 
-#     size=sys.getsizeof(plan.graph)+sys.getsizeof(plan.aircraft_type)+sys.getsizeof(plan.start_index_previous)+\
-#     sys.getsizeof(plan.start_index)+sys.getsizeof(plan.start_in_open)+sys.getsizeof(plan.goal_index)
-#     size=size+sys.getsizeof(plan.path)+sys.getsizeof(plan.os_keys_dict_pred)
-#                                         
-#     size=size+sys.getsizeof(plan.goal_index_next)+sys.getsizeof(plan.dest_in_open)+sys.getsizeof(plan.edge_gdf)+sys.getsizeof(plan.route)
-#     size=size+sys.getsizeof(plan.turns)+sys.getsizeof(plan.priority)+ sys.getsizeof(plan.loitering)+sys.getsizeof(plan.in_same_cell)
-#     size=size+sys.getsizeof(plan.init_succesful)+ \
-#     sys.getsizeof(plan.start_point)+sys.getsizeof(plan.goal_point)+sys.getsizeof(plan.route)+ \
-#     sys.getsizeof(plan.turns)+sys.getsizeof(plan.edges_list)+sys.getsizeof(plan.next_turn_point)+ \
-#     sys.getsizeof(plan.groups)+sys.getsizeof(plan.in_constrained)+sys.getsizeof(plan.turn_speed)    
-#     print("size ",size)
-#     print(sys.getsizeof(plan.graph))
-#     print(sys.getsizeof(plan.aircraft_type))
-#     print(sys.getsizeof(plan.start_index_previous))
-#     print(sys.getsizeof(plan.start_index))
-#     print(sys.getsizeof(plan.start_in_open))
-#     print(sys.getsizeof(plan.goal_index))
-#     print(sys.getsizeof(plan.goal_index_next))
-#     print(sys.getsizeof(plan.dest_in_open))
-#     print(sys.getsizeof(plan.edge_gdf))
-#     print(sys.getsizeof(plan.path))
-#     print(sys.getsizeof(plan.os_keys_dict_pred))
-#     print(sys.getsizeof(plan.route))
-#     print(sys.getsizeof(plan.turns))
-#     print(sys.getsizeof(plan.priority))
-#     print(sys.getsizeof(plan.loitering))
-#     print(sys.getsizeof(plan.in_same_cell))
-#     print(sys.getsizeof(plan.init_succesful))
-#     print(sys.getsizeof(plan.start_point))
-#     print(sys.getsizeof(plan.goal_point))
-#     print(sys.getsizeof(plan.route))
-#     print(sys.getsizeof(plan.turns))
-#     print(sys.getsizeof(plan.edges_list))
-#     print(sys.getsizeof(plan.next_turn_point))
-#     print(sys.getsizeof(plan.groups))
-#     print(sys.getsizeof(plan.in_constrained))
-#     print(sys.getsizeof(plan.turn_speed))
-#         
-# 
-# =============================================================================
 
 
     if route!=[]:
@@ -234,19 +194,18 @@ list2dill=[]
 list2dill.append(flight_plans_dict)
 list2dill.append(graph)
 
-
-del flight_plans_dict['D1'].flow_graph
+for key in flight_plans_dict.keys():
+    del flight_plans_dict[key].flow_graph
+    
 ##Dill the flight_plans_dict
 output_file=open(f"{path_plan_filename}.dill", 'wb')
-dill.dump(flight_plans_dict['D1'],output_file)
+dill.dump(flight_plans_dict,output_file)
 output_file.close()
 
-# =============================================================================
-# ##Dill the flight_plans_dict
-# output_file=open(f"{path_plan_filename}.dill", 'wb')
-# dill.dump(list2dill,output_file)
-# output_file.close()
-# =============================================================================
+##Dill the flight_plans_dict
+output_file=open(f"{path_plan_filename}.dill", 'wb')
+dill.dump(list2dill,output_file)
+output_file.close()
 
 #output_file=open("G-multigraph.dill", 'wb')
 #dill.dump(G,output_file)
