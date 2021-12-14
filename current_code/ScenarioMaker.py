@@ -197,15 +197,21 @@ list2dill.append(graph)
 for key in flight_plans_dict.keys():
     del flight_plans_dict[key].flow_graph
     
+output_file=open(f"Flow_control.dill", 'wb')
+dill.dump(graph,output_file)
+output_file.close()    
+    
 ##Dill the flight_plans_dict
 output_file=open(f"{path_plan_filename}.dill", 'wb')
 dill.dump(flight_plans_dict,output_file)
 output_file.close()
 
-##Dill the flight_plans_dict
-output_file=open(f"{path_plan_filename}.dill", 'wb')
-dill.dump(list2dill,output_file)
-output_file.close()
+# =============================================================================
+# ##Dill the flight_plans_dict
+# output_file=open(f"{path_plan_filename}.dill", 'wb')
+# dill.dump(list2dill,output_file)
+# output_file.close()
+# =============================================================================
 
 #output_file=open("G-multigraph.dill", 'wb')
 #dill.dump(G,output_file)
