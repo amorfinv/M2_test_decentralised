@@ -87,7 +87,7 @@ sizes=[]
 for flight in generated_traffic:
     cnt=cnt+1
 
-    if cnt>20:#0 :
+    if cnt>20:
         break #stop at 20 aircrafts or change that
         
     # First get the route and turns
@@ -98,25 +98,39 @@ for flight in generated_traffic:
     priority = flight[7]
     aircraft_type = 1 if flight[1] == 'MP20' else 2
     
+    exp_const=0.01
+    
     if flight[0] in loitering_edges_dict.keys():
-        plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.01,True,loitering_edges_dict[flight[0]])
+        plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],exp_const,True,loitering_edges_dict[flight[0]])
     else:
-        plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1])
+        plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],exp_const)
 
     
     flight_plans_dict[flight[0]]=plan
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
-    if route==[]: ##TODO convert that to a while and 
+    while route==[]: ##TODO convert that to a while and 
+        exp_const=exp_const+0.01
         #No path was found
         if flight[0] in loitering_edges_dict.keys():
-            plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.03,True,loitering_edges_dict[flight[0]])
+            plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],exp_const,True,loitering_edges_dict[flight[0]])
         else:
-            plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.03)
+            plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],exp_const)
 
         
         flight_plans_dict[flight[0]]=plan
         route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
-        
+# =============================================================================
+#     exp_const=exp_const+0.005 
+#     if flight[0] in loitering_edges_dict.keys():
+#         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],exp_const,True,loitering_edges_dict[flight[0]])
+#     else:
+#         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],exp_const)
+# 
+#     
+#     flight_plans_dict[flight[0]]=plan
+#     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()    
+# =============================================================================
+    
     if len(route)!=len(edges):
         print("unequal lens",len(route),len(edges))
 

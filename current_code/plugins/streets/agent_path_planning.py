@@ -1071,12 +1071,12 @@ class PathPlanning:
         
         if self.in_same_cell:
             self.route=[(self.start_point.x,self.start_point.y),(self.goal_point.x,self.goal_point.y)]
-            self.turns=[False,False]
+            self.turns=[False,True]
             self.edges_list=[(self.start_index_previous,self.start_index),(self.goal_index,self.goal_index_next)]
             self.next_turn_point=[(-999,-999),(-999,-999)]
             self.groups=[2000,2000]    
             self.in_constrained=[False,False]
-            self.turn_speed=[0,0]
+            self.turn_speed=[0,1]
             
             return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
 
@@ -1238,13 +1238,16 @@ class PathPlanning:
                     
         del indices_nodes[0]
                     
+        turns[-1]=True
+        turn_speed[-1]=1
+        
         self.route=np.array(route,dtype=np.float64)
         self.turns=np.array(turns,dtype=np.bool8) 
         self.edges_list=np.array(edges_list) 
         self.next_turn_point=next_turn_point
         self.groups=np.array(groups,dtype=np.uint16)
         self.in_constrained=np.array(in_constrained,dtype=np.bool8)
-        self.turn_speed=np.array(turn_speed,dtype=np.float64)
+        self.turn_speed=np.array(turn_speed,dtype=np.uint16())
         
         return route,turns,edges_list,next_turn_point,groups,in_constrained,turn_speed
     
@@ -1314,8 +1317,8 @@ class PathPlanning:
                 
         if not  path_found:
             length=len(graph.g_list)
-            graph.g_list=np.ones(length,dtype=np.float64)*float('inf')
-            graph.rhs_list=np.ones(length,dtype=np.float64)*float('inf')
+            graph.g_list=np.ones(length,dtype=np.float32)*float('inf')
+            graph.rhs_list=np.ones(length,dtype=np.float32)*float('inf')
             graph.inQueue_list=np.ones(length,dtype=np.bool8)*False
             graph.expanded_list=np.ones(length,dtype=np.bool8)*False
             graph.key_list=np.zeros([length,2],dtype=np.float64)
@@ -1690,12 +1693,12 @@ class PathPlanning:
     def replan(self,changes_list,prev_node_osmnx_id,next_node_index,lat,lon):
         if self.in_same_cell:
             self.route=[(self.start_point.x,self.start_point.y),(self.goal_point.x,self.goal_point.y)]
-            self.turns=[False,False]
+            self.turns=[False,True]
             self.edges_list=[(self.start_index_previous,self.start_index),(self.goal_index,self.goal_index_next)]
             self.next_turn_point=[(-999,-999),(-999,-999)]
             self.groups=[2000,2000]    
             self.in_constrained=[False,False]
-            self.turn_speed=[0,0]
+            self.turn_speed=[0,1]
             
             return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
         
@@ -1902,7 +1905,9 @@ class PathPlanning:
                         next_turn_point.append(turn_coord[cnt])
                                 
                 del indices_nodes[0]
-
+                
+                turns[-1]=True
+                turn_speed[-1]=1
                             
                 self.route=np.array(route,dtype=np.float64)
                 self.turns=np.array(turns,dtype=np.bool8) 
@@ -1928,12 +1933,12 @@ class PathPlanning:
     def replan_spawned(self,changes_list,prev_node_osmnx_id,next_node_index,lat,lon):
         if self.in_same_cell:
             self.route=[(self.start_point.x,self.start_point.y),(self.goal_point.x,self.goal_point.y)]
-            self.turns=[False,False]
+            self.turns=[False,True]
             self.edges_list=[(self.start_index_previous,self.start_index),(self.goal_index,self.goal_index_next)]
             self.next_turn_point=[(-999,-999),(-999,-999)]
             self.groups=[2000,2000]    
             self.in_constrained=[False,False]
-            self.turn_speed=[0,0]
+            self.turn_speed=[0,1]
             
             return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
 
@@ -2134,6 +2139,9 @@ class PathPlanning:
                                 
                 del indices_nodes[0]
                         
+
+                turns[-1]=True
+                turn_speed[-1]=1
                             
                 self.route=np.array(route,dtype=np.float64)
                 self.turns=np.array(turns,dtype=np.bool8) 

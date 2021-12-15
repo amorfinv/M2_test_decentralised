@@ -19,15 +19,22 @@ from pympler import asizeof
 import geopandas
 
 
-cc = geopandas.read_file("airspace_design/updated_constrained_airspace.gpkg")
+#Load the open airspace grid
+input_file=open("Path_PLanning_Big.dill", 'rb')
+#input_file=open("open_airspace_grid_updated.dill", 'rb')##for 3d path planning
+grid=dill.load(input_file)
 
-constrained_poly=cc["geometry"][0].exterior._get_coords()
-
-##Dill the flight_plans_dict
-output_file=open("constrained_poly.dill", 'wb')
-dill.dump(constrained_poly,output_file)
-output_file.close()
-
+# =============================================================================
+# cc = geopandas.read_file("airspace_design/updated_constrained_airspace.gpkg")
+# 
+# constrained_poly=cc["geometry"][0].exterior._get_coords()
+# 
+# ##Dill the flight_plans_dict
+# output_file=open("constrained_poly.dill", 'wb')
+# dill.dump(constrained_poly,output_file)
+# output_file.close()
+# 
+# =============================================================================
 # =============================================================================
 # # Initialize stuff
 # bst = BlueskySCNTools.BlueskySCNTools()
@@ -82,5 +89,5 @@ output_file.close()
 # output_file=open("renamed_open_airspace_grid.dill", 'wb')
 # dill.dump(grid,output_file)
 # output_file.close()
-#     
 # =============================================================================
+    
