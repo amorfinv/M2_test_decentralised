@@ -10,6 +10,7 @@ import osmnx as ox
 import networkx as nx
 import os 
 import json
+import geopandas as gpd
 #from pygeos.measurement import length
 import rtree
 from shapely.geometry import Polygon, Point
@@ -39,7 +40,8 @@ class BlueskySCNTools():
             self.layer_dict = json.load(filename)
         
     def Drone2Scn(self, drone_id, aircraft_type, start_time, lats, lons, turnbool,alts = None, edges = None, group_num=None, next_turn = None, 
-                cruise_speed_constraint = True, start_speed = None,in_constrained=True, priority = 1, geoduration = 0, geocoords = []):
+                cruise_speed_constraint = True, start_speed = None,in_constrained=True, priority = 1, geoduration = 0, geocoords = [],
+                file_loc = ''):
         """Converts arrays to Bluesky scenario files. The first
         and last waypoints will be taken as the origin and 
         destination of the drone.
@@ -142,9 +144,9 @@ class BlueskySCNTools():
         qdr = self.qdrdist(lats[0], lons[0], lats[1], lons[1], 'qdr')
 
         if geocoords:
-            cre_text = f'QUEUEM2 {drone_id},{aircraft_type},{lats[0]},{lons[0]},{qdr},{alts},{start_speed},{priority},{geoduration},{geocoords}\n'
+            cre_text = f'QUEUEM2 {drone_id},{aircraft_type},{file_loc},{lats[0]},{lons[0]},{lats[-1]},{lons[-1]},{qdr},{alts},{start_speed},{priority},{geoduration},{geocoords}\n'
         else:
-            cre_text = f'QUEUEM2 {drone_id},{aircraft_type},{lats[0]},{lons[0]},{qdr},{alts},{start_speed},{priority},{geoduration},\n'
+            cre_text = f'QUEUEM2 {drone_id},{aircraft_type},{file_loc},{lats[0]},{lons[0]},{lats[-1]},{lons[-1]},{qdr},{alts},{start_speed},{priority},{geoduration},\n'
         lines.append(start_time_txt + cre_text)
         
         # # Then we need to for loop through all the lats
@@ -183,13 +185,14 @@ class BlueskySCNTools():
         #     prev_wpt_turn = turnbool[i]
         
         # Delete aircraft at destination waypoint
-        if geocoords:
-            lines.append(start_time_txt + f'{drone_id} ATDIST {lats[-1]} {lons[-1]} {5/nm} DELLOITER {drone_id}\n')
-        else:
-            lines.append(start_time_txt + f'{drone_id} ATDIST {lats[-1]} {lons[-1]} {5/nm} DEL {drone_id}\n')
-        # Enable vnav and lnav
-        lines.append(start_time_txt + lnav)
-        lines.append(start_time_txt + vnav)
+        # if geocoords:
+        #     lines.append(start_time_txt + f'{drone_id} ATDIST {lats[-1]} {lons[-1]} {5/nm} DELLOITER {drone_id}\n')
+        # else:
+        #     lines.append(start_time_txt + f'{drone_id} ATDIST {lats[-1]} {lons[-1]} {5/nm} DEL {drone_id}\n')
+        
+        # # Enable vnav and lnav
+        # lines.append(start_time_txt + lnav)
+        # lines.append(start_time_txt + vnav)
 
         return lines
     
@@ -253,12 +256,13 @@ class BlueskySCNTools():
                     priority = dictionary[drone_id]['priority']
                     geoduration = dictionary[drone_id]['geoduration']
                     geocoords = dictionary[drone_id]['geocoords']
+                    file_loc = dictionary[drone_id]['file_loc']
                 except:
                     print('Key error. Make sure the dictionary is formatted correctly.')
                     return
 
                 lines = self.Drone2Scn(drone_id, aircraft_type, start_time, lats, lons, turnbool, alts, edges, group_num, next_turn, 
-                                      cruise_speed_constraint, start_speed, in_constrained, priority, geoduration, geocoords)
+                                      cruise_speed_constraint, start_speed, in_constrained, priority, geoduration, geocoords, file_loc)
                 f.write(''.join(lines))
 
     def Intention2Traf(self, flight_intention_list, edges):
@@ -300,13 +304,14 @@ class BlueskySCNTools():
             start_speed = float(aircraft_type[-2:])
 
             # get the origin location
-            origin_lon = float(flight_intention[4][2:])
-            origin_lat = float(flight_intention[5][1:-2])
+            round_int = 10
+            origin_lon = round(float(flight_intention[4][2:]),round_int)
+            origin_lat = round(float(flight_intention[5][1:-2]),round_int)
             origin = (origin_lon, origin_lat)
 
             # get the destination location
-            destination_lon = float(flight_intention[6][2:])
-            destination_lat = float(flight_intention[7][1:-2])
+            destination_lon = round(float(flight_intention[6][2:]),round_int)
+            destination_lat = round(float(flight_intention[7][1:-2]),round_int)
             destination = (destination_lon, destination_lat)
 
             # get the priority
@@ -314,7 +319,11 @@ class BlueskySCNTools():
 
             # get the geoduration
             geoduration = flight_intention[9]
- 
+
+            # find file location for the path planning
+            file_loc = self.pairs_list.index((origin_lon,origin_lat,destination_lon,destination_lat))
+            file_loc = str(file_loc) + '_' + aircraft_type
+
             # check if it has geocoords
             if flight_intention[10]:
                 # get polygon coordianates from box and create into lat1 lon1 list
@@ -335,9 +344,9 @@ class BlueskySCNTools():
                 # fill the loitering edges dict
                 loitering_edges_dict['D'+str(ac_no)] = list_intersecting_edges
 
-                trafgen.append(('D'+str(ac_no), aircraft_type, start_time, origin, destination, start_speed, priority, geoduration, geocoords))
+                trafgen.append(('D'+str(ac_no), aircraft_type, start_time, origin, destination, file_loc ,start_speed, priority, geoduration, geocoords))
             else:
-                trafgen.append(('D'+str(ac_no), aircraft_type, start_time, origin, destination, start_speed, priority, 0, []))
+                trafgen.append(('D'+str(ac_no), aircraft_type, start_time, origin, destination, file_loc, start_speed, priority, 0, []))
 
             ac_no += 1
         
@@ -717,8 +726,50 @@ class BlueskySCNTools():
                     break                
               
         return speeds, turnbool
+
+    def PreGeneratedPaths(self):
+        origins = gpd.read_file('whole_vienna/gis/Sending_nodes.gpkg').to_numpy()[:,0:2]
+        destinations = gpd.read_file('whole_vienna/gis/Recieving_nodes.gpkg').to_numpy()[:,0:2]
+
+        pairs = []
+        round_int = 10
+        for origin in origins:
+            for destination in destinations:
+                if kwikdist(origin, destination) >=800:
+                    lon1 = origin[0]
+                    lat1 = origin[1]
+                    lon2 = destination[0]
+                    lat2 = destination[1]
+                    pairs.append((round(lon1,round_int),round(lat1,round_int),round(lon2,round_int),round(lat2,round_int)))
+
+        self.pairs_list = pairs
+
+
                 
-    
+def kwikdist(origin, destination):
+    """
+    Quick and dirty dist [nm]
+    In:
+        lat/lon, lat/lon [deg]
+    Out:
+        dist [nm]
+    """
+    # We're getting these guys as strings
+    lona = float(origin[0])
+    lata = float(origin[1])
+
+    lonb = float(destination[0])
+    latb = float(destination[1])
+
+    re      = 6371000.  # radius earth [m]
+    dlat    = np.radians(latb - lata)
+    dlon    = np.radians(((lonb - lona)+180)%360-180)
+    cavelat = np.cos(np.radians(lata + latb) * 0.5)
+
+    dangle  = np.sqrt(dlat * dlat + dlon * dlon * cavelat * cavelat)
+    dist    = re * dangle
+    return dist
+
 # Testing here       
 def main():
     bst = BlueskySCNTools()
