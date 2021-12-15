@@ -15,7 +15,7 @@ def main():
     G = ox.io.load_graphml(graph_path)
 
     # read in airspace grid dill from parent directory
-    with open('open_airspace_grid_updated.dill', 'rb') as f:
+    with open('renamed_open_airspace_grid.dill', 'rb') as f:
         airspace_grid = dill.load(f)
 
     # get the nodes in the airspace grid
