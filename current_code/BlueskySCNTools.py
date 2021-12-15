@@ -236,7 +236,7 @@ class BlueskySCNTools():
             f.write('00:00:00>HOLD\n00:00:00>PAN 48.204011819028494 16.363471515762452\n00:00:00>ZOOM 15\n')
             f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV2\n00:00:00>CDMETHOD M2STATEBASED\n')
             f.write(f'00:00:00>LOADPATH {pathplanfilename}\n')
-            f.write('00:00:00>00:00:00>STREETSENABLE\n')
+            f.write('00:00:00>STREETSENABLE\n')
             for drone_id in dictionary:
                 try:
                     aircraft_type = dictionary[drone_id]['aircraft_type']
