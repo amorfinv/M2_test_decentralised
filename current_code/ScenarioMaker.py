@@ -71,9 +71,13 @@ print('Created loitering dill')
 # 
 # print("planned")
 # =============================================================================
-fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
-s=0
 
+
+fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
+ax.set_xlim([16.2,16.5])
+ax.set_ylim([48.1,48.3])
+s=0
+colors=['b','r','g','y',]
 plan=None
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
@@ -83,10 +87,7 @@ sizes=[]
 for flight in generated_traffic:
     cnt=cnt+1
 
-
-    if cnt!=4:
-        continue
-    if cnt>5:#0 :
+    if cnt>20:#0 :
         break #stop at 20 aircrafts or change that
         
     # First get the route and turns
@@ -137,7 +138,7 @@ for flight in generated_traffic:
             x_list.append(r[0])
             y_list.append(r[1])
             
-        ax.scatter(x_list,y_list, color='b')
+        ax.scatter(x_list,y_list, color=colors[cnt%4])
         route = np.array(route)
         # Create dictionary
         scenario_dict[flight[0]] = dict()

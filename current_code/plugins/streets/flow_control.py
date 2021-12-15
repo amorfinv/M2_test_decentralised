@@ -13,6 +13,8 @@ import random
 import json
 from pyproj import  Transformer
 from plugins.streets.open_airspace_grid import Cell, open_airspace
+import dill
+import shapely
 
 
 ##https://github.com/chuducty/KD-Tree-Python
@@ -311,7 +313,10 @@ class street_graph:
         self.create_graph(G,edges_gdf,open_airspace_grid)
         self.create_tree(G,open_airspace_grid)
         self.G=G
-
+        
+        input_file=open("airspace_design/constrained_poly.dill", 'rb')
+        constrained_poly=dill.load(input_file)
+        self.constrained_poly=shapely.geometry.Polygon(constrained_poly)
         
         # Open strokes.JSON as a dictionary
         with open('airspace_design/strokes.json', 'r') as filename:
