@@ -614,7 +614,7 @@ class SearchGraph:
         
 class PathPlanning:
     
-    def __init__(self,aircraft_type,priority,open_airspace_grid,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest,exp_const=0.01,loitering=False,loitering_edges=[]):
+    def __init__(self,aircraft_type,open_airspace_grid,flow_control_graph,gdf,lon_start,lat_start,lon_dest,lat_dest,exp_const=0.01):
         self.aircraft_type=aircraft_type
         self.start_index=None
         self.start_index_previous=None
@@ -633,12 +633,11 @@ class PathPlanning:
         
         self.route=[]
         self.turns=[]
-        self.priority=priority #4,3,2,1 in decreasing priority
-        self.loitering=loitering
+        self.priority=1 #4,3,2,1 in decreasing priority
+        self.loitering=False
         self.in_same_cell=False
         self.init_succesful=True
-        if self.loitering:
-            self.loitering_edges=loitering_edges
+        self.loitering_edges=None
 
         self.start_point=Point(tuple((lon_start,lat_start)))
         self.goal_point=Point(tuple((lon_dest,lat_dest)))
