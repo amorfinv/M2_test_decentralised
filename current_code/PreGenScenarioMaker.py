@@ -44,43 +44,45 @@ cnt=0
 flight_plans_dict={}
 sizes=[]
 
-aircraft_type = 'MP20'
+aircraft_types = ['MP20', 'MP30']
 
-for file_num, flight in enumerate(bst.pairs_list):
+for aircraft_type in aircraft_types:
 
-    if file_num>20:#0 :
-        break #stop at 20 aircrafts or change that
+    for file_num, flight in enumerate(bst.pairs_list):
 
-    # First get the origin, destinations
-    origin_lon = flight[0]
-    origin_lat = flight[1]
+        if file_num>20:#0 :
+            break #stop at 20 aircrafts or change that
 
-    destination_lon = flight[2]
-    destination_lat = flight[3]
+        # First get the origin, destinations
+        origin_lon = flight[0]
+        origin_lat = flight[1]
 
-    # generate the path planning object
-    plan = PathPlanning(aircraft_type, grid, graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat)
-    
-    route,_,edges,_,_,_,_=plan.plan()
-    if route==[]: ##TODO convert that to a while and 
-        #No path was found
-        plan = PathPlanning(aircraft_type,grid,graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat,0.03)
+        destination_lon = flight[2]
+        destination_lat = flight[3]
+
+        # generate the path planning object
+        plan = PathPlanning(aircraft_type, grid, graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat)
         
         route,_,edges,_,_,_,_=plan.plan()
-        
-    if len(route)!=len(edges):
-        print("unequal lens",len(route),len(edges))
+        if route==[]: ##TODO convert that to a while and 
+            #No path was found
+            plan = PathPlanning(aircraft_type,grid,graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat,0.03)
+            
+            route,_,edges,_,_,_,_=plan.plan()
+            
+        if len(route)!=len(edges):
+            print("unequal lens",len(route),len(edges))
 
-    print("size",asizeof.asizeof(plan)-asizeof.asizeof(graph))
-    s=s+asizeof.asizeof(plan)-asizeof.asizeof(graph)
+        print("size",asizeof.asizeof(plan)-asizeof.asizeof(graph))
+        s=s+asizeof.asizeof(plan)-asizeof.asizeof(graph)
 
-    # Delete the graph from plan and then save dill   
-    del plan.flow_graph
+        # Delete the graph from plan and then save dill   
+        del plan.flow_graph
 
-    file_loc_dill = f'{file_num}_{aircraft_type}'
-    output_file=open(f"path_plan_dills/{file_loc_dill}.dill", 'wb')
-    dill.dump(plan,output_file)
-    output_file.close()
+        file_loc_dill = f'{file_num}_{aircraft_type}'
+        output_file=open(f"path_plan_dills/{file_loc_dill}.dill", 'wb')
+        dill.dump(plan,output_file)
+        output_file.close()
 
 
 print("total size of all dills",s)    
