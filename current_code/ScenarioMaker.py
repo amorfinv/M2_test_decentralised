@@ -30,7 +30,7 @@ print('Graph loaded!')
 
 # read line by line of file
 flight_intention_list  = []
-with open('Flight_intention_ultra_40_0.csv') as file:
+with open('flight_intentions/Flight_intention_ultra_40_0.csv') as file:
     for line in file:
         line = line.strip()
         line = line.split(',')
@@ -70,7 +70,7 @@ print('Created loitering dill')
 # 
 # print("planned")
 # =============================================================================
-fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
+#fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
 s=0
 
 plan=None
@@ -95,10 +95,12 @@ for flight in generated_traffic:
     
 
     plan = PathPlanning(aircraft_type,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1])
-
-    
     flight_plans_dict[flight[0]]=plan
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
+    #turn_speed = np.where(np.logical_and(turns))
+    print(turns)
+    print(turn_speed)
+    print(np.logical_xor(turns, turn_speed))
     if route==[]: ##TODO convert that to a while and 
         #No path was found
         plan = PathPlanning(aircraft_type,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.03)
@@ -124,7 +126,7 @@ for flight in generated_traffic:
             x_list.append(r[0])
             y_list.append(r[1])
             
-        ax.scatter(x_list,y_list, color='b')
+        #ax.scatter(x_list,y_list, color='b')
         route = np.array(route)
         # Create dictionary
         scenario_dict[flight[0]] = dict()

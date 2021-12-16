@@ -1075,7 +1075,7 @@ class PathPlanning:
             self.next_turn_point=[(-999,-999),(-999,-999)]
             self.groups=[2000,2000]    
             self.in_constrained=[False,False]
-            self.turn_speed=[0,1]
+            self.turn_speed=[0,5]
             
             return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
 
@@ -1238,7 +1238,7 @@ class PathPlanning:
         del indices_nodes[0]
                     
         turns[-1]=True
-        turn_speed[-1]=1
+        turn_speed[-1]=5
         
         self.route=np.array(route,dtype=np.float64)
         self.turns=np.array(turns,dtype=np.bool8) 
@@ -1597,7 +1597,7 @@ class PathPlanning:
         #speed to 5 knots for turning angles between 45 and 90 degrees
         #speed to 2 knots for turning angles larger tha 90 degrees
 
-###############################Retriev taht to previous state!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+###############################Retrieve that to previous state!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         for i in range(len(group_numbers)-3):#for i in range(len(group_numbers)-2):
             lat_cur=route[i][0]
             lon_cur=route[i][1]
@@ -1607,7 +1607,8 @@ class PathPlanning:
             line_string_1 = [(lat_prev,lon_prev), (lat_cur,lon_cur)]
             line_string_2 = [(lat_cur,lon_cur), (lat_next,lon_next)]
             angle = 180 - angleBetweenTwoLines(line_string_1,line_string_2)
-
+            # if turns[i]:
+            #     turn_speed[i]=10
             if angle>self.cutoff_angle and group_numbers[i]!=2000 and i!=0:
                 turns[i]=True
                 tmp=(route[i][1],route[i][0])
@@ -1618,7 +1619,6 @@ class PathPlanning:
                     turn_speed[i]=5
                 else:
                     turn_speed[i]=2
-                    
 
                 
             lat_prev=lat_cur
@@ -1629,6 +1629,8 @@ class PathPlanning:
                 turns[i]=True
                 tmp=(route[i][1],route[i][0])
                 turn_coords.append(tmp)
+                if not turn_speed[i]:
+                    turn_speed[i]=10
 
         turn_coords.append((-999,-999))
         turns[0]=False
@@ -1697,7 +1699,7 @@ class PathPlanning:
             self.next_turn_point=[(-999,-999),(-999,-999)]
             self.groups=[2000,2000]    
             self.in_constrained=[False,False]
-            self.turn_speed=[0,1]
+            self.turn_speed=[0,5]
             
             return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
         
@@ -1906,7 +1908,7 @@ class PathPlanning:
                 del indices_nodes[0]
                 
                 turns[-1]=True
-                turn_speed[-1]=1
+                turn_speed[-1]=5
                             
                 self.route=np.array(route,dtype=np.float64)
                 self.turns=np.array(turns,dtype=np.bool8) 
@@ -2140,7 +2142,7 @@ class PathPlanning:
                         
 
                 turns[-1]=True
-                turn_speed[-1]=1
+                turn_speed[-1]=5
                             
                 self.route=np.array(route,dtype=np.float64)
                 self.turns=np.array(turns,dtype=np.bool8) 

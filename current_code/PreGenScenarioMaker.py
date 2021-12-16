@@ -34,7 +34,7 @@ grid=dill.load(input_file)
 ##Initialise the flow control entity
 graph=street_graph(G,edges,grid) 
 
-fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
+#fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
 s=0
 
 plan=None
