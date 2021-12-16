@@ -1601,14 +1601,14 @@ class PathPlanning:
         for i in range(len(group_numbers)-3):#for i in range(len(group_numbers)-2):
             lat_cur=route[i][0]
             lon_cur=route[i][1]
-            lat_next=route[i+1][0]
-            lon_next=route[i+1][1]
+            lat_next=route[i+2][0]
+            lon_next=route[i+2][1]
             ##Check the angle between the prev point- current point and the current point- next point  
             line_string_1 = [(lat_prev,lon_prev), (lat_cur,lon_cur)]
             line_string_2 = [(lat_cur,lon_cur), (lat_next,lon_next)]
             angle = 180 - angleBetweenTwoLines(line_string_1,line_string_2)
 
-            if angle>self.cutoff_angle and turns[i]!=True and group_numbers[i]!=2000:
+            if angle>self.cutoff_angle and group_numbers[i]!=2000 and i!=0:
                 turns[i]=True
                 tmp=(route[i][1],route[i][0])
                 turn_coords.append(tmp)
