@@ -103,28 +103,18 @@ for flight in generated_traffic:
         #No path was found
         plan = PathPlanning(aircraft_type,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.03)
 
-        
         flight_plans_dict[flight[0]]=plan
         route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
-        
-    if len(route)!=len(edges):
-        print("unequal lens",len(route),len(edges))
 
-    #print(asizeof.asizeof(plan.graph))
-    #print(asizeof.asizeof(plan.turns))
-    #print(asizeof.asizeof(plan.os_keys2_indices))
-    print("size",asizeof.asizeof(plan)-asizeof.asizeof(graph))
-    s=s+asizeof.asizeof(plan)-asizeof.asizeof(graph)
-    #print(asizeof.asizeof(graph))    
-    #sizes.append(asizeof.asizeof(plan))
-    flight_plans_dict[flight[0]]=plan
-    # get necessary file location
+    # Step 4: Add to dictionary
+    file_loc_dill = flight[5]
+    # TODO: delet here after we have all the DILLS!!!
     
     del plan.flow_graph
-    file_loc_dill = flight[5]
     output_file=open(f"path_plan_dills/{file_loc_dill}.dill", 'wb')
     dill.dump(plan,output_file)
     output_file.close()
+    #############################################
 
     if route!=[]:
         x_list=[]
@@ -172,8 +162,6 @@ for flight in generated_traffic:
         scenario_dict[flight[0]]['file_loc'] = flight[5]
     
     
-
-print("total size",s)    
 print('All paths created!')
     
 # Step 4: Create scenario file from dictionary
@@ -181,32 +169,4 @@ bst.Dict2Scn(r'Test_Scenario_Big.scn',
               scenario_dict, path_plan_filename)
 
 print('Scenario file created!')
-
-list2dill=[]
-list2dill.append(flight_plans_dict)
-list2dill.append(graph)
-
-for key in flight_plans_dict.keys():
-    del flight_plans_dict[key].flow_graph
-    
-output_file=open(f"Flow_control.dill", 'wb')
-dill.dump(graph,output_file)
-output_file.close()    
-    
-##Dill the flight_plans_dict
-output_file=open(f"{path_plan_filename}.dill", 'wb')
-dill.dump(flight_plans_dict,output_file)
-output_file.close()
-
-# =============================================================================
-# ##Dill the flight_plans_dict
-# output_file=open(f"{path_plan_filename}.dill", 'wb')
-# dill.dump(list2dill,output_file)
-# output_file.close()
-# =============================================================================
-
-#output_file=open("G-multigraph.dill", 'wb')
-#dill.dump(G,output_file)
-#output_file.close()
-
 print("Flight plans and search graphs saved!")

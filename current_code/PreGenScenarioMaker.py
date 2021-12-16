@@ -47,7 +47,7 @@ sizes=[]
 aircraft_types = ['MP20', 'MP30']
 
 # create dills for two aircraft types
-for aircraft_type in aircraft_types:
+for idx_type, aircraft_type in enumerate(aircraft_types):
 
     # Go through each origin destination pair and save the dill
     # TODO: Multiprocess me please
@@ -66,14 +66,14 @@ for aircraft_type in aircraft_types:
         destination_lat = flight[3]
 
         # generate the path planning object
-        plan = PathPlanning(aircraft_type, grid, graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat)
+        plan = PathPlanning(idx_type+1, grid, graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat)
         
         # Check if route is empty and then recreate it
         # TODO: Convert to a while loop to find best sub graph
         route,_,edges,_,_,_,_=plan.plan()
         if route==[]: ##TODO convert that to a while and 
             #No path was found so incease the exp_constant from default
-            plan = PathPlanning(aircraft_type,grid,graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat,0.03)
+            plan = PathPlanning(idx_type+1,grid,graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat,0.03)
             
             route,_,edges,_,_,_,_=plan.plan()
         
@@ -93,6 +93,10 @@ for aircraft_type in aircraft_types:
         dill.dump(plan,output_file)
         output_file.close()
 
+# Create flow control dill
+output_file=open(f"Flow_control.dill", 'wb')
+dill.dump(graph,output_file)
+output_file.close()    
 
 print("total size of all dills",s)    
 print('All paths created!')
