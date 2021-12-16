@@ -47,9 +47,8 @@ sizes=[]
 aircraft_type = 'MP20'
 
 for file_num, flight in enumerate(bst.pairs_list):
-    cnt=cnt+1
 
-    if cnt>10:#0 :
+    if file_num>20:#0 :
         break #stop at 20 aircrafts or change that
 
     # First get the origin, destinations
