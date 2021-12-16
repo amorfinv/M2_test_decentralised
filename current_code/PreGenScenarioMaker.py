@@ -77,7 +77,7 @@ for aircraft_type in aircraft_types:
             
             route,_,edges,_,_,_,_=plan.plan()
         
-        # Check if route and edges are same size
+        # Check if route and edges are same size for quality of life purposes
         if len(route)!=len(edges):
             print("unequal lens",len(route),len(edges))
 
