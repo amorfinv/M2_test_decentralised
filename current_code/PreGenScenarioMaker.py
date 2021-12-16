@@ -50,11 +50,13 @@ aircraft_types = ['MP20', 'MP30']
 for aircraft_type in aircraft_types:
 
     # Go through each origin destination pair and save the dill
-    # Multiprocess me please
+    # TODO: Multiprocess me please
     for file_num, flight in enumerate(bst.pairs_list):
-
-        if file_num>20:#0 :
-            break #stop at 20 aircrafts or change that
+        
+        # Break the loop at 10 files per aircraft type (just for now)
+        # TODO: REMOVE THIS LATER WHEN CREATING ALL THE DILLS!
+        if file_num>10:#0 :
+            break 
 
         # First get the origin, destinations
         origin_lon = flight[0]
@@ -66,13 +68,16 @@ for aircraft_type in aircraft_types:
         # generate the path planning object
         plan = PathPlanning(aircraft_type, grid, graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat)
         
+        # Check if route is empty and then recreate it
+        # TODO: Convert to a while loop to find best sub graph
         route,_,edges,_,_,_,_=plan.plan()
         if route==[]: ##TODO convert that to a while and 
-            #No path was found
+            #No path was found so incease the exp_constant from default
             plan = PathPlanning(aircraft_type,grid,graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat,0.03)
             
             route,_,edges,_,_,_,_=plan.plan()
-            
+        
+        # Check if route and edges are same size
         if len(route)!=len(edges):
             print("unequal lens",len(route),len(edges))
 
@@ -82,6 +87,7 @@ for aircraft_type in aircraft_types:
         # Delete the graph from plan and then save dill   
         del plan.flow_graph
 
+        # save the dill!!
         file_loc_dill = f'{file_num}_{aircraft_type}'
         output_file=open(f"path_plan_dills/{file_loc_dill}.dill", 'wb')
         dill.dump(plan,output_file)
