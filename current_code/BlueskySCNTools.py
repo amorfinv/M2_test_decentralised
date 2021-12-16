@@ -22,6 +22,8 @@ ft = 1/0.3048
 
 class BlueskySCNTools():
     def __init__(self):
+        # create the pre generated pairs list
+        self.PreGeneratedPaths()
 
         # Open strokes.JSON as a dictionary
         with open('airspace_design/strokes.json', 'r') as filename:
@@ -728,6 +730,11 @@ class BlueskySCNTools():
         return speeds, turnbool
 
     def PreGeneratedPaths(self):
+        """ Generates a set of pre-generated paths for the aircraft. It reads the origins and 
+        destinations and creates the list of tuples with
+        (origin_lon, origin_lat, destination_lon, destination_lat)
+
+        """
         origins = gpd.read_file('whole_vienna/gis/Sending_nodes.gpkg').to_numpy()[:,0:2]
         destinations = gpd.read_file('whole_vienna/gis/Recieving_nodes.gpkg').to_numpy()[:,0:2]
 

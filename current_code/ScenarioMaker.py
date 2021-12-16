@@ -28,19 +28,9 @@ edges = ox.graph_to_gdfs(G)[1]
 gdf=ox.graph_to_gdfs(G, nodes=False, fill_edge_geometry=True)
 print('Graph loaded!')
 
-
-#Load the open airspace grid
-input_file=open("renamed_open_airspace_grid.dill", 'rb')
-#input_file=open("open_airspace_grid_updated.dill", 'rb')##for 3d path planning
-grid=dill.load(input_file)
-
-
-##Initialise the flow control entity
-graph=street_graph(G,edges,grid) 
-
 # read line by line of file
 flight_intention_list  = []
-with open('flight_intention_big.csv') as file:
+with open('Flight_intention_ultra_40_0.csv') as file:
     for line in file:
         line = line.strip()
         line = line.split(',')
@@ -52,6 +42,15 @@ path_plan_filename = 'Path_Planning_Big'
 # Step 2: Generate traffic from the flight intention file
 generated_traffic, loitering_edges_dict = bst.Intention2Traf(flight_intention_list, edges.copy())
 print('Traffic generated!')
+
+#Load the open airspace grid
+input_file=open("renamed_open_airspace_grid.dill", 'rb')
+#input_file=open("open_airspace_grid_updated.dill", 'rb')##for 3d path planning
+grid=dill.load(input_file)
+
+
+##Initialise the flow control entity
+graph=street_graph(G,edges,grid) 
 
 # create a loitering dill
 output_file=open(f"loitering_edges.dill", 'wb')
@@ -71,13 +70,9 @@ print('Created loitering dill')
 # 
 # print("planned")
 # =============================================================================
-
-
 fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
-ax.set_xlim([16.2,16.5])
-ax.set_ylim([48.1,48.3])
 s=0
-colors=['b','r','g','y',]
+
 plan=None
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
@@ -87,50 +82,31 @@ sizes=[]
 for flight in generated_traffic:
     cnt=cnt+1
 
-    if cnt>20:
+    if cnt>10:#0 :
         break #stop at 20 aircrafts or change that
-        
+
     # First get the route and turns
     print(flight[0])
     origin = flight[3]
     destination = flight[4]
 
-    priority = flight[7]
+    priority = flight[8]
     aircraft_type = 1 if flight[1] == 'MP20' else 2
     
-    exp_const=0.01
-    
-    if flight[0] in loitering_edges_dict.keys():
-        plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],exp_const,True,loitering_edges_dict[flight[0]])
-    else:
-        plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],exp_const)
+
+    plan = PathPlanning(aircraft_type,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1])
 
     
     flight_plans_dict[flight[0]]=plan
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
-    while route==[]: ##TODO convert that to a while and 
-        exp_const=exp_const+0.01
+    if route==[]: ##TODO convert that to a while and 
         #No path was found
-        if flight[0] in loitering_edges_dict.keys():
-            plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],exp_const,True,loitering_edges_dict[flight[0]])
-        else:
-            plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],exp_const)
+        plan = PathPlanning(aircraft_type,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.03)
 
         
         flight_plans_dict[flight[0]]=plan
         route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
-# =============================================================================
-#     exp_const=exp_const+0.005 
-#     if flight[0] in loitering_edges_dict.keys():
-#         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],exp_const,True,loitering_edges_dict[flight[0]])
-#     else:
-#         plan = PathPlanning(aircraft_type,priority,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],exp_const)
-# 
-#     
-#     flight_plans_dict[flight[0]]=plan
-#     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()    
-# =============================================================================
-    
+        
     if len(route)!=len(edges):
         print("unequal lens",len(route),len(edges))
 
@@ -142,7 +118,13 @@ for flight in generated_traffic:
     #print(asizeof.asizeof(graph))    
     #sizes.append(asizeof.asizeof(plan))
     flight_plans_dict[flight[0]]=plan
-
+    # get necessary file location
+    
+    del plan.flow_graph
+    file_loc_dill = flight[5]
+    output_file=open(f"path_plan_dills/{file_loc_dill}.dill", 'wb')
+    dill.dump(plan,output_file)
+    output_file.close()
 
     if route!=[]:
         x_list=[]
@@ -152,7 +134,7 @@ for flight in generated_traffic:
             x_list.append(r[0])
             y_list.append(r[1])
             
-        ax.scatter(x_list,y_list, color=colors[cnt%4])
+        ax.scatter(x_list,y_list, color='b')
         route = np.array(route)
         # Create dictionary
         scenario_dict[flight[0]] = dict()
@@ -169,7 +151,7 @@ for flight in generated_traffic:
         #Add alts
         scenario_dict[flight[0]]['alts'] = 0
         ## add start speed, If None then it is turnspeed
-        # scenario_dict[flight[0]]['start_speed'] = flight[5]
+        # scenario_dict[flight[0]]['start_speed'] = flight[6]
         scenario_dict[flight[0]]['start_speed'] = None
 
         #Add active edges
@@ -181,11 +163,13 @@ for flight in generated_traffic:
         #Add constarined airspace indicator
         scenario_dict[flight[0]]['airspace_type'] = in_constrained
         #add priority
-        scenario_dict[flight[0]]['priority'] = flight[6]
+        scenario_dict[flight[0]]['priority'] = flight[7]
         # add geoduration
-        scenario_dict[flight[0]]['geoduration'] = flight[7]
+        scenario_dict[flight[0]]['geoduration'] = flight[8]
         # add geocoords
-        scenario_dict[flight[0]]['geocoords'] = flight[8]
+        scenario_dict[flight[0]]['geocoords'] = flight[9]
+        # give file location to QUEUEM2
+        scenario_dict[flight[0]]['file_loc'] = flight[5]
     
     
 
