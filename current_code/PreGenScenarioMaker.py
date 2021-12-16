@@ -46,8 +46,11 @@ sizes=[]
 
 aircraft_types = ['MP20', 'MP30']
 
+# create dills for two aircraft types
 for aircraft_type in aircraft_types:
 
+    # Go through each origin destination pair and save the dill
+    # Multiprocess me please
     for file_num, flight in enumerate(bst.pairs_list):
 
         if file_num>20:#0 :
@@ -87,5 +90,4 @@ for aircraft_type in aircraft_types:
 
 print("total size of all dills",s)    
 print('All paths created!')
-
 print("Pre-generated plans and search graphs saved!")
