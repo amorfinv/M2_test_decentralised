@@ -30,14 +30,13 @@ print('Graph loaded!')
 
 # read line by line of file
 flight_intention_list  = []
-with open('flight_intentions/Flight_intention_ultra_40_0.csv') as file:
+flight_intention_folder = 'flight_intentions/'
+intention_file_name = 'Flight_intention_ultra_40_0.csv'
+with open(flight_intention_folder + intention_file_name) as file:
     for line in file:
         line = line.strip()
         line = line.split(',')
         flight_intention_list.append(line)
-
-# path planning file TODO: match scenario name
-path_plan_filename = 'Path_Planning_Big'
 
 # Step 2: Generate traffic from the flight intention file
 generated_traffic, loitering_edges_dict = bst.Intention2Traf(flight_intention_list, edges.copy())
@@ -53,40 +52,28 @@ grid=dill.load(input_file)
 graph=street_graph(G,edges,grid) 
 
 # create a loitering dill
-output_file=open(f"loitering_edges.dill", 'wb')
+scenario_loitering_dill_folder = 'scenario_loitering_dills/'
+scenario_loitering_dill_name = intention_file_name.replace('.csv','.dill')
+output_file=open(scenario_loitering_dill_folder + scenario_loitering_dill_name, 'wb')
 dill.dump(loitering_edges_dict,output_file)
 output_file.close()
 print('Created loitering dill')
 
-# =============================================================================
-# lon_start=16.3304374
-# lat_start=48.2293708
-# lon_dest=16.3507849
-# lat_dest=48.224925
-# plan = PathPlanning(grid,graph,gdf, lon_start,lat_start,lon_dest,lat_dest)
-# route=[]
-# turns=[]
-# route,turns,edges,next_turn,groups,in_constrained=plan.plan()
-# 
-# print("planned")
-# =============================================================================
 #fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
 s=0
 
 plan=None
 # Step 3: Loop through traffic, find path, add to dictionary
 scenario_dict = dict()
-cnt=0
-flight_plans_dict={}
 sizes=[]
-for flight in generated_traffic:
-    cnt=cnt+1
+lines = []
 
-    if cnt>10:#0 :
+for cnt, flight in enumerate(generated_traffic):
+
+    if cnt>100:#0 :
         break #stop at 20 aircrafts or change that
 
     # First get the route and turns
-    print(flight[0])
     origin = flight[3]
     destination = flight[4]
 
@@ -95,17 +82,11 @@ for flight in generated_traffic:
     
 
     plan = PathPlanning(aircraft_type,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1])
-    flight_plans_dict[flight[0]]=plan
     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
-    #turn_speed = np.where(np.logical_and(turns))
-    print(turns)
-    print(turn_speed)
-    print(np.logical_xor(turns, turn_speed))
+
     if route==[]: ##TODO convert that to a while and 
         #No path was found
         plan = PathPlanning(aircraft_type,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.03)
-
-        flight_plans_dict[flight[0]]=plan
         route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
 
     # Step 4: Add to dictionary
@@ -117,58 +98,51 @@ for flight in generated_traffic:
     dill.dump(plan,output_file)
     output_file.close()
     #############################################
+    
+    # Get the flight intention information
+    drone_id = flight[0]
+    aircraft_type = flight[1]
+    start_time = flight[2]
+    origin_lat = flight[3][1]
+    origin_lon = flight[3][0]
+    dest_lat = flight[4][1]
+    dest_lon = flight[4][0]
+    file_loc = flight[5]
+    priority = flight[7]
+    geoduration = flight[8]
+    geocoords = flight[9] 
 
-    if route!=[]:
-        x_list=[]
-        y_list=[]
-            
-        for r in route:
-            x_list.append(r[0])
-            y_list.append(r[1])
-            
-        #ax.scatter(x_list,y_list, color='b')
-        route = np.array(route)
-        # Create dictionary
-        scenario_dict[flight[0]] = dict()
-        # Add start time
-        scenario_dict[flight[0]]['start_time'] = flight[2]
-        # Add aircraft type
-        scenario_dict[flight[0]]['aircraft_type'] = 'M600'
-        #Add lats
-        scenario_dict[flight[0]]['lats'] = route[:,1]
-        #Add lons
-        scenario_dict[flight[0]]['lons'] = route[:,0]
-        #Add turnbool
-        scenario_dict[flight[0]]['turnbool'] = turns
-        #Add alts
-        scenario_dict[flight[0]]['alts'] = 0
-        ## add start speed, If None then it is turnspeed
-        # scenario_dict[flight[0]]['start_speed'] = flight[6]
-        scenario_dict[flight[0]]['start_speed'] = None
+    # constants for scenario
+    start_speed = 0.0
+    qdr = 0.0
+    alt = 0.0
 
-        #Add active edges
-        scenario_dict[flight[0]]['edges'] = edges
-        #Add stroke group
-        scenario_dict[flight[0]]['stroke_group'] = groups
-        #Add next turn
-        scenario_dict[flight[0]]['next_turn'] = next_turn
-        #Add constarined airspace indicator
-        scenario_dict[flight[0]]['airspace_type'] = in_constrained
-        #add priority
-        scenario_dict[flight[0]]['priority'] = flight[7]
-        # add geoduration
-        scenario_dict[flight[0]]['geoduration'] = flight[8]
-        # add geocoords
-        scenario_dict[flight[0]]['geocoords'] = flight[9]
-        # give file location to QUEUEM2
-        scenario_dict[flight[0]]['file_loc'] = flight[5]
+    # Convert start_time to Bluesky format
+    start_time = round(start_time)
+    m, s = divmod(start_time, 60)
+    h, m = divmod(m, 60)
+    start_time_txt = f'{h:02d}:{m:02d}:{s:02d}>'
+
+    # QUEUE COMMAND
+    if geocoords:
+        queue_text = f'QUEUEM2 {drone_id},{aircraft_type},{file_loc},{origin_lat},{origin_lon},{dest_lat},{dest_lon},{qdr},{alt},{start_speed},{priority},{geoduration},{geocoords}\n'
+    else:
+        queue_text = f'QUEUEM2 {drone_id},{aircraft_type},{file_loc},{origin_lat},{origin_lon},{dest_lat},{dest_lon},{qdr},{alt},{start_speed},{priority},{geoduration},\n'
+    
+    lines.append(start_time_txt + queue_text)
     
     
-print('All paths created!')
-    
+# write stuff to file
+scenario_folder = 'scenarios/'
+scenario_file_name = intention_file_name.replace('csv','scn')
+
 # Step 4: Create scenario file from dictionary
-bst.Dict2Scn(r'Test_Scenario_Big.scn', 
-              scenario_dict, path_plan_filename)
-
+with open(scenario_folder+scenario_file_name, 'w+') as f:
+    f.write('00:00:00>HOLD\n00:00:00>PAN 48.204011819028494 16.363471515762452\n00:00:00>ZOOM 10\n')
+    f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV2\n00:00:00>CDMETHOD M2STATEBASED\n')
+    f.write('00:00:00>STREETSENABLE\n')
+    f.write(f'00:00:00>loadloiteringdill {scenario_loitering_dill_name}\n')
+    f.write('00:00:00>CASMACHTHR 0\n')
+    f.write(''.join(lines))
+    
 print('Scenario file created!')
-print("Flight plans and search graphs saved!")

@@ -198,7 +198,7 @@ class BlueskySCNTools():
 
         return lines
     
-    def Dict2Scn(self, filepath, dictionary, pathplanfilename, cruise_speed_constraint = True, start_speed = None):
+    def Dict2Scn(self, filepath, dictionary, cruise_speed_constraint = True, start_speed = None):
         """Creates a scenario file from dictionary given that dictionary
         has the correct format.
     
@@ -240,7 +240,6 @@ class BlueskySCNTools():
         with open(filepath, 'w+') as f:
             f.write('00:00:00>HOLD\n00:00:00>PAN 48.204011819028494 16.363471515762452\n00:00:00>ZOOM 15\n')
             f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV2\n00:00:00>CDMETHOD M2STATEBASED\n')
-            f.write(f'00:00:00>LOADPATH {pathplanfilename}\n')
             f.write('00:00:00>STREETSENABLE\n')
             for drone_id in dictionary:
                 try:
@@ -295,7 +294,7 @@ class BlueskySCNTools():
         for flight_intention in flight_intention_list:
           
             # get the starting time in seconds
-            start_time = flight_intention[0][-8:]#.removeprefix('\ufeff')
+            start_time = flight_intention[3][-8:]#.removeprefix('\ufeff')
             start_time = start_time.split(':')
             start_time = int(start_time[0])*3600 + int(start_time[1])*60 + int(start_time[2])
 
