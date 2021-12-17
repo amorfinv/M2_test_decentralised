@@ -107,7 +107,7 @@ def main():
 
 
     # add dummy node to dictionary
-    dummy_osmid = 0
+    dummy_osmid = 5000
     dummy_lat = 48.1351
     dummy_lon = 11.582
 
