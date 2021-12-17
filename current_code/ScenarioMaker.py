@@ -32,6 +32,7 @@ print('Graph loaded!')
 flight_intention_list  = []
 flight_intention_folder = 'flight_intentions/'
 intention_file_name = 'Flight_intention_ultra_40_0.csv'
+print(intention_file_name[0:~3])
 with open(flight_intention_folder + intention_file_name) as file:
     for line in file:
         line = line.strip()
@@ -69,7 +70,7 @@ sizes=[]
 lines = []
 
 for cnt, flight in enumerate(generated_traffic):
-
+    print(flight[0])
     if cnt>100:#0 :
         break #stop at 20 aircrafts or change that
 
@@ -141,7 +142,7 @@ with open(scenario_folder+scenario_file_name, 'w+') as f:
     f.write('00:00:00>HOLD\n00:00:00>PAN 48.204011819028494 16.363471515762452\n00:00:00>ZOOM 10\n')
     f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV2\n00:00:00>CDMETHOD M2STATEBASED\n')
     f.write('00:00:00>STREETSENABLE\n')
-    f.write(f'00:00:00>loadloiteringdill {scenario_loitering_dill_name}\n')
+    f.write(f'00:00:00>loadloiteringdill {scenario_loitering_dill_name[0:~3]}\n')
     f.write('00:00:00>CASMACHTHR 0\n')
     f.write(''.join(lines))
     
