@@ -71,7 +71,7 @@ lines = []
 
 for cnt, flight in enumerate(generated_traffic):
     print(flight[0])
-    if cnt>100:#0 :
+    if cnt>=100:#0 :
         break #stop at 20 aircrafts or change that
 
     # First get the route and turns

@@ -1071,7 +1071,7 @@ class PathPlanning:
         if self.in_same_cell:
             self.route=[(self.start_point.x,self.start_point.y),(self.goal_point.x,self.goal_point.y)]
             self.turns=[False,True]
-            self.edges_list=[(self.start_index_previous,self.start_index),(self.goal_index,self.goal_index_next)]
+            self.edges_list=[(self.start_index_previous,self.start_index),(self.goal_index_next,self.goal_index)]
             self.next_turn_point=[(-999,-999),(-999,-999)]
             self.groups=[2000,2000]    
             self.in_constrained=[False,False]
@@ -1695,7 +1695,7 @@ class PathPlanning:
         if self.in_same_cell:
             self.route=[(self.start_point.x,self.start_point.y),(self.goal_point.x,self.goal_point.y)]
             self.turns=[False,True]
-            self.edges_list=[(self.start_index_previous,self.start_index),(self.goal_index,self.goal_index_next)]
+            self.edges_list=[(self.start_index_previous,self.start_index),(self.goal_index_next,self.goal_index)]
             self.next_turn_point=[(-999,-999),(-999,-999)]
             self.groups=[2000,2000]    
             self.in_constrained=[False,False]
@@ -1935,7 +1935,7 @@ class PathPlanning:
         if self.in_same_cell:
             self.route=[(self.start_point.x,self.start_point.y),(self.goal_point.x,self.goal_point.y)]
             self.turns=[False,True]
-            self.edges_list=[(self.start_index_previous,self.start_index),(self.goal_index,self.goal_index_next)]
+            self.edges_list=[(self.start_index_previous,self.start_index),(self.goal_index_next,self.goal_index)]
             self.next_turn_point=[(-999,-999),(-999,-999)]
             self.groups=[2000,2000]    
             self.in_constrained=[False,False]
