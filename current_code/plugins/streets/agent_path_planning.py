@@ -718,6 +718,9 @@ class PathPlanning:
             #Start and destination in the same cell
             print("same cell")
             self.in_same_cell=True
+            del self.flow_control_graph #empty these, we do not need it any more
+            del self.gdf
+            del self.open_airspace_grid
             return 
             
             
