@@ -679,7 +679,7 @@ class PathPlanning:
                 else:
                     open_start=winner[1]
                     self.start_index=self.open_airspace_grid.grid[open_start].key_index
-                    self.start_index_previous=0
+                    self.start_index_previous=5000
 
 
         
@@ -704,7 +704,7 @@ class PathPlanning:
                 else:
                     open_goal=winner[1]
                     self.goal_index=self.open_airspace_grid.grid[open_goal].key_index
-                    self.goal_index_next=0
+                    self.goal_index_next=5000
 
         del self.open_airspace_cells
         
@@ -714,7 +714,7 @@ class PathPlanning:
             print("same goal to start index")
             self.init_succesful=False
             return 
-        if self.goal_index_next==0 and self.start_index_previous==0 and self.start_index==self.goal_index:
+        if self.goal_index_next==5000 and self.start_index_previous==5000 and self.start_index==self.goal_index:
             #Start and destination in the same cell
             print("same cell")
             self.in_same_cell=True
@@ -1103,7 +1103,7 @@ class PathPlanning:
         
         result = np.where(self.os_keys2_indices ==self.start_index)
         rr=np.where(result[1] ==0)
-        if self.start_index_previous==0:
+        if self.start_index_previous==5000:
             start_id=self.os_keys2_indices[result[0][rr]][0][1]
         else:
             for ii in self.os_keys2_indices[result[0][rr]][0][1:]:
@@ -1119,7 +1119,7 @@ class PathPlanning:
                     break
         result = np.where(self.os_keys2_indices ==self.goal_index)
         rr=np.where(result[1] ==0)
-        if self.goal_index_next==0:
+        if self.goal_index_next==5000:
             goal_id=self.os_keys2_indices[result[0][rr]][0][1]
         else:
             for ii in self.os_keys2_indices[result[0][rr]][0][1:]:
@@ -1219,7 +1219,7 @@ class PathPlanning:
                 
                 if init_groups[nodes_index]==2000 and init_groups[nodes_index+1]==2000:
                     nodes_index=nodes_index+1
-                    os_id1=0
+                    os_id1=5000
                     os_id2=indices_nodes[nodes_index]
                 else:
                     nodes_index=nodes_index+1
@@ -1787,7 +1787,7 @@ class PathPlanning:
 # =============================================================================
 
               
-        if prev_node_osmnx_id!=0 and replan_bool:
+        if prev_node_osmnx_id!=5000 and replan_bool:
 
                 # Do not replan in high traffic if you have low priority, should the same happen when in loitering mission?
                 #TODO check if teh second condition is not needed
@@ -1811,7 +1811,7 @@ class PathPlanning:
             start_id=None
             result = np.where(self.os_keys2_indices ==self.start_index)
             rr=np.where(result[1] ==0)
-            if self.start_index_previous==0:
+            if self.start_index_previous==5000:
                 start_id=self.os_keys2_indices[result[0][rr]][0][1]
             else:
                 for ii in self.os_keys2_indices[result[0][rr]][0][1:]:
@@ -1889,7 +1889,7 @@ class PathPlanning:
                     
                     if init_groups[nodes_index]==2000 and init_groups[nodes_index+1]==2000:
                         nodes_index=nodes_index+1
-                        os_id1=0
+                        os_id1=5000
                         os_id2=indices_nodes[nodes_index]
                     else:
                         nodes_index=nodes_index+1
@@ -2022,7 +2022,7 @@ class PathPlanning:
 # 
 # =============================================================================
                 
-        if prev_node_osmnx_id!=0 and replan_bool:
+        if prev_node_osmnx_id!=5000 and replan_bool:
 
                    # Do not replan in high traffic if you have low priority, should the same happen when in loitering mission?
             if (self.flow_graph.edges_current_speed[prev_node_osmnx_id][next_node_index]<1 and self.flow_graph.edges_current_speed[prev_node_osmnx_id][next_node_index]!=0 and self.priority==3):# or self.edge_gdf[prev_node_osmnx_id][next_node_index].speed==0:
@@ -2048,7 +2048,7 @@ class PathPlanning:
             start_id=None
             result = np.where(self.os_keys2_indices ==self.start_index)
             rr=np.where(result[1] ==0)
-            if self.start_index_previous==0:
+            if self.start_index_previous==5000:
                 start_id=self.os_keys2_indices[result[0][rr]][0][1]
             else:
                 for ii in self.os_keys2_indices[result[0][rr]][0][1:]:
