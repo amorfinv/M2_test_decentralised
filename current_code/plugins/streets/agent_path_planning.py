@@ -16,7 +16,7 @@ import math
 import copy
 from shapely.geometry import Point
 from pyproj import  Transformer
-
+import shapely
 from plugins.streets.flow_control import street_graph,bbox
 from plugins.streets.open_airspace_grid import Cell, open_airspace
 
@@ -1467,6 +1467,7 @@ class PathPlanning:
             in_open_airspace=False
         
         delete_indices=[]
+        p3=None
 
         if len(airspace_transitions)==0:
             route=route_centers
@@ -1481,11 +1482,69 @@ class PathPlanning:
                 p1=[route_centers[airspace_transitions[open_i]-1][0],route_centers[airspace_transitions[open_i]-1][1]]
             else:
                 p1=[route_centers[airspace_transitions[open_i]][0],route_centers[airspace_transitions[open_i]][1]]
-            p2=[route_centers[airspace_transitions[open_i+1]][0],route_centers[airspace_transitions[open_i+1]][1]]
-            transformer2 = Transformer.from_crs( 'epsg:4326','epsg:32633')
-            
-            p1=transformer2.transform(p1[1],p1[0])
-            p2=transformer2.transform(p2[1],p2[0])  
+            if airspace_transitions[open_i+1]-airspace_transitions[open_i]>10:
+
+                p2=[route_centers[airspace_transitions[open_i+1]][0],route_centers[airspace_transitions[open_i+1]][1]]
+                transformer2 = Transformer.from_crs( 'epsg:4326','epsg:32633')
+                
+                p1=transformer2.transform(p1[1],p1[0])
+                p2=transformer2.transform(p2[1],p2[0])  
+                shapely_line = shapely.geometry.LineString([(p1[0],p1[1]),(p2[0],p2[1])])
+                intersection_line =self.flow_graph.constrained_poly.intersection(shapely_line)
+                if not intersection_line.is_empty:
+                    p3=p2
+
+                    p2=[route_centers[int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][0],route_centers[int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][1]]
+                    p2=transformer2.transform(p2[1],p2[0])
+  
+                    shapely_line1 = shapely.geometry.LineString([(p1[0],p1[1]),(p2[0],p2[1])])
+                    shapely_line2 = shapely.geometry.LineString([(p3[0],p3[1]),(p2[0],p2[1])])
+
+                    intersection_line1 = self.flow_graph.constrained_poly.intersection(shapely_line1)
+                    intersection_line2 = self.flow_graph.constrained_poly.intersection(shapely_line2)
+                    if not intersection_line1.is_empty and not intersection_line2.is_empty:
+                        a=1
+                    elif not intersection_line2.is_empty:
+                        cnt=0
+                        while intersection_line1.is_empty:
+                            cnt=cnt+1
+                            p2=[route_centers[cnt+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][0],route_centers[cnt+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][1]]
+                            p2=transformer2.transform(p2[1],p2[0])
+          
+                            shapely_line1 = shapely.geometry.LineString([(p1[0],p1[1]),(p2[0],p2[1])])
+                            shapely_line2 = shapely.geometry.LineString([(p3[0],p3[1]),(p2[0],p2[1])])
+        
+                            intersection_line1 = self.flow_graph.constrained_poly.intersection(shapely_line1)
+                            intersection_line2 = self.flow_graph.constrained_poly.intersection(shapely_line2) 
+                            if intersection_line2.is_empty:
+                                cnt=cnt+1
+                                break
+                        p2=[route_centers[cnt-1+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][0],route_centers[cnt-1+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][1]]
+                        p2=transformer2.transform(p2[1],p2[0])
+                    elif not intersection_line1.is_empty:
+                        cnt=0
+                        while intersection_line2.is_empty:
+                            cnt=cnt-1
+                            p2=[route_centers[cnt+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][0],route_centers[cnt+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][1]]
+                            p2=transformer2.transform(p2[1],p2[0])
+          
+                            shapely_line1 = shapely.geometry.LineString([(p1[0],p1[1]),(p2[0],p2[1])])
+                            shapely_line2 = shapely.geometry.LineString([(p3[0],p3[1]),(p2[0],p2[1])])
+        
+                            intersection_line1 = self.flow_graph.constrained_poly.intersection(shapely_line1)
+                            intersection_line2 = self.flow_graph.constrained_poly.intersection(shapely_line2) 
+                            if intersection_line1.is_empty:
+                                cnt=cnt-1
+                                break
+                        p2=[route_centers[cnt+1+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][0],route_centers[cnt+1+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][1]]
+                        p2=transformer2.transform(p2[1],p2[0])
+                        
+            else:
+                p2=[route_centers[airspace_transitions[open_i+1]][0],route_centers[airspace_transitions[open_i+1]][1]]
+                transformer2 = Transformer.from_crs( 'epsg:4326','epsg:32633')
+                
+                p1=transformer2.transform(p1[1],p1[0])
+                p2=transformer2.transform(p2[1],p2[0])  
 
             
             
@@ -1494,15 +1553,77 @@ class PathPlanning:
                 if j+1>airspace_transitions[open_i+1]:
                     if open_i+2<len(airspace_transitions):
                         open_i=open_i+2
-                    
                         p1=[route_centers[airspace_transitions[open_i]-1][0],route_centers[airspace_transitions[open_i]-1][1]]
-                        p2=[route_centers[airspace_transitions[open_i+1]][0],route_centers[airspace_transitions[open_i+1]][1]]
                         transformer2 = Transformer.from_crs( 'epsg:4326','epsg:32633')
-                        
                         p1=transformer2.transform(p1[1],p1[0])
-                        p2=transformer2.transform(p2[1],p2[0])
+                        
+                        if airspace_transitions[open_i+1]-airspace_transitions[open_i]>10:
 
-    
+                            p2=[route_centers[airspace_transitions[open_i+1]][0],route_centers[airspace_transitions[open_i+1]][1]]
+                            transformer2 = Transformer.from_crs( 'epsg:4326','epsg:32633')
+                            
+                            p2=transformer2.transform(p2[1],p2[0])  
+                            shapely_line = shapely.geometry.LineString([(p1[0],p1[1]),(p2[0],p2[1])])
+                            intersection_line =self.flow_graph.constrained_poly.intersection(shapely_line)
+                            if not intersection_line.is_empty:
+                                p3=p2
+            
+                                p2=[route_centers[int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][0],route_centers[int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][1]]
+                                p2=transformer2.transform(p2[1],p2[0])
+              
+                                shapely_line1 = shapely.geometry.LineString([(p1[0],p1[1]),(p2[0],p2[1])])
+                                shapely_line2 = shapely.geometry.LineString([(p3[0],p3[1]),(p2[0],p2[1])])
+            
+                                intersection_line1 = self.flow_graph.constrained_poly.intersection(shapely_line1)
+                                intersection_line2 = self.flow_graph.constrained_poly.intersection(shapely_line2)
+                                if not intersection_line1.is_empty and not intersection_line2.is_empty:
+                                    a=1
+                                elif not intersection_line2.is_empty:
+                                    cnt=0
+                                    while intersection_line1.is_empty:
+                                        cnt=cnt+1
+                                        p2=[route_centers[cnt+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][0],route_centers[cnt+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][1]]
+                                        p2=transformer2.transform(p2[1],p2[0])
+                      
+                                        shapely_line1 = shapely.geometry.LineString([(p1[0],p1[1]),(p2[0],p2[1])])
+                                        shapely_line2 = shapely.geometry.LineString([(p3[0],p3[1]),(p2[0],p2[1])])
+                    
+                                        intersection_line1 = self.flow_graph.constrained_poly.intersection(shapely_line1)
+                                        intersection_line2 = self.flow_graph.constrained_poly.intersection(shapely_line2) 
+                                        if intersection_line2.is_empty:
+                                            cnt=cnt+1
+                                            break
+                                    p2=[route_centers[cnt-1+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][0],route_centers[cnt-1+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][1]]
+                                    p2=transformer2.transform(p2[1],p2[0])
+                                elif not intersection_line1.is_empty:
+                                    cnt=0
+                                    while intersection_line2.is_empty:
+                                        cnt=cnt-1
+                                        p2=[route_centers[cnt+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][0],route_centers[cnt+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][1]]
+                                        p2=transformer2.transform(p2[1],p2[0])
+                      
+                                        shapely_line1 = shapely.geometry.LineString([(p1[0],p1[1]),(p2[0],p2[1])])
+                                        shapely_line2 = shapely.geometry.LineString([(p3[0],p3[1]),(p2[0],p2[1])])
+                    
+                                        intersection_line1 = self.flow_graph.constrained_poly.intersection(shapely_line1)
+                                        intersection_line2 = self.flow_graph.constrained_poly.intersection(shapely_line2) 
+                                        if intersection_line1.is_empty:
+                                            cnt=cnt-1
+                                            break
+                                    p2=[route_centers[cnt+1+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][0],route_centers[cnt+1+int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)][1]]
+                                    p2=transformer2.transform(p2[1],p2[0])
+                            
+
+                        else:
+                            p2=[route_centers[airspace_transitions[open_i+1]][0],route_centers[airspace_transitions[open_i+1]][1]]
+                            p2=transformer2.transform(p2[1],p2[0])
+                            
+                if p3!=None:
+                    if j>int((airspace_transitions[open_i+1]-airspace_transitions[open_i])/2)+airspace_transitions[open_i]:
+                        p1=p2
+                        p2=p3
+                        p3=None    
+                        
                 if  group_numbers[j]!=2000 and j!=0: 
                     route.append(route_centers[j])
 
@@ -1596,7 +1717,6 @@ class PathPlanning:
         #speed to 10 knots for angles smaller than 45 degrees
         #speed to 5 knots for turning angles between 45 and 90 degrees
         #speed to 2 knots for turning angles larger tha 90 degrees
-
 ###############################Retrieve that to previous state!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         for i in range(len(group_numbers)-3):#for i in range(len(group_numbers)-2):
             lat_cur=route[i][0]
