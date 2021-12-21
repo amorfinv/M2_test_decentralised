@@ -318,7 +318,7 @@ class street_graph:
             self.flows_dict = json.load(filename)
             
         with open('airspace_design/flow_length.json', 'r') as filename:
-            self.flow_lengths= json.load(filename)
+            self.flows_lengths= json.load(filename)
             
         del self.flows_dict["0"]
         del self.flows_lengths["0"]

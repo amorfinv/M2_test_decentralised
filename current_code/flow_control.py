@@ -11,6 +11,8 @@ import math
 import numpy as np
 import random
 import json
+from pyproj import  Transformer
+from plugins.streets.open_airspace_grid import Cell, open_airspace
 
 
 ##https://github.com/chuducty/KD-Tree-Python
@@ -55,20 +57,38 @@ def kselect(li,k):
     else:
         return kselect(li[cur_rank:],k-cur_rank)
     
+    
+class CellNode:
+    def __init__(self,cell):
+        self.p0=cell.p0
+        self.p1=cell.p1
+        self.p2=cell.p2
+        self.p3=cell.p3  
+        self.entry_list=cell.entry_list
+        self.exit_list=cell.exit_list
 
 class Node:
-    def __init__(self,key_index,x,y):
+    def __init__(self,key_index,lon,lat):
         self.key_index=key_index # the index the osmnx graph
-        self.x=x
-        self.y=y
+        self.lon=lon
+        self.lat=lat
     
         self.parents=[]
         self.children=[]
         
+        ##Coordinates of the center
+        self.x_cartesian=None
+        self.y_cartesian=None
+        self.cell=None
+        self.open_airspace=False
+
+        
 
 class Edge:
-    av_speed_horizontal=0.005#10.0
-    av_speed_vertical=2.0
+# =============================================================================
+#     av_speed_horizontal=0.005#10.0
+#     av_speed_vertical=2.0
+# =============================================================================
     def __init__(self,start,end,length,geometry,stroke):
         self.start_key=start #the osmnx key of the start node
         self.end_key=end #the osmnx key of the end node
@@ -76,10 +96,10 @@ class Edge:
         self.geometry=geometry
         self.max_speed=10 #max allowed overall speed
         self.speed=10 #max speed allowed after geovectoring
-        self.max_density=1#the maximum allowed density
-        self.density=0#the measured density
+        #self.max_density=1#the maximum allowed density
+        #self.density=0#the measured density
         self.stroke_group=stroke
-        self.layer_alt=25# the altitude of the lower layer allowed in that edge in feet
+        #self.layer_alt=25# the altitude of the lower layer allowed in that edge in feet
             
 class bbox:
     def __init__(self,x1,y1,x2,y2):
@@ -276,55 +296,98 @@ class KdTree(object):
 
             
 class street_graph:                
-    def __init__(self,G,edges_gdf):
+    def __init__(self,G,edges_gdf,open_airspace_grid):
         self.nodes_graph={}
         self.edges_graph={}
+        self.edges_current_speed={}
+        self.edges_previous_speed={}
+        self.edges_init_speed={}
+    
         self.modified={} # TODO : that should probably be deleted
         self.high_traffic_groups=[]
         self.medium_traffic_groups=[]
         self.loiter_nfz_edges=[] # TODO : add the edges currently used for loitering missions
         self.modified_group={}
-        self.create_graph(G,edges_gdf)
-        self.create_tree(G)
+        self.create_graph(G,edges_gdf,open_airspace_grid)
+        self.create_tree(G,open_airspace_grid)
         self.G=G
 
         
         # Open strokes.JSON as a dictionary
-        with open('airspace_design/strokes.json', 'r') as filename:
-            self.stroke_dict = json.load(filename)
+        with open('airspace_design/flows.json', 'r') as filename:
+            self.flows_dict = json.load(filename)
             
-        with open('airspace_design/stroke_length.json', 'r') as filename:
-            self.group_lengths= json.load(filename)
+        with open('airspace_design/flow_length.json', 'r') as filename:
+            self.flows_lengths= json.load(filename)
             
-        ##Delete the stroke groups that include open airspace
-        del self.stroke_dict["1578"]
-        del self.stroke_dict["1577"]
-        del self.stroke_dict["1576"]
+        del self.flows_dict["0"]
+        del self.flows_lengths["0"]
+# =============================================================================
+#         ##Delete the stroke groups that include open airspace
+#         del self.stroke_dict["1578"]
+#         del self.stroke_dict["1577"]
+#         del self.stroke_dict["1576"]
+# =============================================================================
         
-        for key in self.stroke_dict:
+        for key in self.flows_dict:
             self.modified_group[int(key)]=0 # 0 means low traffic, 1 medium traffic and 2 high traffic
 
 
 
     ##Create a kd tree with the flow control nodes
-    def create_tree(self,G):
+    def create_tree(self,G,open_airspace_grid):
         tree_nodes = []
         self.kdtree= KdTree()
         omsnx_keys_list=list(G._node.keys())
         for key in omsnx_keys_list:
-            tmp=[self.nodes_graph[key].x,self.nodes_graph[key].y,key]
+            tmp=[self.nodes_graph[key].lon,self.nodes_graph[key].lat,key]
+            tree_nodes.append(tmp)
+        transformer = Transformer.from_crs('epsg:32633', 'epsg:4326')
+        for i in range(len(open_airspace_grid.grid)):
+            x=open_airspace_grid.grid[i].center_x
+            y=open_airspace_grid.grid[i].center_y
+            key=open_airspace_grid.grid[i].key_index
+            p=transformer.transform(x,y)
+            lon=p[1]
+            lat=p[0]
+            tmp=[lon,lat,key]
             tree_nodes.append(tmp)
         self.kdtree.build(tree_nodes)
         
     ##Create the flow control graph 
-    def create_graph(self,G,edges_gdf):
-        #edges_gdf=pickle.load(open("edge_gdf.pickle", "rb"))#load edge_geometry
+    def create_graph(self,G,edges_gdf,open_airspace_grid):
+        
+        transformer = Transformer.from_crs('epsg:32633', 'epsg:4326')
+        #Add open airspace nodes to graph
+        for i in range(len(open_airspace_grid.grid)):
+           cell=open_airspace_grid.grid[i]
+           x=cell.center_x
+           y=cell.center_y
+           p=transformer.transform(x,y)
+           lon=p[1]
+           lat=p[0]
+           key=cell.key_index
+           
+           node=Node(key,lon,lat)
+           node.open_airspace=True
+           node.cell=CellNode(cell)
+           node.x_cartesian=cell.center_x
+           node.y_cartesian=cell.center_y
+           for j in cell.neighbors:
+               node.children.append(j)
+               node.parents.append(j)
+           self.nodes_graph[key]=node
+
+
+        transformer = Transformer.from_crs( 'epsg:4326','epsg:32633')
         omsnx_keys_list=list(G._node.keys())
         G_list=list(G._node)
         for key in omsnx_keys_list:
             x=G._node[key]['x']
             y=G._node[key]['y']
             node=Node(key,x,y)
+            pp=transformer.transform(x,y)
+            node.x_cartesian,node.y_cartesian =pp[0],pp[1]
             children=list(G._succ[key].keys())
             for ch in children: 
                 node.children.append(ch)#node.children.append(G_list.index(ch))
@@ -360,6 +423,19 @@ class street_graph:
                     tt[key]=0
                     self.modified[p]=tt
             self.nodes_graph[key]=node
+            
+        for k in self.edges_graph.keys():
+            for i,kk in enumerate(self.edges_graph[k].keys()):
+                if i==0:
+                    tt={}
+                    tt[kk]=self.edges_graph[k][kk].max_speed
+                    self.edges_current_speed[k]=tt
+                    self.edges_previous_speed[k]=tt
+                    self.edges_init_speed[k]=tt
+                else:
+                    self.edges_current_speed[k][kk]=self.edges_graph[k][kk].max_speed
+                    self.edges_previous_speed[k][kk]=self.edges_graph[k][kk].max_speed
+                    self.edges_init_speed[k][kk]=self.edges_graph[k][kk].max_speed
         
 
     ##Get the nearest node of a point (x,y) 
@@ -389,6 +465,27 @@ class street_graph:
            
     
         for i in keys:
+            if self.nodes_graph[i].open_airspace:
+                tmp_ch=[]
+                for ch in graph[i].children:
+                    if ch in keys:
+                        tmp={}
+                    else:
+                        tmp_ch.append(ch)
+    
+                for ch in tmp_ch:
+                    graph[i].children.remove(ch)
+    
+                tmp_p=[]       
+                for p in graph[i].parents:
+                    if p in keys:
+                        tmp={}
+                    else:
+                        tmp_p.append(p)
+    
+                for p in tmp_p:
+                    graph[i].parents.remove(p)
+                continue
             tmp_ch=[]
             for ch in graph[i].children:
                 if ch in keys:
