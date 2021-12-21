@@ -118,7 +118,7 @@ for cnt, flight in enumerate(generated_traffic):
     start_speed = 0.0
     qdr = 0.0
     alt = 0.0
-
+ 
     # Convert start_time to Bluesky format
     start_time = round(start_time)
     m, s = divmod(start_time, 60)
@@ -143,8 +143,10 @@ with open(scenario_folder+scenario_file_name, 'w+') as f:
     f.write('00:00:00>HOLD\n00:00:00>PAN 48.204011819028494 16.363471515762452\n00:00:00>ZOOM 10\n')
     f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV2\n00:00:00>CDMETHOD M2STATEBASED\n')
     f.write('00:00:00>STREETSENABLE\n')
-    f.write(f'00:00:00>loadloiteringdill {scenario_loitering_dill_name[0:~3]}\n')
+    f.write(f'00:00:00>loadloiteringdill {scenario_loitering_dill_name[0:~4]}\n')
     f.write('00:00:00>CASMACHTHR 0\n')
     f.write(''.join(lines))
     
 print('Scenario file created!')
+
+

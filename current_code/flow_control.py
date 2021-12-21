@@ -13,6 +13,8 @@ import random
 import json
 from pyproj import  Transformer
 from plugins.streets.open_airspace_grid import Cell, open_airspace
+import dill
+import shapely
 
 
 ##https://github.com/chuducty/KD-Tree-Python
@@ -94,8 +96,8 @@ class Edge:
         self.end_key=end #the osmnx key of the end node
         self.length=length
         self.geometry=geometry
-        self.max_speed=10 #max allowed overall speed
-        self.speed=10 #max speed allowed after geovectoring
+        self.max_speed=30 #max allowed overall speed
+        self.speed=30 #max speed allowed after geovectoring
         #self.max_density=1#the maximum allowed density
         #self.density=0#the measured density
         self.stroke_group=stroke
@@ -311,6 +313,10 @@ class street_graph:
         self.create_graph(G,edges_gdf,open_airspace_grid)
         self.create_tree(G,open_airspace_grid)
         self.G=G
+        
+        input_file=open("airspace_design/constrained_poly.dill", 'rb')
+        constrained_poly=dill.load(input_file)
+        self.constrained_poly=shapely.geometry.Polygon(constrained_poly)
 
         
         # Open strokes.JSON as a dictionary
