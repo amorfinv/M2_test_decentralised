@@ -231,1479 +231,2217 @@
     "edges": {
         "4501-2940": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4501-2868": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4501-2872": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4510-2835": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4510-2837": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4513-2853": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4519-2877": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4527-4192": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4535-2056": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4536-3852": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4536-3851": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4541-3846": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4545-3841": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4545-3843": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4551-1904": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4551-2083": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4551-1687": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4551-1684": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4551-1681": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4551-1679": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4553-3638": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4564-3636": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4575-444": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4575-440": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4581-3311": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4587-3303": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4590-3300": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4592-1691": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4615-4471": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4626-424": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4626-1657": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4637-419": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4641-1527": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4655-401": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4669-1507": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4669-1502": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4676-1497": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4678-1498": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4678-1500": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4684-1508": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4685-1609": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4687-689": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4689-694": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4689-696": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4689-1494": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4689-1496": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4692-694": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4700-2748": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4700-2750": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4700-2752": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4700-2710": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4700-2717": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4700-2721": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4700-2905": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4700-2908": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4700-2911": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4701-1675": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4701-1673": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4701-1672": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4702-2062": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4703-2026": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4704-3734": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4704-3849": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4704-3850": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4704-3762": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4704-3641": {
             "stroke_group": "1576",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2937-4499": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2937-4501": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2870-4501": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2867-4502": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2850-4510": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2844-4510": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2841-4510": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2841-4511": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2847-4513": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2862-4513": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2741-4513": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2892-4519": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2879-4519": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2882-4525": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2885-4527": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2805-4527": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2802-4527": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "3022-4527": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2069-4534": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2038-4535": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2069-4535": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "3837-4543": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2075-4551": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1901-4551": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2049-4551": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1693-4551": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "474-4551": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "474-4556": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "467-4556": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "457-4562": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4344-4564": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4347-4564": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4456-4564": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "449-4575": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4342-4577": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4342-4578": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4339-4579": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "3307-4581": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4339-4581": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "3298-4590": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "3299-4590": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "3301-4590": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "438-4592": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1728-4592": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1663-4624": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4388-4635": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4390-4635": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "4388-4638": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1520-4641": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "416-4647": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1514-4653": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "410-4655": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "392-4658": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1499-4669": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "382-4680": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1603-4681": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "382-4681": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1503-4684": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1544-4685": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1610-4685": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1604-4685": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1597-4685": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "687-4687": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "690-4687": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "692-4692": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "693-4692": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "691-4695": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "692-4695": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2699-4700": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2700-4700": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2725-4700": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2890-4700": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2896-4700": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "1677-4701": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "791-4701": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2018-4702": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "2014-4702": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "3733-4704": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "3726-4704": {
             "stroke_group": "1577",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4481": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4482": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4483": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4484": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4485": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4486": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4487": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4488": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4489": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4490": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4491": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4492": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4493": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4494": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4495": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4496": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4497": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4498": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4499": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4500": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4501": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4502": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4503": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4504": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4505": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4506": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4507": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4508": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4509": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4510": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4511": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4512": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4513": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4514": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4515": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4516": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4517": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4518": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4519": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4520": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4521": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4522": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4523": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4524": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4525": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4526": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4527": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4528": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4529": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4530": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4531": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4532": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4533": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4534": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4535": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4536": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4537": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4538": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4539": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4540": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4541": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4542": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4543": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4544": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4545": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4546": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4547": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4548": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4549": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4550": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4551": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4552": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4553": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4554": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4555": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4556": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4557": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4558": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4559": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4560": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4561": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4562": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4563": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4564": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4565": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4566": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4567": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4568": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4569": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4570": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4571": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4572": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4573": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4574": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4575": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4576": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4577": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4578": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4579": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4580": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4581": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4582": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4583": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4584": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4585": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4586": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4587": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4588": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4589": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4590": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4591": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4592": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4593": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4594": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4595": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4596": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4597": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4598": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4599": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4600": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4601": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4602": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4603": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4604": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4605": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4606": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4607": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4608": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4609": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4610": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4611": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4612": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4613": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4614": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4615": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4616": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4617": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4618": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4619": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4620": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4621": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4622": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4623": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4624": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4625": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4626": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4627": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4628": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4629": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4630": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4631": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4632": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4633": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4634": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4635": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4636": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4637": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4638": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4639": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4640": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4641": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4642": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4643": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4644": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4645": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4646": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4647": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4648": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4649": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4650": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4651": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4652": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4653": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4654": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4655": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4656": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4657": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4658": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4659": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4660": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4661": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4662": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4663": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4664": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4665": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4666": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4667": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4668": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4669": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4670": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4671": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4672": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4673": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4674": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4675": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4676": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4677": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4678": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4679": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4680": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4681": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4682": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4683": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4684": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4685": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4686": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4687": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4688": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4689": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4690": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4691": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4692": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4693": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4694": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4695": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4696": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4697": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4698": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4699": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4700": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4701": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4702": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4703": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         },
         "5000-4704": {
             "stroke_group": "1578",
-            "height_allocation": "open"
+            "flow_group": 0,
+            "height_allocation": "open",
+            "speed_limit": 30
         }
     },
     "strokes": {
