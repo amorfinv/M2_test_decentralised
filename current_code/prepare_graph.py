@@ -11,7 +11,7 @@ from pyproj import Transformer,Proj, transform
 def main():
 
     # read in data
-    graph_path = 'whole_vienna/gis/renamed_graph.graphml'
+    graph_path = 'whole_vienna/gis/finalized_graph.graphml'
     G = ox.io.load_graphml(graph_path)
 
     # read in airspace grid dill from parent directory
@@ -30,9 +30,11 @@ def main():
 
     # also remove some columns from dataframe
     edge_stroke = pd.DataFrame(edge_gdf['stroke_group'].copy())
+    edge_flow = pd.DataFrame(edge_gdf['flow_group'].copy())
 
     # for each edge, get the stroke group
     stroke_array = np.sort(np.unique(edge_stroke.loc[:, 'stroke_group'].to_numpy()).astype(np.int64))
+    flow_array = np.sort(np.unique(edge_gdf.loc[:, 'flow_group'].to_numpy()).astype(np.int64))
 
     stroke_length = {}
     for stroke in stroke_array:
@@ -48,6 +50,22 @@ def main():
     # save node dictionary to JSON
     with open('airspace_design/stroke_length.json', 'w') as fp:
         json.dump(stroke_length, fp, indent=4)
+
+    # for each edge, get the flow group
+    flow_length = {}
+    for flow in flow_array:
+        # get the edges with the flow group
+        flow_edges = edge_gdf.loc[edge_gdf['flow_group'] == str(flow)].to_crs(crs='epsg:32633')
+        
+        # get the nodes of the edges
+        length_flow = sum(flow_edges.length)
+
+        # add to dictionary
+        flow_length[str(flow)] = length_flow
+
+    # save node dictionary to JSON
+    with open('airspace_design/flow_length.json', 'w') as fp:
+        json.dump(flow_length, fp, indent=4)
 
     edge_gdf.drop(['oneway','length', 'bearing', 'edge_interior_angle', 'layer_allocation','bearing_diff', 'geometry'], axis=1, inplace=True)
 
@@ -123,6 +141,7 @@ def main():
     # and with the values as another sub dictionary, with stroke_group and layer_height
     edge_dict = edge_gdf.to_dict(orient='index')
     stroke_dict = edge_stroke.to_dict(orient='index')
+    flow_dict = edge_flow.to_dict(orient='index')
 
     # create open airspace grid edges
     open_airspace_edges = [f'{dummy_osmid}-{open_node}' for open_node in open_airspace_nodes]
@@ -156,7 +175,7 @@ def main():
     with open('airspace_design/edges.json', 'w') as fp:
         json.dump(edge_dict_new, fp, indent=4)
 
-    # simplify edge_dict keys into a string rather than tuple
+    # simplify edge_dict keys into a string rather than tuple for stroke
     stroke_dict_new = {}
     for key, value in stroke_dict.items():
         new_key = value['stroke_group']
@@ -194,6 +213,22 @@ def main():
     # save edge dictionary as json
     with open('airspace_design/strokes.json', 'w') as fp:
         json.dump(stroke_dict_new, fp, indent=4)
+    
+    # simplify edge_dict keys into a string rather than tuple for flow
+    flow_dict_new = {}
+    for key, value in flow_dict.items():
+        new_key = value['flow_group']
+        new_value = f'{key[0]}-{key[1]}'
+
+        if new_key in flow_dict_new.keys():
+            flow_dict_new[new_key].append(new_value)
+        else:
+            flow_dict_new[new_key] = []
+            flow_dict_new[new_key].append(new_value)
+            
+    # save edge dictionary as json
+    with open('airspace_design/flows.json', 'w') as fp:
+        json.dump(flow_dict_new, fp, indent=4)
     
     # now create another json file containing information about dummies
     dummy_nodes = [int(dummy_osmid)] + open_airspace_nodes
