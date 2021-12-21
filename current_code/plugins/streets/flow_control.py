@@ -13,8 +13,6 @@ import random
 import json
 from pyproj import  Transformer
 from plugins.streets.open_airspace_grid import Cell, open_airspace
-import dill
-import shapely
 
 
 ##https://github.com/chuducty/KD-Tree-Python
@@ -313,24 +311,25 @@ class street_graph:
         self.create_graph(G,edges_gdf,open_airspace_grid)
         self.create_tree(G,open_airspace_grid)
         self.G=G
-        
-        input_file=open("airspace_design/constrained_poly.dill", 'rb')
-        constrained_poly=dill.load(input_file)
-        self.constrained_poly=shapely.geometry.Polygon(constrained_poly)
+
         
         # Open strokes.JSON as a dictionary
-        with open('airspace_design/strokes.json', 'r') as filename:
-            self.stroke_dict = json.load(filename)
+        with open('airspace_design/flows.json', 'r') as filename:
+            self.flows_dict = json.load(filename)
             
-        with open('airspace_design/stroke_length.json', 'r') as filename:
-            self.group_lengths= json.load(filename)
+        with open('airspace_design/flow_length.json', 'r') as filename:
+            self.flow_lengths= json.load(filename)
             
-        ##Delete the stroke groups that include open airspace
-        del self.stroke_dict["1578"]
-        del self.stroke_dict["1577"]
-        del self.stroke_dict["1576"]
+        del self.flows_dict["0"]
+        del self.flows_lengths["0"]
+# =============================================================================
+#         ##Delete the stroke groups that include open airspace
+#         del self.stroke_dict["1578"]
+#         del self.stroke_dict["1577"]
+#         del self.stroke_dict["1576"]
+# =============================================================================
         
-        for key in self.stroke_dict:
+        for key in self.flows_dict:
             self.modified_group[int(key)]=0 # 0 means low traffic, 1 medium traffic and 2 high traffic
 
 
