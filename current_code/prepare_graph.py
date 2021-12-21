@@ -139,6 +139,8 @@ def main():
 
     # convert edges into a dictionary with the directionality as the key. 
     # and with the values as another sub dictionary, with stroke_group and layer_height
+    # add a speed limit column to edge_gdf
+    edge_gdf['speed_limit'] = 30
     edge_dict = edge_gdf.to_dict(orient='index')
     stroke_dict = edge_stroke.to_dict(orient='index')
     flow_dict = edge_flow.to_dict(orient='index')
@@ -157,19 +159,23 @@ def main():
         new_key = f'{key[0]}-{key[1]}'
         edge_dict_new[new_key] = value
 
+    # make a constrained dictionary just for constrained
+    with open('airspace_design/const_edges.json', 'w') as fp:
+        json.dump(edge_dict_new, fp, indent=4)
+
     # add entry and exit edges to edge_dict
     for entry_edge in entry_edges:
-        edge_dict_new[entry_edge] = {'stroke_group': str(stroke_entry), 'height_allocation': 'open'}
+        edge_dict_new[entry_edge] = {'stroke_group': str(stroke_entry), 'flow_group': 0, 'height_allocation': 'open', 'speed_limit': 30}
 
     for exit_edge in exit_edges:
-        edge_dict_new[exit_edge] = {'stroke_group': str(stroke_exit), 'height_allocation': 'open'}
+        edge_dict_new[exit_edge] = {'stroke_group': str(stroke_exit), 'flow_group': 0, 'height_allocation': 'open', 'speed_limit': 30}
     
     # add open airspace edges to the edge dictionary
     for open_edge in open_airspace_edges:
-        edge_dict_new[open_edge] = {'stroke_group': str(stroke_open), 'height_allocation': 'open'}
+        edge_dict_new[open_edge] = {'stroke_group': str(stroke_open), 'flow_group': 0, 'height_allocation': 'open', 'speed_limit': 30}
     
     # add open airspace edges to edge_dict
-    edge_dict_new[f'{dummy_osmid}-{dummy_osmid}'] = {'stroke_group': str(stroke_open), 'height_allocation': 'open'}
+    edge_dict_new[f'{dummy_osmid}-{dummy_osmid}'] = {'stroke_group': str(stroke_open), 'flow_group': 0,'height_allocation': 'open', 'speed_limit': 30}
 
     # save edge dictionary as json
     with open('airspace_design/edges.json', 'w') as fp:
@@ -237,14 +243,14 @@ def main():
     dummy_edge_dict = {}
     # add entry and exit edges to dummy_edge_dict
     for entry_edge in entry_edges:
-        dummy_edge_dict[entry_edge] = {'stroke_group': str(stroke_entry), 'height_allocation': 'open'}
+        dummy_edge_dict[entry_edge] = {'stroke_group': str(stroke_entry), 'flow_group': 0, 'height_allocation': 'open', 'speed_limit': 30}
 
     for exit_edge in exit_edges:
-        dummy_edge_dict[exit_edge] = {'stroke_group': str(stroke_exit), 'height_allocation': 'open'}
+        dummy_edge_dict[exit_edge] = {'stroke_group': str(stroke_exit), 'flow_group': 0, 'height_allocation': 'open', 'speed_limit': 30}
     
     # add open edges to dummy_edge_dict
     for open_edge in open_airspace_edges:
-        dummy_edge_dict[open_edge] = {'stroke_group': str(stroke_open), 'height_allocation': 'open'}
+        dummy_edge_dict[open_edge] = {'stroke_group': str(stroke_open), 'flow_group': 0, 'height_allocation': 'open', 'speed_limit': 30}
     
     dummy_stroke_dict = {}
     dummy_stroke_dict[str(stroke_entry)] = stroke_dict_new[str(stroke_entry)]
