@@ -1719,7 +1719,6 @@ class PathPlanning:
             
             
         init_groups=copy.deepcopy(group_numbers)
-        print(group_numbers)
         for i in range(len(delete_indices)):
 
             
@@ -1727,7 +1726,6 @@ class PathPlanning:
             del group_numbers[j]
             del turns[j]
 
-        print(group_numbers)   
 
             
         ##Check for turn points
