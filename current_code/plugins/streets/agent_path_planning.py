@@ -1199,32 +1199,52 @@ class PathPlanning:
             os_id1=self.start_index_previous
 
             os_id2=indices_nodes[0]
-            if not( init_groups[0]==2000 and init_groups[2]!=2000) :
                 
-                edges_list.append((os_id1,os_id2))
-            
-            nodes_index=1
-            #cnt=0
-            for i in range(len(init_groups)-1):
+            if 2000 not in init_groups and self.start_index_previous==5000:
+                    edges_list.append((os_id1,os_id2))
 
-                edges_list.append((os_id1,os_id2))
-                if nodes_index>len(init_groups)-2:
-                    break
-                if nodes_index<len(init_groups)-1 and indices_nodes[nodes_index+1]==os_id2:
-                    nodes_index=nodes_index+1
-                    continue
-                if nodes_index<len(init_groups)-2 and init_groups[nodes_index+1]==2000 and init_groups[nodes_index+2]!=2000:
-                    nodes_index=nodes_index+1
-                    os_id2=indices_nodes[nodes_index]
+                    nodes_index=0
+
+                    for i in range(len(init_groups)-1):
+                        edges_list.append((os_id1,os_id2))
+
+                        if nodes_index>len(init_groups)-2:
+                            break
+                        if nodes_index<len(init_groups)-1 and indices_nodes[nodes_index+1]==os_id2:
+                            nodes_index=nodes_index+1
+                            continue
+    
+                        nodes_index=nodes_index+1
+                        os_id1=os_id2
+                        os_id2=indices_nodes[nodes_index]
                 
-                if init_groups[nodes_index]==2000 and init_groups[nodes_index+1]==2000:
-                    nodes_index=nodes_index+1
-                    os_id1=5000
-                    os_id2=indices_nodes[nodes_index]
-                else:
-                    nodes_index=nodes_index+1
-                    os_id1=os_id2
-                    os_id2=indices_nodes[nodes_index]
+            else:
+                    if not( init_groups[0]==2000 and init_groups[2]!=2000) :
+                        edges_list.append((os_id1,os_id2))
+                    
+                    nodes_index=1
+    
+                    for i in range(len(init_groups)-1):
+                        edges_list.append((os_id1,os_id2))
+                        if nodes_index>len(init_groups)-2:
+                            break
+                        if nodes_index<len(init_groups)-1 and indices_nodes[nodes_index+1]==os_id2:
+                            nodes_index=nodes_index+1
+                            continue
+                        if nodes_index<len(init_groups)-2 and init_groups[nodes_index+1]==2000 and init_groups[nodes_index+2]!=2000:
+                            nodes_index=nodes_index+1
+                            os_id2=indices_nodes[nodes_index]
+    
+                        if init_groups[nodes_index]==2000 and init_groups[nodes_index+1]==2000:
+                            nodes_index=nodes_index+1
+                            os_id1=5000
+                            os_id2=indices_nodes[nodes_index]
+    
+                        else:
+                            nodes_index=nodes_index+1
+                            os_id1=os_id2
+                            os_id2=indices_nodes[nodes_index]
+
 
                 
             cnt=0
@@ -1699,6 +1719,7 @@ class PathPlanning:
             
             
         init_groups=copy.deepcopy(group_numbers)
+        print(group_numbers)
         for i in range(len(delete_indices)):
 
             
@@ -1706,7 +1727,7 @@ class PathPlanning:
             del group_numbers[j]
             del turns[j]
 
-            
+        print(group_numbers)   
 
             
         ##Check for turn points
@@ -1834,7 +1855,11 @@ class PathPlanning:
         self.start_point=Point(tuple((lon,lat)))
         self.start_index=next_node_index
         self.start_index_previous=prev_node_osmnx_id
-        
+        if prev_node_osmnx_id>4480 and prev_node_osmnx_id!=5000:
+            prev_node_osmnx_id=5000
+            self.start_index=self.start_index_previous
+            next_node_index=self.start_index_previous
+            self.start_index_previous=prev_node_osmnx_id
 
         ## check for changes in the aircrafts subgraph if any
         expanded=False
@@ -1971,30 +1996,54 @@ class PathPlanning:
                 os_id1=self.start_index_previous
 
                 os_id2=indices_nodes[0]
+
                 
-                if not( init_groups[0]==2000 and init_groups[2]!=2000) :
+                if 2000 not in init_groups and self.start_index_previous==5000:
                     edges_list.append((os_id1,os_id2))
+
+                    nodes_index=0
+
                     
-                nodes_index=1
-                for i in range(len(init_groups)-1):
-                    edges_list.append((os_id1,os_id2))
-                    if nodes_index>len(init_groups)-2:
-                        break
-                    if nodes_index<len(init_groups)-1 and indices_nodes[nodes_index+1]==os_id2:
-                        nodes_index=nodes_index+1
-                        continue
-                    if nodes_index<len(init_groups)-2 and init_groups[nodes_index+1]==2000 and init_groups[nodes_index+2]!=2000:
-                        nodes_index=nodes_index+1
-                        os_id2=indices_nodes[nodes_index]
-                    
-                    if init_groups[nodes_index]==2000 and init_groups[nodes_index+1]==2000:
-                        nodes_index=nodes_index+1
-                        os_id1=5000
-                        os_id2=indices_nodes[nodes_index]
-                    else:
+                    for i in range(len(init_groups)-1):
+                        edges_list.append((os_id1,os_id2))
+
+                        if nodes_index>len(init_groups)-2:
+                            break
+                        if nodes_index<len(init_groups)-1 and indices_nodes[nodes_index+1]==os_id2:
+                            nodes_index=nodes_index+1
+                            continue
+    
                         nodes_index=nodes_index+1
                         os_id1=os_id2
                         os_id2=indices_nodes[nodes_index]
+                
+                else:
+                    if not( init_groups[0]==2000 and init_groups[2]!=2000) :
+                        edges_list.append((os_id1,os_id2))
+                    
+                    nodes_index=1
+    
+                    for i in range(len(init_groups)-1):
+                        edges_list.append((os_id1,os_id2))
+                        if nodes_index>len(init_groups)-2:
+                            break
+                        if nodes_index<len(init_groups)-1 and indices_nodes[nodes_index+1]==os_id2:
+                            nodes_index=nodes_index+1
+                            continue
+                        if nodes_index<len(init_groups)-2 and init_groups[nodes_index+1]==2000 and init_groups[nodes_index+2]!=2000:
+                            nodes_index=nodes_index+1
+                            os_id2=indices_nodes[nodes_index]
+    
+                        if init_groups[nodes_index]==2000 and init_groups[nodes_index+1]==2000:
+                            nodes_index=nodes_index+1
+                            os_id1=5000
+                            os_id2=indices_nodes[nodes_index]
+    
+                        else:
+                            nodes_index=nodes_index+1
+                            os_id1=os_id2
+                            os_id2=indices_nodes[nodes_index]
+
 
                             
                 cnt=0
@@ -2210,29 +2259,53 @@ class PathPlanning:
 
                 os_id2=indices_nodes[0]
             
-                nodes_index=1
-                if not( init_groups[0]==2000 and init_groups[2]!=2000) :
+                
+                if 2000 not in init_groups and self.start_index_previous==5000:
                     edges_list.append((os_id1,os_id2))
-                for i in range(len(init_groups)-1):
-                    edges_list.append((os_id1,os_id2))
-                    if nodes_index>len(init_groups)-2:
-                        break
-                    if nodes_index<len(init_groups)-1 and indices_nodes[nodes_index+1]==os_id2:
-                        nodes_index=nodes_index+1
-                        continue
-                    if nodes_index<len(init_groups)-2 and init_groups[nodes_index+1]==2000 and init_groups[nodes_index+2]!=2000:
-                        nodes_index=nodes_index+1
-                        os_id2=indices_nodes[nodes_index]
+
+                    nodes_index=0
+
                     
-                    if init_groups[nodes_index]==-1 and init_groups[nodes_index+1]==2000:
-                        nodes_index=nodes_index+1
-                        os_id1=0
-                        os_id2=indices_nodes[nodes_index]
-                    else:
+                    for i in range(len(init_groups)-1):
+                        edges_list.append((os_id1,os_id2))
+
+                        if nodes_index>len(init_groups)-2:
+                            break
+                        if nodes_index<len(init_groups)-1 and indices_nodes[nodes_index+1]==os_id2:
+                            nodes_index=nodes_index+1
+                            continue
+    
                         nodes_index=nodes_index+1
                         os_id1=os_id2
                         os_id2=indices_nodes[nodes_index]
-                      
+                
+                else:
+                    if not( init_groups[0]==2000 and init_groups[2]!=2000) :
+                        edges_list.append((os_id1,os_id2))
+                    
+                    nodes_index=1
+    
+                    for i in range(len(init_groups)-1):
+                        edges_list.append((os_id1,os_id2))
+                        if nodes_index>len(init_groups)-2:
+                            break
+                        if nodes_index<len(init_groups)-1 and indices_nodes[nodes_index+1]==os_id2:
+                            nodes_index=nodes_index+1
+                            continue
+                        if nodes_index<len(init_groups)-2 and init_groups[nodes_index+1]==2000 and init_groups[nodes_index+2]!=2000:
+                            nodes_index=nodes_index+1
+                            os_id2=indices_nodes[nodes_index]
+    
+                        if init_groups[nodes_index]==2000 and init_groups[nodes_index+1]==2000:
+                            nodes_index=nodes_index+1
+                            os_id1=5000
+                            os_id2=indices_nodes[nodes_index]
+    
+                        else:
+                            nodes_index=nodes_index+1
+                            os_id1=os_id2
+                            os_id2=indices_nodes[nodes_index]
+
                             
                 cnt=0
                 for i in turns:

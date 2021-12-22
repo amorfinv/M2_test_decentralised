@@ -20,7 +20,7 @@ from pympler import asizeof
 # Step 1: Import the graph we will be using
 dir_path = os.path.dirname(os.path.realpath(__file__))
 graph_path = dir_path.replace('current_code', 
-          'current_code/whole_vienna/gis/renamed_graph.graphml')
+          'current_code/whole_vienna/gis/finalized_graph.graphml')
 G = ox.io.load_graphml(graph_path)
 #G = ox.io.load_graphml('processed_graph.graphml')
 edges = ox.graph_to_gdfs(G)[1]
@@ -38,19 +38,22 @@ grid=dill.load(input_file)
 ##Initialise the flow control entity
 graph=street_graph(G,edges,grid) 
 
+fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
 
 
-plan = PathPlanning(2,grid,graph,gdf, 16.4140594505, 48.1990561304, 16.363599949,48.2098319007)
+plan = PathPlanning(2,grid,graph,gdf, 16.4047372913,48.2025129631,16.3539759332,48.2198151219)
 route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
+
+x_list=[]
+y_list=[]
+for r in route:
+    x_list.append(r[0])
+    y_list.append(r[1])
+
+ax.scatter(x_list,y_list,c="b")
+
 
 print(in_constrained)
 
-plan = PathPlanning(2,grid,graph,gdf, 16.4062782944, 48.1866483792, 16.3711874939,48.2116662268)
-route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
 
-print(in_constrained)
-
-# Create flow control dill
-output_file=open(f"Flow_control.dill", 'wb')
-dill.dump(graph,output_file)
-output_file.close()    
+ 
