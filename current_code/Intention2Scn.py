@@ -102,7 +102,7 @@ scenario_file_name = intention_file_name.replace('csv','scn')
 # Step 4: Create scenario file from dictionary
 with open(scenario_folder+scenario_file_name, 'w+') as f:
     f.write('00:00:00>HOLD\n00:00:00>PAN 48.204011819028494 16.363471515762452\n00:00:00>ZOOM 10\n')
-    f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV2\n00:00:00>CDMETHOD M2STATEBASED\n')
+    f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV3\n00:00:00>CDMETHOD M2STATEBASED\n')
     f.write('00:00:00>STREETSENABLE\n')
     f.write(f'00:00:00>loadloiteringdill {scenario_loitering_dill_name}\n')
     f.write('00:00:00>CASMACHTHR 0\n')
