@@ -21,7 +21,7 @@ bst = BlueskySCNTools.BlueskySCNTools()
 # Step 1: Import the graph we will be using
 dir_path = os.path.dirname(os.path.realpath(__file__))
 graph_path = dir_path.replace('current_code', 
-          'current_code/whole_vienna/gis/renamed_graph.graphml')
+          'current_code/whole_vienna/gis/finalized_graph.graphml')
 G = ox.io.load_graphml(graph_path)
 edges = ox.graph_to_gdfs(G)[1]
 gdf=ox.graph_to_gdfs(G, nodes=False, fill_edge_geometry=True)
