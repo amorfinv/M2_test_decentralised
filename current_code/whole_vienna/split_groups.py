@@ -352,7 +352,7 @@ def flow_control_split(edges, average_length=300, ignore_threshold=200, merge_th
             preceding_flow_group = edges_gdf.loc[edge_index, 'flow_group'].iloc[0]
 
             # merge the flow groups
-            flow_group_dict[preceding_flow_group] = flow_group_dict[preceding_flow_group] + flow_group_dict[flow_group]
+            flow_group_dict[preceding_flow_group] = flow_group_dict[preceding_flow_group] + flow_group_dict[flow_group].copy()
 
         # if the first_node_count = 1 and last_node_count = 2 then the flow group is at the start of the stroke
         elif first_node_count == 1 and last_node_count == 2:
@@ -361,7 +361,7 @@ def flow_control_split(edges, average_length=300, ignore_threshold=200, merge_th
             following_flow_group = edges_gdf.loc[edge_index, 'flow_group'].iloc[0]
 
             # merge the flow groups
-            flow_group_dict[following_flow_group] = flow_group_dict[following_flow_group] + flow_group_dict[flow_group]
+            flow_group_dict[following_flow_group] = flow_group_dict[following_flow_group] + flow_group_dict[flow_group].copy()
         
         # if the first_node_count = 2 and last_node_count = 2 then the flow group is in the middle of the stroke
         elif first_node_count == 2 and last_node_count == 2:
@@ -380,10 +380,14 @@ def flow_control_split(edges, average_length=300, ignore_threshold=200, merge_th
 
             # merge the flow groups
             if length_preceding_flow_group < length_following_flow_group:
-                flow_group_dict[preceding_flow_group] = flow_group_dict[preceding_flow_group] + flow_group_dict[flow_group]
+                flow_group_dict[preceding_flow_group] = flow_group_dict[preceding_flow_group] + flow_group_dict[flow_group].copy()
             else:
-                flow_group_dict[following_flow_group] = flow_group_dict[following_flow_group] + flow_group_dict[flow_group]
-
+                flow_group_dict[following_flow_group] = flow_group_dict[following_flow_group] + flow_group_dict[flow_group].copy()
+        
+    # delete the merged flow groups from dictionary
+    for group in groups_to_merge:
+        del flow_group_dict[group[0]]
+    
     # loop through dictionary again to get the new flow groups
     # to ensure they are in order restart the count of the keys
     # TODO: for loop could fail if it doesn't start with zero
