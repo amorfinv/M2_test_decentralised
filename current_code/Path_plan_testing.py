@@ -40,8 +40,7 @@ graph=street_graph(G,edges,grid)
 
 fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
 
-
-plan = PathPlanning(2,grid,graph,gdf, 16.4047372913,48.2025129631,16.3539759332,48.2198151219)
+plan = PathPlanning(2,grid,graph,gdf, 16.3483711835,48.2054864165,16.3608620862,48.2356842079)
 route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
 
 x_list=[]
@@ -53,7 +52,6 @@ for r in route:
 ax.scatter(x_list,y_list,c="b")
 
 
-print(in_constrained)
 
 
  

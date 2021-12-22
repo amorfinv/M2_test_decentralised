@@ -591,6 +591,13 @@ def computeAngle(point1, point2):
     angle = round(math.degrees(math.atan(height/base)), 3)
     return(angle)
 
+def angle3pt(a, b, c):
+    """Counterclockwise angle in degrees by turning from a to c around b
+        Returns a float between 0.0 and 360.0"""
+    ang = math.degrees(
+        math.atan2(c[1]-b[1], c[0]-b[0]) - math.atan2(a[1]-b[1], a[0]-b[0]))
+    return ang + 360 if ang < 0 else ang
+
 class SearchGraph:
     def __init__(self,key_indices_list,groups_list,parents_list,children_list,g_list,rhs_list,key_list,inQueue_list,expanded_list):
         self.key_indices_list=np.array(key_indices_list,dtype=np.uint16)
@@ -808,6 +815,7 @@ class PathPlanning:
         new_nodes_counter=0
         for i in range(len(omsnx_keys_list)):
            key=omsnx_keys_list[i]
+
            #lon=self.G[key].lon
            #lat=self.G[key].lat 
 
@@ -843,6 +851,7 @@ class PathPlanning:
            ii=0
            tmp=[]#list if the groups that the node has been added
            for p in parents:
+
                if not ii:
                    if (str(p)+'-'+str(key)) in list(self.edge_gdf.keys()): 
 
@@ -867,8 +876,11 @@ class PathPlanning:
                            tmp_dict[key]=tmp_cnt
                            tmp_cnt=tmp_cnt+1
                            os_keys2_indices.append([key,i+new_nodes_counter])
-                       elif (i+new_nodes_counter)  not in os_keys2_indices[tmp_dict[key]]:
+
+                       elif (i+new_nodes_counter)  not in os_keys2_indices[tmp_dict[key]][1:]:
                            os_keys2_indices[tmp_dict[key]].append(i+new_nodes_counter)
+
+                               
                else: 
                 if (str(p)+'-'+str(key)) in list(self.edge_gdf.keys()):  
 
@@ -893,7 +905,9 @@ class PathPlanning:
                            tmp_dict[key]=tmp_cnt
                            tmp_cnt=tmp_cnt+1
                            os_keys2_indices.append([key,i+new_nodes_counter])
-                        elif (i+new_nodes_counter)  not in os_keys2_indices[tmp_dict[key]]:
+ 
+                               
+                        elif (i+new_nodes_counter)  not in os_keys2_indices[tmp_dict[key]][1:]:
                            os_keys2_indices[tmp_dict[key]].append(i+new_nodes_counter)
 
                            
@@ -919,7 +933,7 @@ class PathPlanning:
                            tmp_dict[key]=tmp_cnt
                            tmp_cnt=tmp_cnt+1
                            os_keys2_indices.append([key,i+new_nodes_counter])
-                        elif (i+new_nodes_counter)  not in os_keys2_indices[tmp_dict[key]]:
+                        elif (i+new_nodes_counter)  not in os_keys2_indices[tmp_dict[key]][1:]:
                             os_keys2_indices[tmp_dict[key]].append(i+new_nodes_counter)
 
                         
@@ -943,7 +957,7 @@ class PathPlanning:
                            tmp_dict[key]=tmp_cnt
                            tmp_cnt=tmp_cnt+1
                            os_keys2_indices.append([key,i+new_nodes_counter])
-                        elif (i+new_nodes_counter)  not in os_keys2_indices[tmp_dict[key]]:
+                        elif (i+new_nodes_counter)  not in os_keys2_indices[tmp_dict[key]][1:]:
                             os_keys2_indices[tmp_dict[key]].append(i+new_nodes_counter)
                         
            if ii==0:
@@ -986,7 +1000,7 @@ class PathPlanning:
                                tmp_dict[j]=tmp_cnt
                                tmp_cnt=tmp_cnt+1
                                os_keys2_indices.append([j,jj])
-                            elif jj  not in os_keys2_indices[tmp_dict[j]]:
+                            elif jj  not in os_keys2_indices[tmp_dict[j]][1:]:
                                os_keys2_indices[tmp_dict[j]].append(jj)
                    
                             break                    
@@ -1001,7 +1015,7 @@ class PathPlanning:
                                tmp_dict[i]=tmp_cnt
                                tmp_cnt=tmp_cnt+1
                                os_keys2_indices.append([i,ii])
-                            elif ii  not in os_keys2_indices[tmp_dict[i]]:
+                            elif ii  not in os_keys2_indices[tmp_dict[i]][1:]:
                                os_keys2_indices[tmp_dict[i]].append(ii)
                             break
                         
@@ -1026,7 +1040,7 @@ class PathPlanning:
                                tmp_dict[i]=tmp_cnt
                                tmp_cnt=tmp_cnt+1
                                os_keys2_indices.append([i,ii])
-                            elif ii  not in os_keys2_indices[tmp_dict[i]]:
+                            elif ii  not in os_keys2_indices[tmp_dict[i]][1:]:
                                os_keys2_indices[tmp_dict[i]].append(ii)                            
                             break
               
@@ -1038,12 +1052,13 @@ class PathPlanning:
                                tmp_dict[i]=tmp_cnt
                                tmp_cnt=tmp_cnt+1
                                os_keys2_indices.append([i,ii])
-                            elif ii  not in os_keys2_indices[tmp_dict[i]]:
+                            elif ii  not in os_keys2_indices[tmp_dict[i]][1:]:
                                os_keys2_indices[tmp_dict[i]].append(ii)                      
                             break
           
 
         
+
         del self.open_airspace_grid
         del self.G
         del self.edge_gdf
@@ -1294,7 +1309,7 @@ class PathPlanning:
         
         if change: #Scan for changes
         ##replan
-            path.k_m=path.k_m+heuristic(path.origin_node_index,path.start,path.speed,self.flow_graph,graph)
+            path.k_m=path.k_m+heuristic(path.origin_node_index,self.path.start,path.speed,self.flow_graph,graph)
             for c in change_list:
                 
                 #if not  graph.expanded_list[c[0]] or not graph.expanded_list[c[1]]:
@@ -1746,7 +1761,8 @@ class PathPlanning:
             ##Check the angle between the prev point- current point and the current point- next point  
             line_string_1 = [(lat_prev,lon_prev), (lat_cur,lon_cur)]
             line_string_2 = [(lat_cur,lon_cur), (lat_next,lon_next)]
-            angle = 180 - angleBetweenTwoLines(line_string_1,line_string_2)
+            angle=abs(180-angle3pt((lon_prev,lat_prev),(lon_cur,lat_cur),(lon_next,lat_next)))
+            #angle = 180 - angleBetweenTwoLines(line_string_1,line_string_2)
             # if turns[i]:
             #     turn_speed[i]=10
             if angle>self.cutoff_angle and group_numbers[i]!=2000 and i!=0:
