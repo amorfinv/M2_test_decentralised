@@ -69,6 +69,10 @@ scenario_dict = dict()
 sizes=[]
 lines = []
 
+
+plan = PathPlanning(2,grid,graph,gdf, 16.4047372913,48.2025129631,16.3539759332,48.2198151219)
+route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
+
 for cnt, flight in enumerate(generated_traffic):
     print(flight[0])
 
