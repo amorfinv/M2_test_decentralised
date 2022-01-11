@@ -150,7 +150,9 @@ def qdrdist(latd1, lond1, latd2, lond2):
                                 np.sin(lat1) * coslat2 * np.cos(lon2 - lon1)))
 
     return qdr, d/nm
-
+d1=qdrdist(48.2069826,16.3727506,48.2075894,16.3730102)
+d2=qdrdist(48.2075894,16.3730102,48.20727253,16.37385858)
+print(d1,d2)
 plan = PathPlanning(2,grid,graph,gdf, 16.4047372913,48.2025129631,16.3539759332,48.2198151219)
 route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan() 
 for i in range(1,len(route)-1):

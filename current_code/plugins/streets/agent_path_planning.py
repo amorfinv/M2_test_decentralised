@@ -1825,8 +1825,8 @@ class PathPlanning:
 
             
         ##Check for turn points
-        lat_prev=self.start_point.x
-        lon_prev=self.start_point.y
+        lat_prev=self.start_point.y
+        lon_prev=self.start_point.x
         
         turn_speed=copy.deepcopy(turns) ## TODO : update those values when they are ready
         #speed set to 0 for open airspace or for no turn
@@ -1834,11 +1834,12 @@ class PathPlanning:
         #speed to 5 knots for turning angles between 45 and 90 degrees
         #speed to 2 knots for turning angles larger tha 90 degrees
 
-        for i in range(len(group_numbers)-1):
-            lat_cur=route[i][0]
-            lon_cur=route[i][1]
-            lat_next=route[i+1][0]
-            lon_next=route[i+1][1]
+
+        for i in range(1,len(group_numbers)-1):
+            lat_cur=route[i][1]
+            lon_cur=route[i][0]
+            lat_next=route[i+1][1]
+            lon_next=route[i+1][0]
             ##Check the angle between the prev point- current point and the current point- next point  
             #line_string_1 = [(lat_prev,lon_prev), (lat_cur,lon_cur)]
             #line_string_2 = [(lat_cur,lon_cur), (lat_next,lon_next)]
@@ -1846,10 +1847,10 @@ class PathPlanning:
             d2=qdrdist(lat_cur,lon_cur,lat_next,lon_next)
 
             angle=abs(d2[0]-d1[0])
+            
             if angle>180:
                 angle=360-angle
-            #angle=abs(180-angle3pt((lon_prev,lat_prev),(lon_cur,lat_cur),(lon_next,lat_next)))
-            #angle = 180 - angleBetweenTwoLines(line_string_1,line_string_2)
+
 
             if angle>self.cutoff_angle and group_numbers[i]!=2000 and i!=0:
                 turns[i]=True

@@ -78,7 +78,11 @@ for cnt, flight in enumerate(generated_traffic):
 
     if cnt>=100:#0 :
         break #stop at 20 aircrafts or change that
-
+    
+# =============================================================================
+#     if cnt!=87:
+#         continue
+# =============================================================================
     # First get the route and turns
     origin = flight[3]
     destination = flight[4]
