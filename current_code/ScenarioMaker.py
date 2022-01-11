@@ -98,6 +98,16 @@ for cnt, flight in enumerate(generated_traffic):
         #No path was found
         plan = PathPlanning(aircraft_type,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.03)
         route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
+        
+        const=0.03
+        while route==[]:
+            const=const+0.01
+            if const>0.06:
+                print("No path can be found")
+                break
+            plan = PathPlanning(aircraft_type,grid,graph,gdf, origin[0], origin[1], destination[0], destination[1],0.03)
+            route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
+            
 
     # Step 4: Add to dictionary
     file_loc_dill = flight[5]

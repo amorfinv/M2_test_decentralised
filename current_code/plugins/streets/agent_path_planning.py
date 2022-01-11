@@ -1506,7 +1506,8 @@ class PathPlanning:
             if current_node in selected_nodes_index:
                 print(selected_nodes_index)
                 print(current_node)
-                print("get_path stack !! Please report this!")
+                print("Path planning failed")
+                #print("get_path stack !! Please report this!")
                 return None,None,None,None,None,None,None,None
                 
             selected_nodes_index.append(current_node)
