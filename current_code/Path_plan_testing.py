@@ -129,9 +129,6 @@ def qdrdist(latd1, lond1, latd2, lond2):
     lat2 = np.radians(latd2)
     lon2 = np.radians(lond2)
 
-    #root = sin1 * sin1 + coslat1 * coslat2 * sin2 * sin2
-    #d    =  2.0 * r * np.arctan2(np.sqrt(root) , np.sqrt(1.0 - root))
-    # d =2.*r*np.arcsin(np.sqrt(sin1*sin1 + coslat1*coslat2*sin2*sin2))
 
     # Corrected to avoid "nan" at westward direction
     d = r*np.arccos(np.cos(lat1)*np.cos(lat2)*np.cos(lon2-lon1) + \

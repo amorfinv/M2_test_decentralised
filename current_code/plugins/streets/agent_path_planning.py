@@ -4,11 +4,7 @@ Created on Tue Oct 12 10:51:03 2021
 
 @author: nipat
 """
-###############################
-#This values made get_path to stack!!!!!!!!!!!!!!!!!
-#origin=[16.342228782395118,48.263495892875554]
-#destination=[16.381609676387115,48.16806791791769  ]##
-##############################
+
 
 import heapq
 import numpy as np
@@ -20,7 +16,7 @@ import shapely
 from plugins.streets.flow_control import street_graph,bbox
 from plugins.streets.open_airspace_grid import Cell, open_airspace
 
-##########
+
 ##Functions for finding the cell of a point in open airspace
 def index_2d(myList, v):
     test=[]
@@ -68,7 +64,7 @@ def sort_cells_x(cells):
         
     #print(sorted(min_x_ind,key=lambda x: (x[1])))
     return min_x_ind
-##########################
+
 
 # Given three collinear points p, q, r, the function checks if
 # point q lies on line segment 'pr'
@@ -248,53 +244,7 @@ def get_nearest_edge(gdf, point):
     return geometry, u, v,distance
 
 
-# =============================================================================
-# class CellNode:
-#     def __init__(self,cell):
-#         self.p0=cell.p0
-#         self.p1=cell.p1
-#         self.p2=cell.p2
-#         self.p3=cell.p3
-# 
-# class Node:
-#     av_speed_horizontal= 10.0#10.0 ##TODO: that needs fine tunng
-#     
-#     def __init__(self,key_index,index,group):
-#         self.key_index=key_index # the index the osmnx graph
-#         self.index=index# the index in the search graph   # do that numpy uint16
-# 
-#         #the coordinates of the node as given by osmnx (latitude,longitude)
-#         ##Coordinates of the center
-# # =============================================================================
-# #         self.lon=None
-# #         self.lat=None
-# # 
-# #         
-# #         ##Coordinates of the center
-# #         self.x_cartesian=None
-# #         self.y_cartesian=None
-# # =============================================================================
-# 
-# 
-#         #the parents(predessecors) and children(successor) of the node expressed as lists containing their indexes in the graph 
-#         self.parents=[]
-#         self.children=[]
-#         
-#         #self.f=0.0
-#         self.g=float('inf')
-#         self.rhs=float('inf')
-#         self.key=[0.0,0.0]
-#  
-#         self.inQueue=False #do that numpy bool8
-#         
-#         #the stroke group
-#         self.group=group # do that numpy uint16
-#         
-#         self.expanded=False #do that numpy bool8
-#         
-#         #self.open_airspace=False
-#         #self.cell=None
-# =============================================================================
+
 ##from geo.py
 def rwgs84(latd):
     """ Calculate the earths radius with WGS'84 geoid definition
@@ -420,7 +370,7 @@ def eucledean_distance(p1,p2):
 def heuristic(current, goal,speed,flow_graph,graph):
     cc=flow_graph.nodes_graph[graph.key_indices_list[current]]
     gg=flow_graph.nodes_graph[graph.key_indices_list[goal]]
-    av_speed_vertical=1.0
+    av_speed_vertical=5.0
     if cc.open_airspace or gg.open_airspace:
         h=eucledean_distance(cc, gg)/speed
     else:
@@ -433,7 +383,7 @@ def heuristic(current, goal,speed,flow_graph,graph):
 
 ##Compute the cost of moving from a node to its neighborh node
 def compute_c(current,neigh,edges_speed,flow_graph,speed,graph):
-    av_speed_vertical=1.0
+    av_speed_vertical=5.0
     g=1
     cc=flow_graph.nodes_graph[graph.key_indices_list[current]]
     nn=flow_graph.nodes_graph[graph.key_indices_list[neigh]]
@@ -574,111 +524,6 @@ def compute_shortest_path(path,graph,edges_speed,flow_graph):
 
 
 
-"""
-The below function calculates the joining angle between
-two line segments. FROM COINS
-"""
-def angleBetweenTwoLines(line1, line2):
-    l1p1, l1p2 = line1
-    l2p1, l2p2 = line2
-    l1orien = computeOrientation(line1)
-    l2orien = computeOrientation(line2)
-    """
-    If both lines have same orientation, return 180
-    If one of the lines is zero, exception for that
-    If both the lines are on same side of the horizontal plane, calculate 180-(sumOfOrientation)
-    If both the lines are on same side of the vertical plane, calculate pointSetAngle
-    """
-    if (l1orien==l2orien): 
-        angle = 180
-    elif (l1orien==0) or (l2orien==0): 
-        angle = pointsSetAngle(line1, line2)
-        
-    elif l1p1 == l2p1:
-        if ((l1p1[1] > l1p2[1]) and (l1p1[1] > l2p2[1])) or ((l1p1[1] < l1p2[1]) and (l1p1[1] < l2p2[1])):
-            angle = 180 - (abs(l1orien) + abs(l2orien))
-        else:
-            angle = pointsSetAngle([l1p1, l1p2], [l2p1,l2p2])
-    elif l1p1 == l2p2:
-        if ((l1p1[1] > l2p1[1]) and (l1p1[1] > l1p2[1])) or ((l1p1[1] < l2p1[1]) and (l1p1[1] < l1p2[1])):
-            angle = 180 - (abs(l1orien) + abs(l2orien))
-        else:
-            angle = pointsSetAngle([l1p1, l1p2], [l2p2,l2p1])
-    elif l1p2 == l2p1:
-        if ((l1p2[1] > l1p1[1]) and (l1p2[1] > l2p2[1])) or ((l1p2[1] < l1p1[1]) and (l1p2[1] < l2p2[1])):
-            angle = 180 - (abs(l1orien) + abs(l2orien))
-        else:
-            angle = pointsSetAngle([l1p2, l1p1], [l2p1,l2p2])
-    elif l1p2 == l2p2:
-        if ((l1p2[1] > l1p1[1]) and (l1p2[1] > l2p1[1])) or ((l1p2[1] < l1p1[1]) and (l1p2[1] < l2p1[1])):
-            angle = 180 - (abs(l1orien) + abs(l2orien))
-        else:
-            angle = pointsSetAngle([l1p2, l1p1], [l2p2,l2p1])
-    return(angle)
-
-"""
-This below function calculates the acute joining angle between
-two given set of points. FROM COINS
-"""
-def pointsSetAngle(line1, line2):
-    l1orien = computeOrientation(line1)
-    l2orien = computeOrientation(line2)
-    if ((l1orien>0) and (l2orien<0)) or ((l1orien<0) and (l2orien>0)):
-        return(abs(l1orien)+abs(l2orien))
-    elif ((l1orien>0) and (l2orien>0)) or ((l1orien<0) and (l2orien<0)):
-        theta1 = abs(l1orien) + 180 - abs(l2orien)
-        theta2 = abs(l2orien) + 180 - abs(l1orien)
-        if theta1 < theta2:
-            return(theta1)
-        else:
-            return(theta2)
-    elif (l1orien==0) or (l2orien==0):
-        if l1orien<0:
-            return(180-abs(l1orien))
-        elif l2orien<0:
-            return(180-abs(l2orien))
-        else:
-            return(180 - (abs(computeOrientation(line1)) + abs(computeOrientation(line2))))
-    elif (l1orien==l2orien):
-        return(180)
-
-# FROM COINS
-
-def computeOrientation(line):
-    point1 = line[1]
-    point2 = line[0]
-    """
-    If the latutide of a point is less and the longitude is more, or
-    If the latitude of a point is more and the longitude is less, then
-    the point is oriented leftward and wil have negative orientation.
-    """
-    if ((point2[0] > point1[0]) and (point2[1] < point1[1])) or ((point2[0] < point1[0]) and (point2[1] > point1[1])):
-        return(-computeAngle(point1, point2))
-    #If the latitudes are same, the line is horizontal
-    elif point2[1] == point1[1]:
-        return(0)
-    #If the longitudes are same, the line is vertical
-    elif point2[0] == point1[0]:
-        return(90)
-    else:
-        return(computeAngle(point1, point2))
-
-"""
-The function below calculates the angle between two points in space. FROM COINS
-"""
-def computeAngle(point1, point2):
-    height = abs(point2[1] - point1[1])
-    base = abs(point2[0] - point1[0])
-    angle = round(math.degrees(math.atan(height/base)), 3)
-    return(angle)
-
-def angle3pt(a, b, c):
-    """Counterclockwise angle in degrees by turning from a to c around b
-        Returns a float between 0.0 and 360.0"""
-    ang = math.degrees(
-        math.atan2(c[1]-b[1], c[0]-b[0]) - math.atan2(a[1]-b[1], a[0]-b[0]))
-    return ang + 360 if ang < 0 else ang
-
 class SearchGraph:
     def __init__(self,key_indices_list,groups_list,parents_list,children_list,g_list,rhs_list,key_list,inQueue_list,expanded_list):
         self.key_indices_list=np.array(key_indices_list,dtype=np.uint16)
@@ -810,9 +655,8 @@ class PathPlanning:
             
             
         #find the area of interest based on teh start and goal point
-        ##TODO: tune the exp_const
         if not self.start_in_open and not self.dest_in_open:
-            #exp_const=0.01#0.005#0.02##0.005 
+
             lats=[lat_start,lat_dest,self.flow_graph.nodes_graph[self.start_index].lat,self.flow_graph.nodes_graph[self.start_index_previous].lat,self.flow_graph.nodes_graph[self.goal_index].lat,self.flow_graph.nodes_graph[self.goal_index_next].lat]
             lons=[lon_start,lon_dest,self.flow_graph.nodes_graph[self.start_index].lon,self.flow_graph.nodes_graph[self.goal_index].lon]
             box=bbox(min(lats)-exp_const,min(lons)-exp_const,max(lats)+exp_const,max(lons)+exp_const) 
@@ -825,8 +669,7 @@ class PathPlanning:
                     self.edge_gdf[key]=edges[k][kk].speed
 
         else:
-            print('open')
-            #exp_const=0.01#0.05#0.03##0.005 
+            #print('open')
             lats=[lat_start,lat_dest,self.flow_graph.nodes_graph[self.start_index].lat,self.flow_graph.nodes_graph[self.goal_index].lat]
             lons=[lon_start,lon_dest,self.flow_graph.nodes_graph[self.start_index].lon,self.flow_graph.nodes_graph[self.goal_index].lon]
             if self.start_in_open:
@@ -1175,27 +1018,10 @@ class PathPlanning:
             
             return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
 
-
-# =============================================================================
-#         start_id=self.os_keys_dict_pred[str(self.start_index)+'-'+str(self.start_index_previous)]
-#         print(self.goal_index,self.goal_index_next)
-#         if self.goal_index_next==0:
-#             goal_id=self.os_keys_dict_pred[str(self.goal_index)+'-'+str(0)] 
-#         else:
-#             goal_list=self.graph.parents_list[self.os_keys_dict_pred[str(self.goal_index_next)+'-'+str(self.goal_index)] ]
-#             for p in goal_list:
-#                 if p==65535:
-#                     break
-#                 if self.graph.key_indices_list[p]==self.goal_index:
-#                     
-#                     goal_id=p
-#                     break
-# =============================================================================
            
         start_id=None
         goal_id=None
         
-        ##########
         
         result = np.where(self.os_keys2_indices ==self.start_index)
         rr=np.where(result[1] ==0)
@@ -1229,44 +1055,7 @@ class PathPlanning:
                         break
                 if goal_id !=None:
                     break 
-        #########
-        
-# =============================================================================
-#         for i in self.os_keys2_indices:
-#             key=i[0]
-#             if key==self.start_index:
-#                 if self.start_index_previous==0:
-#                     start_id=i[1]
-#                 else:
-#                     for ii in i[1:]:
-#                         if ii==65535:
-#                             break
-#                         for p in self.graph.parents_list[ii]:
-#                             if p ==65535:
-#                                 break
-#                             if self.start_index_previous==self.graph.key_indices_list[p]:
-#                                 start_id=ii
-#                                 break
-#                         if start_id !=None:
-#                             break
-#             if key==self.goal_index:
-#                 if self.goal_index_next==0:
-#                     goal_id=i[1]  
-#                 else:
-#                     for ii in i[1:]:
-#                         if ii==65535:
-#                             break
-#                         for ch in self.graph.children_list[ii]:
-#                             if ch==65535:
-#                                 break
-#                             if self.goal_index_next==self.graph.key_indices_list[ch]:
-#                                 goal_id=ii  
-#                                 break
-#                         if goal_id !=None:
-#                             break                        
-#             if start_id !=None and goal_id !=None:
-#                 break
-# =============================================================================
+
             
         start_node=start_id
         goal_node=goal_id
@@ -1992,7 +1781,7 @@ class PathPlanning:
             
             expanded=False
             
-##########################
+
 
             if k not in self.graph.key_indices_list or kk not in self.graph.key_indices_list:
                 continue              
@@ -2008,7 +1797,6 @@ class PathPlanning:
                     if kk==self.graph.key_indices_list[p]:
                            change_list.append([ii,p])
                            break
-###########    
 
         if change_list==[]:
             replan_bool=False
@@ -2025,15 +1813,7 @@ class PathPlanning:
 
 
         if change_list!=[] and replan_bool:
-            
-# =============================================================================
-#             if (str(next_node_index)+'-'+str(prev_node_osmnx_id)) in self.os_keys_dict_pred.keys():
-#                 start_id=self.os_keys_dict_pred[str(next_node_index)+'-'+str(prev_node_osmnx_id)]
-#             else:
-#                 prev_node_osmnx_id =0
-#                 start_id=self.os_keys_dict_pred[str(next_node_index)+'-'+str(prev_node_osmnx_id)]
-# =============================================================================
- ############## 
+
             start_id=None
             result = np.where(self.os_keys2_indices ==self.start_index)
             rr=np.where(result[1] ==0)
@@ -2051,33 +1831,6 @@ class PathPlanning:
                             break
                     if start_id !=None:
                         break
-  #####################################            
-# =============================================================================
-#             start_id=None
-#             for i in self.os_keys2_indices:
-#                 key=i[0]
-#                 if key==self.start_index:
-#                     if self.start_index_previous==0:
-#                         start_id=i[1]
-#                         break
-#                     
-#                     for ii in i[1:]:
-#                         if ii==65535:
-#                             break
-#                         for p in self.graph.parents_list[ii]:
-#                             if p ==65535:
-#                                 break
-#                             if self.start_index_previous==self.graph.key_indices_list[p]:
-#                                 start_id=ii
-#                                 break
-#                         if start_id !=None:
-#                             break                      
-#                 if start_id !=None :
-#                     break
-# =============================================================================
- 
-
-        
  
                 
             start_node=start_id
@@ -2229,7 +1982,7 @@ class PathPlanning:
                 #if you are a loitering mission do not take into account your own geofence
                 if (k,kk) in self.loitering_edges:
                     continue
-######################
+
             if k not in self.graph.key_indices_list or kk not in self.graph.key_indices_list:
                 continue    
             result = np.where(self.os_keys2_indices ==k)
@@ -2243,39 +1996,10 @@ class PathPlanning:
                     if kk==self.graph.key_indices_list[p]:
                            change_list.append([ii,p])
                            break
-#######################
+
         if change_list==[]:
             replan_bool=False
-# =============================================================================
-#         expanded=False
-#         for i in self.os_keys2_indices:
-#             key=i[0]
-#             while key in k_list:
-#                 ind=k_list.index(key)
-#                 kk=changes_list[k_list.index(key)]
-#                 b=False
-#                 for ii in i[1:]:
-#                     if ii==65535:
-#                         break
-#                     for ch in self.graph.children_list[ii]:
-#                         if ch==65535:
-#                             break
-#                         if kk==self.graph.key_indices_list[ch]:
-#                             if self.graph.expanded_list[ch] or self.graph.expanded_list[ii]:
-#                                 change_list.append([ii,ch])
-#                                 b=True
-# 
-#                             break
-#                     if b:
-#                         break
-#                     
-#                 del k_list[ind]
-#                 del changes_list[ind]
-# 
-#             if len(k_list)==0:
-#                 break 
-# 
-# =============================================================================
+
                 
         if prev_node_osmnx_id<4481 and replan_bool and next_node_index<4481 :
 
@@ -2289,17 +2013,7 @@ class PathPlanning:
             
         if change_list!=[] and replan_bool:
             
-# =============================================================================
-#             if (str(next_node_index)+'-'+str(prev_node_osmnx_id)) in self.os_keys_dict_pred.keys():
-#                 start_id=self.os_keys_dict_pred[str(next_node_index)+'-'+str(prev_node_osmnx_id)]
-#             else:
-#                 prev_node_osmnx_id =0
-#                 start_id=self.os_keys_dict_pred[str(next_node_index)+'-'+str(prev_node_osmnx_id)]
-#             start_node=self.flow_graph.nodes_graph[self.graph[start_id].key_index]
-#             
-# =============================================================================
 
-#########################
             start_id=None
             result = np.where(self.os_keys2_indices ==self.start_index)
             rr=np.where(result[1] ==0)
@@ -2317,37 +2031,11 @@ class PathPlanning:
                             break
                     if start_id !=None:
                         break
-#####################
-# =============================================================================
-#            start_id=None
-#             for i in self.os_keys2_indices:
-#                 key=i[0]
-#                 if key==self.start_index:
-#                     if self.start_index_previous==0:
-#                         start_id=i[1]
-#                         break                    
-#                     for ii in i[1:]:
-#                         if ii==65535:
-#                             break
-#                         for p in self.graph.parents_list[ii]:
-#                             if p ==65535:
-#                                 break
-#                             if self.start_index_previous==self.graph.key_indices_list[p]:
-#                                 start_id=ii
-#                                 break
-#                         if start_id !=None:
-#                             break                      
-#                 if start_id !=None :
-#                     break
-# =============================================================================
+
                 
             start_node=start_id
             self.path.start=start_node
             
-# =============================================================================
-#             self.start_index=next_node_index
-#             self.start_index_previous=prev_node_osmnx_id
-# =============================================================================
 
 
             ##call get path
