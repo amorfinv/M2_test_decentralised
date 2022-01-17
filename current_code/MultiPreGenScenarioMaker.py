@@ -66,20 +66,30 @@ def create_dill(variables):
 
         destination_lon = flight[2]
         destination_lat = flight[3]
-
-        # generate the path planning object
-        plan = PathPlanning(idx_type+1, grid, graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat)
         
-        # Check if route is empty and then recreate it
-        # TODO: Convert to a while loop to find best sub graph
-        #route,_,edges,_,_,_,_=plan.plan()
-        route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
-        if route==[]: ##TODO convert that to a while and 
-            #No path was found so incease the exp_constant from default
-            plan = PathPlanning(idx_type+1,grid,graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat,0.03)
+        route = []
+        bigness_factor = 0
+        
+        while not route:
+            bigness_factor += 0.01
+            # generate the path planning object
+            plan = PathPlanning(idx_type+1, grid, graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat, bigness_factor)
             
+            # Check if route is empty and then recreate it
+            # TODO: Convert to a while loop to find best sub graph
             #route,_,edges,_,_,_,_=plan.plan()
             route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
+            
+            if bigness_factor > 0.04:
+                print(f'ERROR IN {file_num,flight}')
+                break
+            
+        # if route==[]: ##TODO convert that to a while and 
+        #     #No path was found so incease the exp_constant from default
+        #     plan = PathPlanning(idx_type+1,grid,graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat,0.03)
+            
+        #     #route,_,edges,_,_,_,_=plan.plan()
+        #     route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
         
         # Check if route and edges are same size for quality of life purposes
         if len(route)!=len(edges):
