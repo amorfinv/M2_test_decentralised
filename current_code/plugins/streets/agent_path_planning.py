@@ -408,7 +408,7 @@ def top_key(q):
     if len(q) > 0:
         return [q[0][0],q[0][1]]
     else:
-        print('empty queue!')
+        #print('empty queue!')
         return [float('inf'), float('inf')]
     
 ##Update the vertex of a node
@@ -456,7 +456,7 @@ def compute_shortest_path(path,graph,edges_speed,flow_graph):
     while graph.rhs_list[path.start]>graph.g_list[path.start] or compare_keys(k_old,graph.key_list[path.start]):
 
         if len(path.queue)==0:
-            print("No path found!")
+            #print("No path found!")
             return 0
 
         k_old=top_key(path.queue)
@@ -644,12 +644,12 @@ class PathPlanning:
         
             
         if self.goal_index_next==self.start_index and self.goal_index==self.start_index_previous:
-            print("same goal to start index")
+            #print("same goal to start index")
             self.init_succesful=False
             return 
         if self.goal_index_next==5000 and self.start_index_previous==5000 and self.start_index==self.goal_index:
             #Start and destination in the same cell
-            print("same cell")
+            #print("same cell")
             self.in_same_cell=True
             return 
             
@@ -1066,7 +1066,7 @@ class PathPlanning:
         initialise(self.path,self.flow_graph)
         
         path_found=compute_shortest_path(self.path,self.graph,self.flow_graph.edges_init_speed,self.flow_graph)
-        print(path_found)
+        #print(path_found)
         
         route=[]
         turns=[]
@@ -1213,10 +1213,11 @@ class PathPlanning:
             path_found=compute_shortest_path(path,graph,edges_old,self.flow_graph)
 
 
-            print(path_found)
+           # print(path_found)
             change=False 
             if not  path_found:
-                print("Compute path all from the start")
+                a=1
+                #print("Compute path all from the start")
                 #break
                 
         if not  path_found:
@@ -1293,9 +1294,9 @@ class PathPlanning:
                     
                     
             if current_node in selected_nodes_index:
-                print(selected_nodes_index)
-                print(current_node)
-                print("Path planning failed")
+                #print(selected_nodes_index)
+                #print(current_node)
+                #print("Path planning failed")
                 #print("get_path stack !! Please report this!")
                 return None,None,None,None,None,None,None,None
                 
