@@ -105,12 +105,40 @@ def create_dill(variables):
         dill.dump(plan,output_file)
         output_file.close()
         print(file_num, aircraft_type)
+        
+def missingfiles(pairs_list, path):
+    '''Returns the missing dill file names.'''
+    # First of all, get all the files in given folder.
+    dill_files = os.listdir(path)
+    # Create empty list to store the missing files
+    missing = []
+    # for loop over pairs list
+    for i, pair in enumerate(pairs_list):
+        file_20 = f'{i}_MP20.dill'
+        file_30 = f'{i}_MP30.dill'
+        if file_20 not in dill_files or file_30 not in dill_files:
+            missing.append((i,pair))
+    return missing
 
 def main():
     # create_dill(input_arr[0])
-    pool = ThreadPool(8)
+    pool = ThreadPool(32)
     results = pool.map(create_dill, input_arr)
     pool.close()
+    
+    # Make a while loop where we check for missing files. As long as we still get
+    # missing files, repeat.
+    print('Checking for missing files.')
+    while True:
+        missing_files = missingfiles(pairs_list, 'path_plan_dills')
+        if not missing_files or len(missing_files) == 0:
+            break
+        print(f'Found {len(missing_files)} missing file(s).')
+        # Create another pool, and create the missing files
+        pool = ThreadPool(32)
+        results = pool.map(create_dill, missing_files)
+        pool.close()
+    print('Done.')
 
 if __name__ == '__main__':
     main()
