@@ -1578,7 +1578,18 @@ class PathPlanning:
                         ymin=max(node1.cell.p2[1],node2.cell.p1[1])
                         ymax=min(node1.cell.p3[1],node2.cell.p0[1])
                         edge=[[node1.cell.p2[0],ymin],[node1.cell.p2[0],ymax]]
-
+                    elif node1.cell.p0[1]==node2.cell.p1[1] and node1.cell.p3[1]==node2.cell.p2[1]:
+                        xmin=min(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
+                        xmax=max(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
+                        ymin=max(node1.cell.p0[1],node1.cell.p3[1])
+                        ymax=min(node1.cell.p0[1],node1.cell.p3[1])
+                        edge=[[xmin,ymin],[xmax,ymax]]
+                    elif node1.cell.p1[1]==node2.cell.p0[1] and node1.cell.p2[1]==node2.cell.p3[1]:
+                        xmin=min(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
+                        xmax=max(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
+                        ymin=max(node1.cell.p1[1],node1.cell.p2[1])
+                        ymax=min(node1.cell.p1[1],node1.cell.p2[1])
+                        edge=[[xmin,ymin],[xmax,ymax]]
 
 
                     pp1=find_closest_point_on_linesegment(edge,p1)
