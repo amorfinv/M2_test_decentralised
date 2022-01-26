@@ -10,11 +10,12 @@ import heapq
 import numpy as np
 import math
 import copy
-from shapely.geometry import Point
+from shapely.geometry import Point,LineString
 from pyproj import  Transformer
 import shapely
 from plugins.streets.flow_control import street_graph,bbox
 from plugins.streets.open_airspace_grid import Cell, open_airspace
+
 
 
 ##Functions for finding the cell of a point in open airspace
@@ -65,6 +66,22 @@ def sort_cells_x(cells):
     #print(sorted(min_x_ind,key=lambda x: (x[1])))
     return min_x_ind
 
+def find_closest_cell(cells,p):
+    cell_id=-1
+    dist=float("inf")
+    for c in cells:
+
+        d1=distance_to_line(c.p0, c.p1, p) 
+        d2=distance_to_line(c.p1, c.p2, p) 
+        d3=distance_to_line(c.p2, c.p3, p) 
+        d4=distance_to_line(c.p0, c.p3, p) 
+        dd=min(d1,d2,d3,d4)
+        if dd<dist:
+            dist=dd
+            cell_id=c.key_index
+    
+    
+    return cell_id
 
 # Given three collinear points p, q, r, the function checks if
 # point q lies on line segment 'pr'
@@ -105,6 +122,8 @@ def line_intersection_point(line1, line2):
     return x, y
 
 def distance_to_line(A, B, E) :
+    if A==B:
+        return(math.sqrt( (A[0]-E[0])*(A[0]-E[0])+(A[1]-E[1])*(A[1]-E[1])))
     # vector AB
     AB = [None, None]
     AB[0] = B[0] - A[0]
@@ -196,7 +215,7 @@ def lies_between(A,B,C):
     return a**2 + b**2 >= c**2 and a**2 + c**2 >= b**2
 
 ##Returns the nearest edge of a point
-def get_nearest_edge(gdf, point):
+def get_nearest_edgee(gdf, point):
     """
     Return the nearest edge to a pair of coordinates. Pass in a graph and a tuple
     with the coordinates. We first get all the edges in the graph. Secondly we compute
@@ -243,7 +262,84 @@ def get_nearest_edge(gdf, point):
 
     return geometry, u, v,distance
 
+##Returns the nearest edge of a point
+def get_nearest_edge(gdf, point):
+    """
+    Return the nearest edge to a pair of coordinates. Pass in a graph and a tuple
+    with the coordinates. We first get all the edges in the graph. Secondly we compute
+    the euclidean distance from the coordinates to the segments determined by each edge.
+    The last step is to sort the edge segments in ascending order based on the distance
+    from the coordinates to the edge. In the end, the first element in the list of edges
+    will be the closest edge that we will return as a tuple containing the shapely
+    geometry and the u, v nodes.
+    Parameters
+    ----------
+    G : networkx multidigraph
+    point : tuple
+        The (lat, lng) or (y, x) point for which we will find the nearest edge
+        in the graph
+    Returns
+    -------
+    closest_edge_to_point : tuple (shapely.geometry, u, v)
+        A geometry object representing the segment and the coordinates of the two
+        nodes that determine the edge section, u and v, the OSM ids of the nodes.
+    """
+    
+    transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+    graph_edges = gdf[["geometry"]].values.tolist()
+    #print("graph_edges ",len(graph_edges))
 
+
+    conv_graph_edges=[]
+
+    for i in range(len(graph_edges)):
+
+        
+        tt=np.asarray(graph_edges[i][0].coords)
+
+        tr=[]
+        for item in tt:
+            r1=transformer.transform(item[1],item[0])
+            tr.append(r1)
+
+        conv_graph_edges.append([LineString(tr)])
+        
+    #print("conv_graph_edges ",len(conv_graph_edges))
+    graph_edges=conv_graph_edges
+    graph_edges_indexes=gdf.index.tolist()
+    for i in range(len(graph_edges)):# maybe do that faster?
+        graph_edges[i].append(graph_edges_indexes[i][0])
+        graph_edges[i].append(graph_edges_indexes[i][1])
+
+   
+   
+    #2.5495288748492004e-05 740 580
+    
+    test_point=transformer.transform(point[0],point[1])
+    #print(test_point)
+    
+    edges_with_distances = [
+        (
+            graph_edge,
+            Point(test_point).distance(graph_edge[0])
+            #Point(tuple(reversed(point))).distance(graph_edge[0])
+        )
+        for graph_edge in graph_edges
+    ]
+    
+    edges_with_distances = sorted(edges_with_distances, key=lambda x: x[1])
+ #   for i in range(10):
+  #      print(edges_with_distances[i][1])
+    closest_edge_to_point = edges_with_distances[0][0]
+
+    
+    geometry, u, v = closest_edge_to_point
+    distance=edges_with_distances[0][1]
+
+    #print(geometry)
+    #print(u,v)
+
+    return geometry, u, v,distance
 
 ##from geo.py
 def rwgs84(latd):
@@ -345,6 +441,7 @@ def initialise(path,flow_graph):
     path.graph.inQueue_list[path.goal]=True #path.goal.inQueue=True
     h=heuristic(path.start,path.goal,path.speed,flow_graph,path.graph) #path.goal.h=heuristic(path.start,path.goal,path.speed,flow_graph)
     path.graph.expanded_list[path.goal]=True   #path.goal.expanded=True
+    gg=copy.deepcopy(path.goal)
     heapq.heappush(path.queue, (h,0,path.goal))
     path.origin_node_index=path.start
  
@@ -370,6 +467,26 @@ def eucledean_distance(p1,p2):
 def heuristic(current, goal,speed,flow_graph,graph):
     cc=flow_graph.nodes_graph[graph.key_indices_list[current]]
     gg=flow_graph.nodes_graph[graph.key_indices_list[goal]]
+    if graph.key_indices_list[current]==graph.start_ind:
+        cc=copy.deepcopy(flow_graph.nodes_graph[graph.key_indices_list[current]])
+        cc.x_cartesian=graph.start_point.x
+        cc.y_cartesian=graph.start_point.y
+
+    if graph.key_indices_list[goal]==graph.start_ind:
+        gg=copy.deepcopy(flow_graph.nodes_graph[graph.key_indices_list[goal]])
+        gg.x_cartesian=graph.start_point.x
+        gg.y_cartesian=graph.start_point.y
+
+    if graph.key_indices_list[current]==graph.goal_ind:
+        cc=copy.deepcopy(flow_graph.nodes_graph[graph.key_indices_list[current]])
+        cc.x_cartesian=graph.goal_point.x
+        cc.y_cartesian=graph.goal_point.y
+
+    if graph.key_indices_list[goal]==graph.goal_ind:
+        gg=copy.deepcopy(flow_graph.nodes_graph[graph.key_indices_list[goal]])
+        gg.x_cartesian=graph.goal_point.x
+        gg.y_cartesian=graph.goal_point.y
+
     av_speed_vertical=5.0
     if cc.open_airspace or gg.open_airspace:
         h=eucledean_distance(cc, gg)/speed
@@ -387,7 +504,27 @@ def compute_c(current,neigh,edges_speed,flow_graph,speed,graph):
     g=1
     cc=flow_graph.nodes_graph[graph.key_indices_list[current]]
     nn=flow_graph.nodes_graph[graph.key_indices_list[neigh]]
-    
+    if graph.key_indices_list[current]==graph.start_ind:
+        cc=copy.deepcopy(flow_graph.nodes_graph[graph.key_indices_list[current]])
+        cc.x_cartesian=graph.start_point.x
+        cc.y_cartesian=graph.start_point.y
+
+    if graph.key_indices_list[neigh]==graph.start_ind:
+        nn=copy.deepcopy(flow_graph.nodes_graph[graph.key_indices_list[neigh]])
+        nn.x_cartesian=graph.start_point.x
+        nn.y_cartesian=graph.start_point.y
+
+    if graph.key_indices_list[current]==graph.goal_ind:
+        cc=copy.deepcopy(flow_graph.nodes_graph[graph.key_indices_list[current]])
+        cc.x_cartesian=graph.goal_point.x
+        cc.y_cartesian=graph.goal_point.y
+
+    if graph.key_indices_list[neigh]==graph.goal_ind:
+        nn=copy.deepcopy(flow_graph.nodes_graph[graph.key_indices_list[neigh]])
+        nn.x_cartesian=graph.goal_point.x
+        nn.y_cartesian=graph.goal_point.y
+
+               
     if cc.open_airspace  or nn.open_airspace:
         g=eucledean_distance(cc,nn)/speed
     else:
@@ -526,6 +663,12 @@ def compute_shortest_path(path,graph,edges_speed,flow_graph):
 
 class SearchGraph:
     def __init__(self,key_indices_list,groups_list,parents_list,children_list,g_list,rhs_list,key_list,inQueue_list,expanded_list):
+        
+        self.start_ind=-1
+        self.goal_ind=-1
+        self.start_point=Point(tuple((-1,-1)))
+        self.goal_point=Point(tuple((-1,-1)))
+
         self.key_indices_list=np.array(key_indices_list,dtype=np.uint16)
         self.groups_list=np.array(groups_list,dtype=np.uint16)
 
@@ -574,6 +717,10 @@ class PathPlanning:
 
         self.start_point=Point(tuple((lon_start,lat_start)))
         self.goal_point=Point(tuple((lon_dest,lat_dest)))
+        self.path_only_open=False
+        
+
+
         self.cutoff_angle=25
         
         self.open_airspace_cells=[]
@@ -593,22 +740,29 @@ class PathPlanning:
         if self.start_in_open:
             point=(lat_start,lon_start)
             geometry, u, v,distance=get_nearest_edge(self.gdf, point)
-            if distance<0.000002:
+            if distance<3.5:#0.000005:
                 self.start_index=v
                 self.start_index_previous=u
                 self.start_in_open=False
+
             else:
                 
                 transformer = Transformer.from_crs('epsg:4326','epsg:32633')
                 p=transformer.transform(lat_start,lon_start)
                 min_x_ind=sort_cells_x(self.open_airspace_cells)
                 winner=check_where(p,min_x_ind,self.open_airspace_cells)
+
                 if winner==-1:
-                    self.start_in_open=False
-                    #point=(lat_start,lon_start)
-                    #geometry, u, v,distance=get_nearest_edge(self.gdf, point)
-                    self.start_index=v
-                    self.start_index_previous=u
+
+                    if distance<7:#0.00003:
+                        self.start_in_open=False
+    
+                        self.start_index=v
+                        self.start_index_previous=u
+                    else:
+                        self.start_index=find_closest_cell(self.open_airspace_grid.grid,p)
+                        self.start_index_previous=5000
+ 
                 else:
                     open_start=winner[1]
                     self.start_index=self.open_airspace_grid.grid[open_start].key_index
@@ -619,7 +773,7 @@ class PathPlanning:
         if self.dest_in_open:
             point=(lat_dest,lon_dest)
             geometry, u, v,distance=get_nearest_edge(self.gdf, point)
-            if distance<0.000002:
+            if distance<3.5:#0.000005:
                 self.goal_index=u
                 self.goal_index_next=v
                 self.dest_in_open=False
@@ -629,11 +783,16 @@ class PathPlanning:
                 min_x_ind=sort_cells_x(self.open_airspace_cells)
                 winner=check_where(p,min_x_ind,self.open_airspace_cells)
                 if winner==-1:
-                    self.dest_in_open=False
-                    #point=(lat_dest,lon_dest)
-                    #geometry, u, v,distance=get_nearest_edge(self.gdf, point)
-                    self.goal_index=u
-                    self.goal_index_next=v
+                    
+                    if distance<7:#0.00003:
+                        self.dest_in_open=False
+    
+                        self.goal_index=u
+                        self.goal_index_next=v
+                    else:
+                        self.goal_index=find_closest_cell(self.open_airspace_grid.grid,p)
+                        self.goal_index_next=5000
+
                 else:
                     open_goal=winner[1]
                     self.goal_index=self.open_airspace_grid.grid[open_goal].key_index
@@ -641,7 +800,9 @@ class PathPlanning:
 
         del self.open_airspace_cells
         
-        
+
+            
+
             
         if self.goal_index_next==self.start_index and self.goal_index==self.start_index_previous:
             #print("same goal to start index")
@@ -987,6 +1148,18 @@ class PathPlanning:
         del self.G
         del self.edge_gdf
         self.graph=SearchGraph(key_indices_list,groups_list,parents_list,children_list,g_list,rhs_list,key_list,inQueue_list,expanded_list)
+        
+
+        transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+        p=transformer.transform(lat_start,lon_start)
+        self.graph.start_point=Point(tuple((p[0],p[1])))
+        p=transformer.transform(lat_dest,lon_dest)
+        self.graph.goal_point=Point(tuple((p[0],p[1])))
+        if self.dest_in_open:
+            self.graph.goal_ind=self.goal_index
+        if self.start_in_open:
+            self.graph.start_ind=self.start_index
+         
         self.os_keys2_indices = np.ones([len(os_keys2_indices),len(max(os_keys2_indices,key = lambda x: len(x)))],dtype=np.uint16)*65535
         for i,j in enumerate(os_keys2_indices):
             self.os_keys2_indices[i][0:len(j)] =j
@@ -1145,6 +1318,10 @@ class PathPlanning:
         turns[-1]=True
         turn_speed[-1]=5
         
+        #Checks if the whole path is in open airspace
+        if len(set(groups)) == 1 and 2000 in groups:
+            self.path_only_open=True
+            
         self.route=np.array(route,dtype=np.float64)
         self.turns=np.array(turns,dtype=np.bool8) 
         self.edges_list=np.array(edges_list) 
@@ -1571,20 +1748,25 @@ class PathPlanning:
                     #node2=self.flow_graph.nodes_graph[self.graph[self.os_keys_dict_pred[str(ii)+'-'+str(i)]].key_index]
                     node2=self.flow_graph.nodes_graph[ii]
                     
-                    if node1.cell.p0[0]==node2.cell.p2[0] :
+
+                    
+                    if node1.cell.p0[0]==node2.cell.p2[0] or node1.cell.p0[0]==node2.cell.p3[0] or node1.cell.p1[0]==node2.cell.p2[0] or node1.cell.p1[0]==node2.cell.p3[0]:
                         ymin=max(node1.cell.p1[1],node2.cell.p2[1])
                         ymax=min(node1.cell.p0[1],node2.cell.p3[1])
                         edge=[[node1.cell.p0[0],ymin],[node1.cell.p0[0],ymax]]
-                    elif node1.cell.p2[0]==node2.cell.p0[0]:
+
+                    elif node1.cell.p2[0]==node2.cell.p0[0] or node1.cell.p2[0]==node2.cell.p1[0] or  node1.cell.p3[0]==node2.cell.p0[0] or node1.cell.p3[0]==node2.cell.p1[0]:
                         ymin=max(node1.cell.p2[1],node2.cell.p1[1])
                         ymax=min(node1.cell.p3[1],node2.cell.p0[1])
                         edge=[[node1.cell.p2[0],ymin],[node1.cell.p2[0],ymax]]
+
                     elif node1.cell.p0[1]==node2.cell.p1[1] and node1.cell.p3[1]==node2.cell.p2[1]:
                         xmin=min(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
                         xmax=max(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
                         ymin=max(node1.cell.p0[1],node1.cell.p3[1])
                         ymax=min(node1.cell.p0[1],node1.cell.p3[1])
                         edge=[[xmin,ymin],[xmax,ymax]]
+
                     elif node1.cell.p1[1]==node2.cell.p0[1] and node1.cell.p2[1]==node2.cell.p3[1]:
                         xmin=min(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
                         xmax=max(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
@@ -1592,11 +1774,17 @@ class PathPlanning:
                         ymax=min(node1.cell.p1[1],node1.cell.p2[1])
                         edge=[[xmin,ymin],[xmax,ymax]]
 
+                    else:
+                        print(node1.cell.p0,node1.cell.p1,node1.cell.p2,node1.cell.p3)
+                        print(node2.cell.p0,node2.cell.p1,node2.cell.p2,node2.cell.p3)
+
+
 
                     pp1=find_closest_point_on_linesegment(edge,p1)
 
                     intersection=intersect(p1,p2,edge[0],edge[1])
                     if intersection:
+
                         px,py=line_intersection_point([p1,p2], edge)
                     else:
                         px=pp1[0]
@@ -1607,7 +1795,7 @@ class PathPlanning:
                           
                     tranformed_p=transformer1.transform(px,py)
                     lon,lat =tranformed_p[1],tranformed_p[0]
-              
+
                     tmp=(lon,lat)
                     route.append(tmp)
 
@@ -1664,6 +1852,11 @@ class PathPlanning:
                     turn_speed[i]=5
                 else:
                     turn_speed[i]=2
+            elif angle>self.cutoff_angle:
+                turns[i]=True
+                tmp=(route[i][1],route[i][0])
+                turn_coords.append(tmp)
+                turn_speed[i]=15
 
                 
             lat_prev=lat_cur
@@ -1738,6 +1931,10 @@ class PathPlanning:
     ##in_constrained is the list of booleans indicating for every waypoint if it is in constarined airspace
     ##turn_speed is teh list if speed to be used if the waypoint is a turning waypoint        
     def replan(self,changes_list,prev_node_osmnx_id,next_node_index,lat,lon):
+        if self.path_only_open:
+            return [],[],[],[],[],[],[]
+        
+        self.start_point=Point(tuple((lon,lat)))
         if self.in_same_cell:
             self.route=[(self.start_point.x,self.start_point.y),(self.goal_point.x,self.goal_point.y)]
             self.turns=[False,True]
@@ -1755,7 +1952,10 @@ class PathPlanning:
         edges_list=None
         next_turn_point=None
 
-        self.start_point=Point(tuple((lon,lat)))
+        
+
+        
+        
         self.start_index=next_node_index
         self.start_index_previous=prev_node_osmnx_id
         if prev_node_osmnx_id>4480 and prev_node_osmnx_id!=5000:
@@ -1763,7 +1963,18 @@ class PathPlanning:
             self.start_index=self.start_index_previous
             next_node_index=self.start_index_previous
             self.start_index_previous=prev_node_osmnx_id
+            
 
+
+        transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+        p=transformer.transform(lat,lon)
+        self.graph.start_point=Point(tuple((p[0],p[1])))
+
+        if self.start_index_previous==5000:
+            self.graph.start_ind=self.start_index
+        else:
+            self.graph.start_ind=-1
+            
         ## check for changes in the aircrafts subgraph if any
         expanded=False
         change_list=[]
@@ -1925,6 +2136,10 @@ class PathPlanning:
                 
                 turns[-1]=True
                 turn_speed[-1]=5
+                
+                #Checks if the whole path is in open airspace
+                if len(set(groups)) == 1 and 2000 in groups:
+                    self.path_only_open=True
                             
                 self.route=np.array(route,dtype=np.float64)
                 self.turns=np.array(turns,dtype=np.bool8) 
@@ -2122,7 +2337,11 @@ class PathPlanning:
 
                 turns[-1]=True
                 turn_speed[-1]=5
-                            
+                
+                #Checks if the whole path is in open airspace
+                if len(set(groups)) == 1 and 2000 in groups:
+                    self.path_only_open=True
+                                    
                 self.route=np.array(route,dtype=np.float64)
                 self.turns=np.array(turns,dtype=np.bool8) 
                 self.edges_list=np.array(edges_list) 
