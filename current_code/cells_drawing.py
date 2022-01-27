@@ -46,10 +46,10 @@ city_poly.reverse()
 plt.ylim([5330000,5350000])
 plt.xlim([593000,609000])
 
-# =============================================================================
-# plt.ylim([5330000,5340000])
-# plt.xlim([595000,602000])
-# =============================================================================
+
+
+plt.ylim([5340000,5346000])
+plt.xlim([595000,598000])
 
 countries_gdf.plot(ax=ax)
 
@@ -81,25 +81,13 @@ for i in range(len(grid.grid)):
     y = np.array([[p.p0[0], p.p0[1]], [p.p1[0], p.p1[1]], [p.p2[0] ,p.p2[1]], [p.p3[0], p.p3[1]]])
     #p = Polygon(y, facecolor = c[i%4])
     pol = Polygon(y, facecolor = "none",edgecolor="r")
-    # if p.key_index in negh_list:
-    #     pol = Polygon(y, facecolor = "none",edgecolor="b")
-    if i==4542-4481:
+
+    if i==4482-4481:
         pol = Polygon(y, facecolor = "none",edgecolor="g")
-    if i==4544-4481:
+    if i==4484-4481:
         pol = Polygon(y, facecolor = "none",edgecolor="y")      
-# =============================================================================
-#     if p.constrained_adj_up:
-#        pol = Polygon(y, facecolor = "none",edgecolor="b") 
-#        
-#        y = np.array([[p.p0[0], p.y_max], [p.p1[0], p.p1[1]], [p.p2[0] ,p.p2[1]], [p.p3[0], p.y_max]])
-#        pol1 = Polygon(y, facecolor = "none",edgecolor="y") 
-#        ax.add_patch(pol1)
-# 
-#     if p.constrained_adj_down:
-#        pol = Polygon(y, facecolor = "none",edgecolor="g") 
-#        
-#        y = np.array([[p.p0[0], p.p0[1]], [p.p1[0], p.y_lower], [p.p2[0] ,p.y_lower], [p.p3[0], p.p3[1]]])
-#        pol1 = Polygon(y, facecolor = "none",edgecolor="y") 
-#        ax.add_patch(pol1)
-# =============================================================================
+
     ax.add_patch(pol)  
+
+
+ax.scatter(595036.10159641969949007 ,5339347.97431845124810934,c="y")

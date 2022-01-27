@@ -801,7 +801,7 @@ class PathPlanning:
         del self.open_airspace_cells
         
 
-            
+        #print(self.goal_index,self.start_index)            
 
             
         if self.goal_index_next==self.start_index and self.goal_index==self.start_index_previous:
@@ -813,6 +813,8 @@ class PathPlanning:
             #print("same cell")
             self.in_same_cell=True
             return 
+        
+        
 
             
         #find the area of interest based on teh start and goal point
@@ -1749,34 +1751,228 @@ class PathPlanning:
                     node2=self.flow_graph.nodes_graph[ii]
                     
 
+                    if node1.cell.p1[0]==node1.cell.p0[0]:
+                        h_a1=None
+                        v_a1=node1.cell.p1[0]
+                    else:
+                        h_a1=(node1.cell.p1[1]-node1.cell.p0[1])/(node1.cell.p1[0]-node1.cell.p0[0])
+                        v_a1=node1.cell.p1[1]-h_a1*node1.cell.p1[0]
+                        h_a1=round(h_a1,8)
+                    if node1.cell.p1[0]==node1.cell.p2[0]:
+                        h_b1=None
+                        v_b1=node1.cell.p1[0]
+                    else:
+                        h_b1=(node1.cell.p2[1]-node1.cell.p1[1])/(node1.cell.p2[0]-node1.cell.p1[0])
+                        v_b1=node1.cell.p1[1]-h_b1*node1.cell.p1[0]
+                        h_b1=round(h_b1,8)
+                    if node1.cell.p2[0]==node1.cell.p3[0]:
+                        h_c1=None
+                        v_c1=node1.cell.p2[0]
+                    else:
+                        h_c1=(node1.cell.p3[1]-node1.cell.p2[1])/(node1.cell.p3[0]-node1.cell.p2[0])
+                        v_c1=node1.cell.p2[1]-h_c1*node1.cell.p2[0]
+                        h_c1=round(h_c1,8)
+                    if node1.cell.p3[0]==node1.cell.p0[0]:
+                        h_d1=None
+                        v_d1=node1.cell.p3[0]
+                    else:
+                        h_d1=(node1.cell.p0[1]-node1.cell.p3[1])/(node1.cell.p0[0]-node1.cell.p3[0])
+                        v_d1=node1.cell.p3[1]-h_d1*node1.cell.p3[0]
+                        h_d1=round(h_d1,8)
+ 
+                    if node2.cell.p1[0]==node2.cell.p0[0]:
+                        h_a2=None
+                        v_a2=node2.cell.p1[0]
+                    else:
+                        h_a2=(node2.cell.p1[1]-node2.cell.p0[1])/(node2.cell.p1[0]-node2.cell.p0[0])
+                        v_a2=node2.cell.p1[1]-h_a2*node2.cell.p1[0]
+                        h_a2=round(h_a2,8)
+                    if node2.cell.p1[0]==node2.cell.p2[0]:
+                        h_b2=None
+                        v_b2=node2.cell.p1[0]
+                    else:
+                        h_b2=(node2.cell.p2[1]-node2.cell.p1[1])/(node2.cell.p2[0]-node2.cell.p1[0])
+                        v_b2=node2.cell.p1[1]-h_b2*node2.cell.p1[0]
+                        h_b2=round(h_b2,8)
+                    if node2.cell.p3[0]==node2.cell.p2[0]:
+                        h_c2=None
+                        v_c2=node2.cell.p3[0]
+                    else:
+                        h_c2=(node2.cell.p3[1]-node2.cell.p2[1])/(node2.cell.p3[0]-node2.cell.p2[0])
+                        v_c2=node2.cell.p2[1]-h_c2*node2.cell.p2[0]
+                        h_c2=round(h_c2,8)
+                    if node2.cell.p3[0]==node2.cell.p0[0]:
+                        h_d2=None
+                        v_d2=node2.cell.p3[0]
+                    else:
+                        h_d2=(node2.cell.p0[1]-node2.cell.p3[1])/(node2.cell.p0[0]-node2.cell.p3[0])
+                        v_d2=node2.cell.p3[1]-h_d2*node2.cell.p3[0]
+                        h_d2=round(h_d2,8)
                     
-                    if node1.cell.p0[0]==node2.cell.p2[0] or node1.cell.p0[0]==node2.cell.p3[0] or node1.cell.p1[0]==node2.cell.p2[0] or node1.cell.p1[0]==node2.cell.p3[0]:
+                    
+
+                    v_a1=round(v_a1,4)
+                    v_b1=round(v_b1,4)
+                    v_c1=round(v_c1,4)
+                    v_d1=round(v_d1,4) 
+                     
+                    v_a2=round(v_a2,4)
+                    v_b2=round(v_b2,4)
+                    v_c2=round(v_c2,4)
+                    v_d2=round(v_d2,4)  
+
+# =============================================================================
+#                     if not (h_a1==h_c2 and v_a1==v_c2) and not (h_a2==h_c1 and v_a2==v_c1)and not (h_b2==h_d1 and v_b2==v_d1)and not (h_d2==h_b1 and v_d2==v_b1):
+#                         print(h_a1,h_b1,h_c1,h_d1)
+#                         print(v_a1,v_b1,v_c1,v_d1)
+#                         print(h_a2,h_b2,h_c2,h_d2)
+#                         print(v_a2,v_b2,v_c2,v_d2)
+# =============================================================================
+                    if h_a1==h_c2 and v_a1==v_c2:
                         ymin=max(node1.cell.p1[1],node2.cell.p2[1])
                         ymax=min(node1.cell.p0[1],node2.cell.p3[1])
-                        edge=[[node1.cell.p0[0],ymin],[node1.cell.p0[0],ymax]]
+                        if h_a1==None:
+                            xmin=node1.cell.p1[0]
+                            xmax=node1.cell.p1[0]
+                        else:
+                            xmin=(ymin-v_a1)/h_a1
+                            xmax=(ymax-v_a1)/h_a1
 
-                    elif node1.cell.p2[0]==node2.cell.p0[0] or node1.cell.p2[0]==node2.cell.p1[0] or  node1.cell.p3[0]==node2.cell.p0[0] or node1.cell.p3[0]==node2.cell.p1[0]:
+                        edge=[[xmin,ymin],[xmax,ymax]]
+                    elif h_a1==h_b2 and v_a1==v_b2:
+                        ymin=max(node1.cell.p1[1],min(node2.cell.p2[1],node2.cell.p1[1]))
+                        ymax=min(node1.cell.p0[1],max(node2.cell.p2[1],node2.cell.p1[1]))
+                        if h_a1==None:
+                            xmin=node1.cell.p1[0]
+                            xmax=node1.cell.p1[0]
+                        else:
+                            xmin=(ymin-v_a1)/h_a1
+                            xmax=(ymax-v_a1)/h_a1
+
+                        edge=[[xmin,ymin],[xmax,ymax]] 
+                    elif h_a1==h_d2 and v_a1==v_d2:
+                        ymin=max(node1.cell.p1[1],min(node2.cell.p0[1],node2.cell.p3[1]))
+                        ymax=min(node1.cell.p0[1],max(node2.cell.p0[1],node2.cell.p3[1]))
+                        if h_a1==None:
+                            xmin=node1.cell.p1[0]
+                            xmax=node1.cell.p1[0]
+                        else:
+                            xmin=(ymin-v_a1)/h_a1
+                            xmax=(ymax-v_a1)/h_a1
+
+                        edge=[[xmin,ymin],[xmax,ymax]]                           
+                    elif h_c1==h_a2 and v_c1==v_a2:
                         ymin=max(node1.cell.p2[1],node2.cell.p1[1])
                         ymax=min(node1.cell.p3[1],node2.cell.p0[1])
-                        edge=[[node1.cell.p2[0],ymin],[node1.cell.p2[0],ymax]]
+                        if h_c1==None:
+                            xmin=node1.cell.p2[0]
+                            xmax=node1.cell.p2[0]
+                        else:
+                            xmin=(ymin-v_a2)/h_a2
+                            xmax=(ymax-v_a2)/h_a2
 
-                    elif node1.cell.p0[1]==node2.cell.p1[1] and node1.cell.p3[1]==node2.cell.p2[1]:
-                        xmin=min(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
-                        xmax=max(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
-                        ymin=max(node1.cell.p0[1],node1.cell.p3[1])
-                        ymax=min(node1.cell.p0[1],node1.cell.p3[1])
                         edge=[[xmin,ymin],[xmax,ymax]]
+                    elif h_c1==h_b2 and v_c1==v_b2:
+                        ymin=max(node1.cell.p2[1],min(node2.cell.p1[1],node2.cell.p2[1]))
+                        ymax=min(node1.cell.p3[1],max(node2.cell.p1[1],node2.cell.p2[1]))
+                        if h_b2==None:
+                            xmin=node1.cell.p2[0]
+                            xmax=node1.cell.p2[0]
+                        else:
+                            xmin=(ymin-v_b2)/h_b2
+                            xmax=(ymax-v_b2)/h_b2
 
-                    elif node1.cell.p1[1]==node2.cell.p0[1] and node1.cell.p2[1]==node2.cell.p3[1]:
-                        xmin=min(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
-                        xmax=max(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
-                        ymin=max(node1.cell.p1[1],node1.cell.p2[1])
-                        ymax=min(node1.cell.p1[1],node1.cell.p2[1])
+                        edge=[[xmin,ymin],[xmax,ymax]]    
+                    elif h_c1==h_d2 and v_c1==v_d2:
+                        ymin=max(node1.cell.p2[1],min(node2.cell.p0[1],node2.cell.p3[1]))
+                        ymax=min(node1.cell.p3[1],max(node2.cell.p0[1],node2.cell.p3[1]))
+                        if h_d2==None:
+                            xmin=node1.cell.p2[0]
+                            xmax=node1.cell.p2[0]
+                        else:
+                            xmin=(ymin-v_d2)/h_d2
+                            xmax=(ymax-v_d2)/h_d2
+
+                        edge=[[xmin,ymin],[xmax,ymax]]                          
+                    elif h_b1==h_a2 and v_b1==v_a2:
+                        ymin=max(min(node1.cell.p2[1],node1.cell.p1[1]),node2.cell.p1[1])
+                        ymax=min(max(node1.cell.p2[1],node1.cell.p1[1]),node2.cell.p0[1])
+
+                        xmin=(ymin-v_a2)/h_a2
+                        xmax=(ymax-v_a2)/h_a2
+
                         edge=[[xmin,ymin],[xmax,ymax]]
+                    elif h_d1==h_a2 and v_d1==v_a2:
+                        ymin=max(min(node1.cell.p0[1],node1.cell.p3[1]),node2.cell.p1[1])
+                        ymax=min(max(node1.cell.p0[1],node1.cell.p3[1]),node2.cell.p0[1])
 
+                        xmin=(ymin-v_a2)/h_a2
+                        xmax=(ymax-v_a2)/h_a2
+
+                        edge=[[xmin,ymin],[xmax,ymax]]                        
+                    elif h_d1==h_b2 and v_d1==v_b2:
+                        xmin=max(node1.cell.p3[0],node2.cell.p2[0])
+                        xmax=min(node1.cell.p0[0],node2.cell.p1[0])
+                        ymin=(xmin*h_d1+v_d1)
+                        ymax=(xmax*h_d1+v_d1)
+
+                        edge=[[xmin,ymin],[xmax,ymax]]      
+                    elif h_d1==h_c2 and v_d1==v_c2:
+                        xmin=max(node1.cell.p3[0],min(node2.cell.p2[0],node2.cell.p3[0]))
+                        xmax=min(node1.cell.p0[0],max(node2.cell.p2[0],node2.cell.p3[0]))
+                        ymin=(xmin*h_d1+v_d1)
+                        ymax=(xmax*h_d1+v_d1)
+
+                        edge=[[xmin,ymin],[xmax,ymax]]                          
+                    elif h_b1==h_d2 and v_b1==v_d2:
+                        xmin=max(node1.cell.p2[0],node2.cell.p3[0])
+                        xmax=min(node1.cell.p1[0],node2.cell.p0[0])
+
+                        ymin=(xmin*h_b1+v_b1)
+                        ymax=(xmax*h_b1+v_b1)
+                        edge=[[xmin,ymin],[xmax,ymax]]
+                    elif h_b1==h_c2 and v_b1==v_c2:
+                        xmin=max(node1.cell.p2[0],min(node2.cell.p2[0],node2.cell.p3[0]))
+                        xmax=min(node1.cell.p1[0],max(node2.cell.p2[0],node2.cell.p3[0]))
+
+                        ymin=(xmin*h_b1+v_b1)
+                        ymax=(xmax*h_b1+v_b1)
+                        edge=[[xmin,ymin],[xmax,ymax]]
                     else:
-                        print(node1.cell.p0,node1.cell.p1,node1.cell.p2,node1.cell.p3)
-                        print(node2.cell.p0,node2.cell.p1,node2.cell.p2,node2.cell.p3)
+                        print("###")
+                        print(self.start_point)
+                        print(self.dest_point)
+                        print("###")
+
+# =============================================================================
+#                     if node1.cell.p0[0]==node2.cell.p2[0] or node1.cell.p0[0]==node2.cell.p3[0] or node1.cell.p1[0]==node2.cell.p2[0] or node1.cell.p1[0]==node2.cell.p3[0]:
+#                         ymin=max(node1.cell.p1[1],node2.cell.p2[1])
+#                         ymax=min(node1.cell.p0[1],node2.cell.p3[1])
+#                         edge=[[node1.cell.p0[0],ymin],[node1.cell.p0[0],ymax]]
+# 
+#                     elif node1.cell.p2[0]==node2.cell.p0[0] or node1.cell.p2[0]==node2.cell.p1[0] or  node1.cell.p3[0]==node2.cell.p0[0] or node1.cell.p3[0]==node2.cell.p1[0]:
+#                         ymin=max(node1.cell.p2[1],node2.cell.p1[1])
+#                         ymax=min(node1.cell.p3[1],node2.cell.p0[1])
+#                         edge=[[node1.cell.p2[0],ymin],[node1.cell.p2[0],ymax]]
+# 
+#                     elif node1.cell.p0[1]==node2.cell.p1[1] and node1.cell.p3[1]==node2.cell.p2[1]:
+#                         xmin=min(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
+#                         xmax=max(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
+#                         ymin=max(node1.cell.p0[1],node1.cell.p3[1])
+#                         ymax=min(node1.cell.p0[1],node1.cell.p3[1])
+#                         edge=[[xmin,ymin],[xmax,ymax]]
+# 
+#                     elif node1.cell.p1[1]==node2.cell.p0[1] and node1.cell.p2[1]==node2.cell.p3[1]:
+#                         xmin=min(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
+#                         xmax=max(node1.cell.p0[0],node1.cell.p3[0],node2.cell.p0[0],node2.cell.p3[0])
+#                         ymin=max(node1.cell.p1[1],node1.cell.p2[1])
+#                         ymax=min(node1.cell.p1[1],node1.cell.p2[1])
+#                         edge=[[xmin,ymin],[xmax,ymax]]
+# 
+#                     else:
+#                         print(node1.cell.p0,node1.cell.p1,node1.cell.p2,node1.cell.p3)
+#                         print(node2.cell.p0,node2.cell.p1,node2.cell.p2,node2.cell.p3)
+# =============================================================================
 
 
 
@@ -1842,7 +2038,7 @@ class PathPlanning:
                 angle=360-angle
 
 
-            if angle>self.cutoff_angle and group_numbers[i]!=2000 and i!=0:
+            if angle>self.cutoff_angle and (group_numbers[i]!=2000 or group_numbers[i+1]!=2000 ) :
                 turns[i]=True
                 tmp=(route[i][1],route[i][0])
                 turn_coords.append(tmp)

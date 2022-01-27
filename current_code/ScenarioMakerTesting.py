@@ -40,32 +40,32 @@ with open(flight_intention_folder + intention_file_name) as file:
         line = line.split(',')
         flight_intention_list.append(line)
         kk=kk+1
-        if kk>100:
+        if kk>200:
             break
 cnt=0
+flight_intention_list1=flight_intention_list
+flight_intention_list=[]
+for fl in flight_intention_list1:
+    cnt=cnt+1
+    if cnt>100:
+        flight_intention_list.append(fl)
+
 # =============================================================================
-# flight_intention_list1=flight_intention_list
-# flight_intention_list=[]
-# for fl in flight_intention_list1:
-#     cnt=cnt+1
-#     if cnt>100:
-#         flight_intention_list.append(fl)
+# flight_intention_list[0][4]="((16.3927261488"
+# flight_intention_list[0][5]=" 48.1530534871))"
+# flight_intention_list[0][6]="((16.2853334612"
+# flight_intention_list[0][7]=" 48.1615252427))"
+# 
+# flight_intention_list[2][4]="((16.272532295"
+# flight_intention_list[2][5]=" 48.1962726022))"
+# flight_intention_list[2][6]="((16.4512130406"
+# flight_intention_list[2][7]=" 48.169089774))"
+# 
+# flight_intention_list[1][4]="((16.2794382147"
+# flight_intention_list[1][5]=" 48.2002463513))"
+# flight_intention_list[1][6]="((16.4418566454"
+# flight_intention_list[1][7]=" 48.1692075752))"
 # =============================================================================
-
-flight_intention_list[0][4]="((16.3927261488"
-flight_intention_list[0][5]=" 48.1530534871))"
-flight_intention_list[0][6]="((16.2853334612"
-flight_intention_list[0][7]=" 48.1615252427))"
-
-flight_intention_list[2][4]="((16.272532295"
-flight_intention_list[2][5]=" 48.1962726022))"
-flight_intention_list[2][6]="((16.4512130406"
-flight_intention_list[2][7]=" 48.169089774))"
-
-flight_intention_list[1][4]="((16.2794382147"
-flight_intention_list[1][5]=" 48.2002463513))"
-flight_intention_list[1][6]="((16.4418566454"
-flight_intention_list[1][7]=" 48.1692075752))"
 # Step 2: Generate traffic from the flight intention file
 generated_traffic, loitering_edges_dict = bst.Intention2Traf(flight_intention_list, edges.copy())
 print('Traffic generated!')
@@ -197,3 +197,11 @@ print('Scenario file created!')
 output_file=open(f"Flow_control.dill", 'wb')
 dill.dump(graph,output_file)
 output_file.close()
+
+# =============================================================================
+# 
+# 
+# "00:00:00>LOADGEOJSON open_geofence id height
+# 00:00:00>LOADGEOJSON bldg_geofence fid h"
+# 00:00:00>STARTM2LOG
+# =============================================================================
