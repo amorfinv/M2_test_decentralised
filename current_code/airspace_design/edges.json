@@ -46745,6 +46745,18 @@
         "height_allocation": "open",
         "speed_limit": 30
     },
+    "5000-4705": {
+        "stroke_group": "1578",
+        "flow_group": 0,
+        "height_allocation": "open",
+        "speed_limit": 30
+    },
+    "5000-4706": {
+        "stroke_group": "1578",
+        "flow_group": 0,
+        "height_allocation": "open",
+        "speed_limit": 30
+    },
     "5000-5000": {
         "stroke_group": "1578",
         "flow_group": 0,
