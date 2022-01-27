@@ -177,21 +177,21 @@ for cell in grid.grid:
 graph=street_graph(G,edges,grid) 
 
 fig, ax = ox.plot_graph(G,node_color="w",show=False,close=False)
-ax.set_xlim([16.2,16.5])
-ax.set_ylim([48.12,48.25])
+ax.set_xlim([16.2,16.6])
+ax.set_ylim([48.1,48.3])
 o=(2*16.35140639+16.34889707)/3
 oo=(2*48.14248111+48.14683853)/3
 
 
 #plan = PathPlanning(1,grid,graph,gdf,16.3323430087,48.1442866785,16.26982427,48.2130230712)
 
-plan = PathPlanning(1,grid,graph,gdf, 16.3927261488,48.1530534871,16.2853334612,48.1615252427)
+plan = PathPlanning(1,grid,graph,gdf, 16.3922761488,48.1530534871,16.4059339278,48.2237229764,0.03)
 #plan = PathPlanning(1,grid,graph,gdf,16.272532295,48.1962726022,16.4512130406,48.169089774)
 #plan = PathPlanning(1,grid,graph,gdf, 16.2794382147,48.2002463513,16.4418566454,48.1692075752)
 route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()
 
-plan1 = PathPlanning(1,grid,graph,gdf, 16.3080673364,48.1997716623,16.4120600607,48.2677756764)
-route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan1.plan()
+#plan1 = PathPlanning(1,grid,graph,gdf, 16.3080673364,48.1997716623,16.4120600607,48.2677756764)
+#route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan1.plan()
 x_list=[]
 y_list=[]
 for r in route:

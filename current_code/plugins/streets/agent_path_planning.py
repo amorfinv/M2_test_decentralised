@@ -813,7 +813,7 @@ class PathPlanning:
             #print("same cell")
             self.in_same_cell=True
             return 
-            
+
             
         #find the area of interest based on teh start and goal point
         if not self.start_in_open and not self.dest_in_open:
