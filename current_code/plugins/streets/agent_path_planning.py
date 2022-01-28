@@ -11,6 +11,7 @@ import numpy as np
 import math
 import copy
 from shapely.geometry import Point,LineString
+from shapely.geometry.polygon import Polygon
 from pyproj import  Transformer
 import shapely
 from plugins.streets.flow_control import street_graph,bbox
@@ -51,6 +52,15 @@ def check_where(p,min_x_ind,cells):
             break
     if wh !=-1:
         winner=canditade_cells[wh]
+        point = Point(x,y)
+        w=cells[winner[1]]
+        p0=(w[0][0][0],w[0][0][1])
+        p1=(w[0][1][0],w[0][1][1])
+        p2=(w[0][2][0],w[0][2][1])
+        p3=(w[0][3][0],w[0][3][1])
+        polygon = Polygon([p0, p1,p2,p3])
+        if not polygon.contains(point):
+            winner=-1
     else :
         winner=-1
 
@@ -751,7 +761,6 @@ class PathPlanning:
                 p=transformer.transform(lat_start,lon_start)
                 min_x_ind=sort_cells_x(self.open_airspace_cells)
                 winner=check_where(p,min_x_ind,self.open_airspace_cells)
-
                 if winner==-1:
 
                     if distance<7:#0.00003:
@@ -762,6 +771,7 @@ class PathPlanning:
                     else:
                         self.start_index=find_closest_cell(self.open_airspace_grid.grid,p)
                         self.start_index_previous=5000
+
  
                 else:
                     open_start=winner[1]
@@ -801,7 +811,7 @@ class PathPlanning:
         del self.open_airspace_cells
         
 
-        #print(self.goal_index,self.start_index)            
+        print(self.goal_index,self.start_index)            
 
             
         if self.goal_index_next==self.start_index and self.goal_index==self.start_index_previous:

@@ -167,6 +167,7 @@ for cell in grid.grid:
     
     
 grid.grid[222].p3[1]=5343690.012145453
+grid.grid[41].p3[1]=5336452.953099009
 
 cell=Cell()
 cell.key_index=4705

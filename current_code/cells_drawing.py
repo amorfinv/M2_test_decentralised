@@ -21,6 +21,7 @@ import copy
 
 from plugins.streets.open_airspace_grid import Cell, open_airspace
 import dill
+from pyproj import  Transformer
 
 
 #https://geopandas.org/docs/reference/api/geopandas.GeoDataFrame.to_crs.html
@@ -46,10 +47,14 @@ city_poly.reverse()
 plt.ylim([5330000,5350000])
 plt.xlim([593000,609000])
 
+plt.ylim([5335000,5337500])
+plt.xlim([595000,600000])
 
 
-plt.ylim([5340000,5346000])
-plt.xlim([595000,598000])
+# =============================================================================
+# plt.ylim([5340000,5346000])
+# plt.xlim([595000,598000])
+# =============================================================================
 
 countries_gdf.plot(ax=ax)
 
@@ -84,10 +89,13 @@ for i in range(len(grid.grid)):
 
     if i==4482-4481:
         pol = Polygon(y, facecolor = "none",edgecolor="g")
-    if i==4484-4481:
+    if i==4522-4481:
         pol = Polygon(y, facecolor = "none",edgecolor="y")      
 
     ax.add_patch(pol)  
 
-
-ax.scatter(595036.10159641969949007 ,5339347.97431845124810934,c="y")
+transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+p=transformer.transform(48.1739801195,16.3050401289)
+ax.scatter(p[0],p[1],c="y")
+print(p)
+ax.scatter(597715.1864200250711292 ,5336619.49283800181001425,c="y")
