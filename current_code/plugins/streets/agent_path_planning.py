@@ -813,7 +813,7 @@ class PathPlanning:
         del self.open_airspace_cells
         
 
-        print(self.goal_index,self.start_index)            
+        #print(self.goal_index,self.start_index)            
 
             
         if self.goal_index_next==self.start_index and self.goal_index==self.start_index_previous:

@@ -40,14 +40,14 @@ with open(flight_intention_folder + intention_file_name) as file:
         line = line.split(',')
         flight_intention_list.append(line)
         kk=kk+1
-        if kk>200:
+        if kk>300:
             break
 cnt=0
 flight_intention_list1=flight_intention_list
 flight_intention_list=[]
 for fl in flight_intention_list1:
     cnt=cnt+1
-    if cnt>100:
+    if cnt>200:
         flight_intention_list.append(fl)
 
 # =============================================================================
