@@ -224,6 +224,8 @@ def lies_between(A,B,C):
     c = distance_point(A,B)
     return a**2 + b**2 >= c**2 and a**2 + c**2 >= b**2
 
+
+
 ##Returns the nearest edge of a point
 def get_nearest_edgee(gdf, point):
     """
@@ -1441,14 +1443,45 @@ class PathPlanning:
 
             linestring=edges[self.start_index_previous][self.start_index].geometry
             coords = list(linestring.coords)
+            p0=self.start_point.x
+            p1=self.start_point.y
+            
+            
+            d=float("inf")
+            i=0
+            transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+            ps=transformer.transform(self.start_point.y,self.start_point.x)
             for c in range(len(coords)-1):
-                if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((self.start_point.x,self.start_point.y)),tuple((self.flow_graph.nodes_graph[graph.key_indices_list[path.start]].lon,self.flow_graph.nodes_graph[graph.key_indices_list[path.start]].lat)))):
+                transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+                p1=transformer.transform(coords[c][1],coords[c][0])
+                p2=transformer.transform(coords[c+1][1],coords[c+1][0])
+                p=find_closest_point_on_linesegment([p1,p2],ps)
+
+                if distance_point([self.start_point.x,self.start_point.y],p)<d:
+                    d=distance_point([self.start_point.x,self.start_point.y],p)
+                    i=c
+                    
+            for c in range(len(coords)-1):
+                if c>i:
                     tmp=(coords[c][0],coords[c][1]) #the points before the first node
                     route_centers.append(tmp) 
                     group_numbers.append(graph.groups_list[path.start])
                     next_node_index.append(self.start_index)
                     turns.append(False)
                 
+                    
+# =============================================================================
+#                 
+#                 if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((p0,p1)),tuple((self.flow_graph.nodes_graph[graph.key_indices_list[path.start]].lon,self.flow_graph.nodes_graph[graph.key_indices_list[path.start]].lat)))):
+#                     tmp=(coords[c][0],coords[c][1]) #the points before the first node
+#                     route_centers.append(tmp) 
+#                     group_numbers.append(graph.groups_list[path.start])
+#                     next_node_index.append(self.start_index)
+#                     turns.append(False)
+#                     p0=coords[c][0]
+#                     p1=coords[c][1]
+#                 
+# =============================================================================
 
             next_node_index.append(self.start_index)
             
@@ -1538,13 +1571,41 @@ class PathPlanning:
     
             linestring=edges[self.goal_index][self.goal_index_next].geometry
             coords = list(linestring.coords)
+            p0=self.flow_graph.nodes_graph[graph.key_indices_list[path.goal]].lon
+            p1=self.flow_graph.nodes_graph[graph.key_indices_list[path.goal]].lat
+            
+            d=float("inf")
+            i=0
+            transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+            ps=transformer.transform(self.goal_point.y,self.goal_point.x)
             for c in range(len(coords)-1):
-                if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((self.goal_point.x,self.goal_point.y)),tuple((self.flow_graph.nodes_graph[graph.key_indices_list[path.goal]].lon,self.flow_graph.nodes_graph[graph.key_indices_list[path.goal]].lat)))):
-                    tmp=(coords[c][0],coords[c][1]) #the points before the first node
-                    route_centers.append(tmp) 
-                    group_numbers.append(graph.groups_list[path.goal])
-                    next_node_index.append(self.goal_index_next)
-                    turns.append(False)
+                p1=transformer.transform(coords[c][1],coords[c][0])
+                p2=transformer.transform(coords[c+1][1],coords[c+1][0])
+                p=find_closest_point_on_linesegment([p1,p2],ps)
+
+                if distance_point([self.goal_point.x,self.goal_point.y],p)<d:
+                    d=distance_point([self.goal_point.x,self.goal_point.y],p)
+                    i=c            
+
+            for c in range(len(coords)-1):
+                if c<=i:
+                     tmp=(coords[c][0],coords[c][1]) #the points before the first node
+                     route_centers.append(tmp) 
+                     group_numbers.append(graph.groups_list[path.goal])
+                     next_node_index.append(self.goal_index_next)
+                     turns.append(False)
+
+# =============================================================================
+#             for c in range(len(coords)-1):
+#                 if (not c==0) and (lies_between(tuple((coords[c][0],coords[c][1])),tuple((self.goal_point.x,self.goal_point.y)),tuple((p0,p1)))):
+#                     tmp=(coords[c][0],coords[c][1]) #the points before the first node
+#                     route_centers.append(tmp) 
+#                     group_numbers.append(graph.groups_list[path.goal])
+#                     next_node_index.append(self.goal_index_next)
+#                     turns.append(False)
+#                     p0=coords[c][0]
+#                     p1=coords[c][1]
+# =============================================================================
                 
 
             tmp=(self.goal_point.x,self.goal_point.y)
