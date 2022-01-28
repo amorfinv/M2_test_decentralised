@@ -1457,8 +1457,8 @@ class PathPlanning:
                 p2=transformer.transform(coords[c+1][1],coords[c+1][0])
                 p=find_closest_point_on_linesegment([p1,p2],ps)
 
-                if distance_point([self.start_point.x,self.start_point.y],p)<d:
-                    d=distance_point([self.start_point.x,self.start_point.y],p)
+                if distance_point(ps,p)<d:
+                    d=distance_point(ps,p)
                     i=c
                     
             for c in range(len(coords)-1):
@@ -1583,11 +1583,11 @@ class PathPlanning:
                 p2=transformer.transform(coords[c+1][1],coords[c+1][0])
                 p=find_closest_point_on_linesegment([p1,p2],ps)
 
-                if distance_point([self.goal_point.x,self.goal_point.y],p)<d:
-                    d=distance_point([self.goal_point.x,self.goal_point.y],p)
+                if distance_point(ps,p)<d:
+                    d=distance_point(ps,p)
                     i=c            
 
-            for c in range(len(coords)-1):
+            for c in range(1,len(coords)-1):
                 if c<=i:
                      tmp=(coords[c][0],coords[c][1]) #the points before the first node
                      route_centers.append(tmp) 
