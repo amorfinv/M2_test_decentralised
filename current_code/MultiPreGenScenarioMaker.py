@@ -29,7 +29,7 @@ gdf=ox.graph_to_gdfs(G, nodes=False, fill_edge_geometry=True)
 print('Graph loaded!')
 
 #Load the open airspace grid
-input_file=open("renamed_open_airspace_grid.dill", 'rb')
+input_file=open("open_airspace_final.dill", 'rb')
 grid=dill.load(input_file)
 
 ##Initialise the flow control entity
