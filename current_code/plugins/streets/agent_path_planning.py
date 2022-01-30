@@ -2012,7 +2012,7 @@ class PathPlanning:
                     else:
                         print("###")
                         print(self.start_point)
-                        print(self.dest_point)
+                        print(self.goal_point)
                         print("###")
 
 # =============================================================================
