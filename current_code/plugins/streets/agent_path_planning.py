@@ -1820,7 +1820,6 @@ class PathPlanning:
 
                     #node2=self.flow_graph.nodes_graph[self.graph[self.os_keys_dict_pred[str(ii)+'-'+str(i)]].key_index]
                     node2=self.flow_graph.nodes_graph[ii]
-                    
 
                     if node1.cell.p1[0]==node1.cell.p0[0]:
                         h_a1=None
@@ -1828,28 +1827,28 @@ class PathPlanning:
                     else:
                         h_a1=(node1.cell.p1[1]-node1.cell.p0[1])/(node1.cell.p1[0]-node1.cell.p0[0])
                         v_a1=node1.cell.p1[1]-h_a1*node1.cell.p1[0]
-                        h_a1=round(h_a1,8)
+                        h_a1=round(h_a1,6)
                     if node1.cell.p1[0]==node1.cell.p2[0]:
                         h_b1=None
                         v_b1=node1.cell.p1[0]
                     else:
                         h_b1=(node1.cell.p2[1]-node1.cell.p1[1])/(node1.cell.p2[0]-node1.cell.p1[0])
                         v_b1=node1.cell.p1[1]-h_b1*node1.cell.p1[0]
-                        h_b1=round(h_b1,8)
+                        h_b1=round(h_b1,6)
                     if node1.cell.p2[0]==node1.cell.p3[0]:
                         h_c1=None
                         v_c1=node1.cell.p2[0]
                     else:
                         h_c1=(node1.cell.p3[1]-node1.cell.p2[1])/(node1.cell.p3[0]-node1.cell.p2[0])
                         v_c1=node1.cell.p2[1]-h_c1*node1.cell.p2[0]
-                        h_c1=round(h_c1,8)
+                        h_c1=round(h_c1,6)
                     if node1.cell.p3[0]==node1.cell.p0[0]:
                         h_d1=None
                         v_d1=node1.cell.p3[0]
                     else:
                         h_d1=(node1.cell.p0[1]-node1.cell.p3[1])/(node1.cell.p0[0]-node1.cell.p3[0])
                         v_d1=node1.cell.p3[1]-h_d1*node1.cell.p3[0]
-                        h_d1=round(h_d1,8)
+                        h_d1=round(h_d1,6)
  
                     if node2.cell.p1[0]==node2.cell.p0[0]:
                         h_a2=None
@@ -1857,40 +1856,40 @@ class PathPlanning:
                     else:
                         h_a2=(node2.cell.p1[1]-node2.cell.p0[1])/(node2.cell.p1[0]-node2.cell.p0[0])
                         v_a2=node2.cell.p1[1]-h_a2*node2.cell.p1[0]
-                        h_a2=round(h_a2,8)
+                        h_a2=round(h_a2,6)
                     if node2.cell.p1[0]==node2.cell.p2[0]:
                         h_b2=None
                         v_b2=node2.cell.p1[0]
                     else:
                         h_b2=(node2.cell.p2[1]-node2.cell.p1[1])/(node2.cell.p2[0]-node2.cell.p1[0])
                         v_b2=node2.cell.p1[1]-h_b2*node2.cell.p1[0]
-                        h_b2=round(h_b2,8)
+                        h_b2=round(h_b2,6)
                     if node2.cell.p3[0]==node2.cell.p2[0]:
                         h_c2=None
                         v_c2=node2.cell.p3[0]
                     else:
                         h_c2=(node2.cell.p3[1]-node2.cell.p2[1])/(node2.cell.p3[0]-node2.cell.p2[0])
                         v_c2=node2.cell.p2[1]-h_c2*node2.cell.p2[0]
-                        h_c2=round(h_c2,8)
+                        h_c2=round(h_c2,6)
                     if node2.cell.p3[0]==node2.cell.p0[0]:
                         h_d2=None
                         v_d2=node2.cell.p3[0]
                     else:
                         h_d2=(node2.cell.p0[1]-node2.cell.p3[1])/(node2.cell.p0[0]-node2.cell.p3[0])
                         v_d2=node2.cell.p3[1]-h_d2*node2.cell.p3[0]
-                        h_d2=round(h_d2,8)
+                        h_d2=round(h_d2,6)
                     
                     
 
-                    v_a1=round(v_a1,4)
-                    v_b1=round(v_b1,4)
-                    v_c1=round(v_c1,4)
-                    v_d1=round(v_d1,4) 
+                    v_a1=round(v_a1,2)
+                    v_b1=round(v_b1,2)
+                    v_c1=round(v_c1,2)
+                    v_d1=round(v_d1,2) 
                      
-                    v_a2=round(v_a2,4)
-                    v_b2=round(v_b2,4)
-                    v_c2=round(v_c2,4)
-                    v_d2=round(v_d2,4)  
+                    v_a2=round(v_a2,2)
+                    v_b2=round(v_b2,2)
+                    v_c2=round(v_c2,2)
+                    v_d2=round(v_d2,2)  
 
 # =============================================================================
 #                     if not (h_a1==h_c2 and v_a1==v_c2) and not (h_a2==h_c1 and v_a2==v_c1)and not (h_b2==h_d1 and v_b2==v_d1)and not (h_d2==h_b1 and v_d2==v_b1):
@@ -1898,6 +1897,14 @@ class PathPlanning:
 #                         print(v_a1,v_b1,v_c1,v_d1)
 #                         print(h_a2,h_b2,h_c2,h_d2)
 #                         print(v_a2,v_b2,v_c2,v_d2)
+# =============================================================================
+
+                    edge=None
+# =============================================================================
+#                     print(h_a1,h_b1,h_c1,h_d1)
+#                     print(v_a1,v_b1,v_c1,v_d1)
+#                     print(h_a2,h_b2,h_c2,h_d2)
+#                     print(v_a2,v_b2,v_c2,v_d2)
 # =============================================================================
                     if h_a1==h_c2 and v_a1==v_c2:
                         ymin=max(node1.cell.p1[1],node2.cell.p2[1])
@@ -2013,6 +2020,7 @@ class PathPlanning:
                         print("###")
                         print(self.start_point)
                         print(self.goal_point)
+                        print(edge)
                         print("###")
 
 # =============================================================================
