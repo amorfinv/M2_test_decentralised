@@ -1443,12 +1443,11 @@ class PathPlanning:
 
             linestring=edges[self.start_index_previous][self.start_index].geometry
             coords = list(linestring.coords)
-            p0=self.start_point.x
-            p1=self.start_point.y
+
             
             
             d=float("inf")
-            i=0
+            i=4000
             transformer = Transformer.from_crs('epsg:4326','epsg:32633')
             ps=transformer.transform(self.start_point.y,self.start_point.x)
             for c in range(len(coords)-1):
@@ -2207,10 +2206,11 @@ class PathPlanning:
     ##turn_speed is teh list if speed to be used if the waypoint is a turning waypoint        
     def replan(self,changes_list,prev_node_osmnx_id,next_node_index,lat,lon):
         if self.path_only_open:
-            return [],[],[],[],[],[],[]
+            return [],[],[],[],[],[],[] 
         
-        self.start_point=Point(tuple((lon,lat)))
+        
         if self.in_same_cell:
+            self.start_point=Point(tuple((lon,lat)))
             self.route=[(self.start_point.x,self.start_point.y),(self.goal_point.x,self.goal_point.y)]
             self.turns=[False,True]
             self.edges_list=[(self.start_index_previous,self.start_index),(self.goal_index_next,self.goal_index)]
@@ -2220,6 +2220,40 @@ class PathPlanning:
             self.turn_speed=[0,5]
             
             return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
+
+        prev_node_osmnx_id_init=prev_node_osmnx_id
+        next_node_index_init=next_node_index
+        lat_init=lat
+        lon_init=lon
+
+        replan_from_next_node=False
+        if next_node_index<4481 and  prev_node_osmnx_id<4481 and next_node_index!=self.goal_index:
+            ##only if next node in constrained
+            transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+            p_curr=transformer.transform(lat,lon)
+            p_node=transformer.transform(self.flow_graph.nodes_graph[next_node_index].lat,self.flow_graph.nodes_graph[next_node_index].lon)
+            eucl_d=math.sqrt((p_curr[0]-p_node[0])*(p_curr[0]-p_node[0])+(p_curr[1]-p_node[1])*(p_curr[1]-p_node[1]))
+            if eucl_d<110:
+                #only if next node closer than 110 meters
+                replan_from_next_node=True
+                next_next_node=-1
+                for i,edge in enumerate(self.edges_list):
+                    if next_node_index==edge[0] and edge[1]<4481:
+                        next_next_node=edge[1]
+                        next_node_index=edge[1]
+                        prev_node_osmnx_id=edge[0]
+                        lat=self.flow_graph.nodes_graph[next_node_index].lat
+                        lon=self.flow_graph.nodes_graph[next_node_index].lon
+                        group_init=self.groups[i]
+                        break
+                    elif next_node_index==edge[0]:
+                        replan_from_next_node=False
+
+# =============================================================================
+#                 if next_next_node==self.goal_index:
+#                     replan_from_next_node=False
+# =============================================================================
+        self.start_point=Point(tuple((lon,lat)))        
         
         route=None
         turns=None
@@ -2227,7 +2261,7 @@ class PathPlanning:
         edges_list=None
         next_turn_point=None
 
-        
+
 
         
         
@@ -2415,6 +2449,146 @@ class PathPlanning:
                 #Checks if the whole path is in open airspace
                 if len(set(groups)) == 1 and 2000 in groups:
                     self.path_only_open=True
+                  
+
+                if replan_from_next_node:
+                    if 1:#len(route)>1:
+                        if 1:#route[0]==route[1]:
+                            del route[0]
+                            del turns[0]
+                            del edges_list[0]
+                            del next_turn_point[0]
+                            del groups[0]
+                            del in_constrained[0]
+                            del turn_speed[0]
+                            #del turn_coord[0]
+                            
+                            turn_speed[0]=0
+                            turns[0]=False
+                       
+                        
+                    tmp=(lon_init,lat_init) #the points before the first node
+                    route.insert(0,tmp) 
+                            
+                    groups.insert(0,group_init)
+                            #groups.insert(i_ins,self.graph.groups_list[])
+                    edges_list.insert(0,[prev_node_osmnx_id_init,next_node_index_init])
+                    turns.insert(0,False)
+                    in_constrained.insert(0,True)
+                    turn_speed.insert(0,0)                        
+                    
+                    i_ins=1
+                    linestring=self.flow_graph.edges_graph[prev_node_osmnx_id_init][next_node_index_init].geometry
+                    coords = list(linestring.coords)
+                   
+                    
+                    
+                    d=float("inf")
+                    i=4000
+                    transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+                    ps=transformer.transform(lat_init,lon_init)
+                    for c in range(len(coords)-1):
+                        transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+                        p1=transformer.transform(coords[c][1],coords[c][0])
+                        p2=transformer.transform(coords[c+1][1],coords[c+1][0])
+                        p=find_closest_point_on_linesegment([p1,p2],ps)
+        
+                        if distance_point(ps,p)<d:
+                            d=distance_point(ps,p)
+                            i=c
+                            
+                    for c in range(len(coords)):
+                        if c>i:
+                            tmp=(coords[c][0],coords[c][1]) #the points before the first node
+                            route.insert(i_ins,tmp) 
+                            
+                            groups.insert(i_ins,group_init)
+                            #groups.insert(i_ins,self.graph.groups_list[])
+                            edges_list.insert(i_ins,[prev_node_osmnx_id_init,next_node_index_init])
+                            turns.insert(i_ins,False)
+                            in_constrained.insert(i_ins,True)
+                            turn_speed.insert(i_ins,0)
+                            i_ins=i_ins+1
+                            
+                    linestring=self.flow_graph.edges_graph[prev_node_osmnx_id][next_node_index].geometry
+                    coords = list(linestring.coords)
+                    for c in range(1,len(coords)-1):
+                        tmp=(coords[c][0],coords[c][1]) #the points before the first node
+                        route.insert(i_ins,tmp) 
+                        groups.insert(i_ins,self.graph.groups_list[start_node])
+                        edges_list.insert(i_ins,[prev_node_osmnx_id,next_node_index])
+                        turns.insert(i_ins,False)
+                        in_constrained.insert(i_ins,True)
+                        turn_speed.insert(i_ins,0)
+                        i_ins=i_ins+1  
+                        
+                    
+                                
+                    ##Check for turn points
+                    lat_prev=lat_init
+                    lon_prev=lon_init
+                    i_turn_coords=0
+                    
+                    #Update turns, and turn speed
+                    for ii in range(1,i_ins+1):
+
+
+                        lat_cur=route[ii][1]
+                        lon_cur=route[ii][0]
+                        lat_next=route[ii+1][1]
+                        lon_next=route[ii+1][0]
+                        ##Check the angle between the prev point- current point and the current point- next point  
+                        d1=qdrdist(lat_prev,lon_prev,lat_cur,lon_cur)
+                        d2=qdrdist(lat_cur,lon_cur,lat_next,lon_next)
+            
+                        angle=abs(d2[0]-d1[0])
+                        
+                        if angle>180:
+                            angle=360-angle
+
+            
+            
+            
+                        if angle>25 and (groups[ii]!=2000 or groups[ii+1]!=2000 ) :
+                            turns[ii]=True
+                            tmp=(route[ii][0],route[ii][1])
+                            turn_coord.insert(i_turn_coords,tmp)
+                            i_turn_coords=i_turn_coords+1
+
+                            if angle<100:
+                                turn_speed[ii]=10
+                            elif angle<150:
+                                turn_speed[ii]=5
+                            else:
+                                turn_speed[ii]=2
+
+                            
+                        lat_prev=lat_cur
+                        lon_prev=lon_cur
+                        
+                        if groups[ii]==groups[ii+1] or groups[ii+1]==2000:
+                            continue
+                        elif turns[ii]!=True:
+                            turns[ii]=True
+                            tmp=(route[ii][0],route[ii][1])
+                            turn_coord.insert(i_turn_coords,tmp)
+                            i_turn_coords=i_turn_coords+1
+                            turns[ii]=True
+
+                            if not turn_speed[ii]:
+                                turn_speed[ii]=10
+                                
+                    next_turn_point=[]
+                    cnt=0
+                    for i in turns:
+                        if i:
+                            next_turn_point.append(turn_coord[cnt])
+                            cnt=cnt+1
+                        else:
+                            next_turn_point.append(turn_coord[cnt])
+            
+                      
+                
                             
                 self.route=np.array(route,dtype=np.float64)
                 self.turns=np.array(turns,dtype=np.bool8) 
@@ -2424,7 +2598,165 @@ class PathPlanning:
                 self.in_constrained=np.array(in_constrained,dtype=np.bool8)
                 self.turn_speed=np.array(turn_speed,dtype=np.float64)
                 return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
+            else:
+                if replan_from_next_node:
+                    replan_from_next_node=False
+                    prev_node_osmnx_id=prev_node_osmnx_id_init
+                    next_node_index=next_node_index_init
+                    lat=lat_init
+                    lon=lon_init
+                    route=None
+                    turns=None
+                    groups=None
+                    edges_list=None
+                    next_turn_point=None
             
+
+                    self.start_index=next_node_index
+                    self.start_index_previous=prev_node_osmnx_id
+
+                        
+            
+            
+                    transformer = Transformer.from_crs('epsg:4326','epsg:32633')
+                    p=transformer.transform(lat,lon)
+                    self.graph.start_point=Point(tuple((p[0],p[1])))
+            
+                    if self.start_index_previous==5000:
+                        self.graph.start_ind=self.start_index
+                    else:
+                        self.graph.start_ind=-1
+                        
+                    ## check for changes in the aircrafts subgraph if any
+                    expanded=False
+                    change_list=[]
+                    
+                          
+                    if prev_node_osmnx_id<4481 and replan_bool and next_node_index<4481:
+            
+                            # Do not replan in high traffic if you have low priority, should the same happen when in loitering mission?
+                            #TODO check if teh second condition is not needed
+                        if (self.flow_graph.edges_current_speed[prev_node_osmnx_id][next_node_index]<1 and self.flow_graph.edges_current_speed[prev_node_osmnx_id][next_node_index]!=0 and self.priority<3):# or self.edge_gdf[prev_node_osmnx_id][next_node_index].speed==0:
+                            replan_bool=False
+                        
+                    if not replan_bool and change_list!=[]:
+                        self.update_changed_vertices(self.path,self.graph,self.flow_graph.edges_current_speed,self.flow_graph.edges_graph,self.flow_graph.edges_previous_speed,True,change_list)
+            
+            
+                    if change_list!=[] and replan_bool:
+            
+                        start_id=None
+                        result = np.where(self.os_keys2_indices ==self.start_index)
+                        rr=np.where(result[1] ==0)
+                        if self.start_index_previous==5000:
+                            start_id=self.os_keys2_indices[result[0][rr]][0][1]
+                        else:
+                            for ii in self.os_keys2_indices[result[0][rr]][0][1:]:
+                                if ii==65535:
+                                    break
+                                for p in self.graph.parents_list[ii]:
+                                    if p ==65535:
+                                        break
+                                    if self.start_index_previous==self.graph.key_indices_list[p]:
+                                        start_id=ii
+                                        break
+                                if start_id !=None:
+                                    break
+             
+                            
+                        start_node=start_id
+                        self.path.start=start_node
+                        
+            
+                        self.start_index=next_node_index
+                        self.start_index_previous=prev_node_osmnx_id
+            
+                        ##call get path
+                        route,turns,indices_nodes,turn_coord,groups,in_constrained,turn_speed,init_groups=self.get_path(self.path,self.graph,self.flow_graph.edges_current_speed,self.flow_graph.edges_graph,self.flow_graph.edges_previous_speed,True,change_list)
+                        
+                        self.path.origin_node_index=start_id
+                         
+                        if route != None :
+                            edges_list=[]
+                            next_turn_point=[]
+                            os_id1=self.start_index_previous
+            
+                            os_id2=indices_nodes[0]
+            
+                            
+                            if 2000 not in init_groups and self.start_index_previous==5000:
+                                edges_list.append((os_id1,os_id2))
+            
+                                nodes_index=0
+            
+                                
+                                for i in range(len(init_groups)-1):
+                                    edges_list.append((os_id1,os_id2))
+            
+                                    if nodes_index>len(init_groups)-2:
+                                        break
+                                    if nodes_index<len(init_groups)-1 and indices_nodes[nodes_index+1]==os_id2:
+                                        nodes_index=nodes_index+1
+                                        continue
+                
+                                    nodes_index=nodes_index+1
+                                    os_id1=os_id2
+                                    os_id2=indices_nodes[nodes_index]
+                            
+                            else:
+                                if not( init_groups[0]==2000 and init_groups[2]!=2000) :
+                                    edges_list.append((os_id1,os_id2))
+                                
+                                nodes_index=1
+                
+                                for i in range(len(init_groups)-1):
+                                    edges_list.append((os_id1,os_id2))
+                                    if nodes_index>len(init_groups)-2:
+                                        break
+                                    if nodes_index<len(init_groups)-1 and indices_nodes[nodes_index+1]==os_id2:
+                                        nodes_index=nodes_index+1
+                                        continue
+                                    if nodes_index<len(init_groups)-2 and init_groups[nodes_index+1]==2000 and init_groups[nodes_index+2]!=2000:
+                                        nodes_index=nodes_index+1
+                                        os_id2=indices_nodes[nodes_index]
+                
+                                    if init_groups[nodes_index]==2000 and init_groups[nodes_index+1]==2000:
+                                        nodes_index=nodes_index+1
+                                        os_id1=5000
+                                        os_id2=indices_nodes[nodes_index]
+                
+                                    else:
+                                        nodes_index=nodes_index+1
+                                        os_id1=os_id2
+                                        os_id2=indices_nodes[nodes_index]
+            
+            
+                                        
+                            cnt=0
+                            for i in turns:
+                                if i:
+                                    next_turn_point.append(turn_coord[cnt])
+                                    cnt=cnt+1
+                                else:
+                                    next_turn_point.append(turn_coord[cnt])
+                                            
+                            del indices_nodes[0]
+                            
+                            turns[-1]=True
+                            turn_speed[-1]=5
+                            
+                            #Checks if the whole path is in open airspace
+                            if len(set(groups)) == 1 and 2000 in groups:
+                                self.path_only_open=True
+                                        
+                            self.route=np.array(route,dtype=np.float64)
+                            self.turns=np.array(turns,dtype=np.bool8) 
+                            self.edges_list=np.array(edges_list) 
+                            self.next_turn_point=next_turn_point
+                            self.groups=np.array(groups,dtype=np.uint16)
+                            self.in_constrained=np.array(in_constrained,dtype=np.bool8)
+                            self.turn_speed=np.array(turn_speed,dtype=np.float64)
+                            return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed                    
 
         return [],[],[],[],[],[],[]
       
