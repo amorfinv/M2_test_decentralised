@@ -1,8 +1,6 @@
 graph_definition/cache/
 graph_definition/funcs/__pycache__/
 
-# don't track csv flight intentions
-*Flight*.csv
 #graph_definition/gis/data/street_graph/
 
 # ignore future changes to these files
