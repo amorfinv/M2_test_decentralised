@@ -7,13 +7,16 @@ Created on Thu Jun  3 11:47:30 2021
 """
 import os
 
-# paths of generated files
+# set the location of the vanilla scenarios
+scenario_folder = 'scenarios/'
+
+# paths for generated scenarios
 wind_scenario_folder = 'final_scenarios/'
 rogue_scenario_folder = 'final_scenarios/'
-scenario_folder = 'scenarios/'
 batch_scenario_folder = 'final_scenarios/'
 
-# set location of where scenatios should be saved
+# set location of places that bluesky should search for all the blueksy scenarios
+# plus the location of the batch file
 scenario_path_bluesky = 'm2/'
 rogues_path_bluesky = 'rogues/'
 
