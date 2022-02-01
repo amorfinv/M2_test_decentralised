@@ -7,11 +7,17 @@ Created on Thu Jun  3 11:47:30 2021
 """
 import os
 
-# folders
-wind_scenario_folder = 'wind_scenarios/'
-rogue_scenario_folder = 'rogue_scenarios/'
+# paths of generated files
+wind_scenario_folder = 'final_scenarios/'
+rogue_scenario_folder = 'final_scenarios/'
 scenario_folder = 'scenarios/'
+batch_scenario_folder = 'final_scenarios/'
 
+# set location of where scenatios should be saved
+scenario_path_bluesky = 'm2/'
+rogues_path_bluesky = 'rogues/'
+
+# %%
 # configurations
 wind_speeds = [1,2,3] # knots
 n_rogues = [1, 2, 3] # number of rogue aircrafts
@@ -47,13 +53,13 @@ for scenario_file in scenario_files:
         rogue_line = []
         for rogue in range(n_rogue):
             # add the rogue aircrafts after the 7th line
-            rogue_line.append(f'00:00:00>SCHEDULE 00:15:00 PCALL rogues/R{rogue}.scn\n')
+            rogue_line.append(f'00:00:00>SCHEDULE 00:15:00 PCALL {rogues_path_bluesky}R{rogue}.scn\n')
         
         # add the rogue lines after the 7th line
         rogue_lines[9:9] = rogue_line
 
         # write the lines to a new file
-        scenario_file_path_new = 'rogue_scenarios/' + scenario_file.replace('.scn', f'_R{n_rogue}.scn')
+        scenario_file_path_new = rogue_scenario_folder + scenario_file.replace('.scn', f'_R{n_rogue}.scn')
 
         with open(scenario_file_path_new, 'w') as file:
             file.writelines(rogue_lines)
@@ -73,23 +79,19 @@ for scenario_file in scenario_files:
         wind_lines[9:9] = wind_line
         
         # write the lines to a new file
-        scenario_file_path_new = 'wind_scenarios/' + scenario_file.replace('.scn', f'_W{wind_speed}.scn')
+        scenario_file_path_new = wind_scenario_folder + scenario_file.replace('.scn', f'_W{wind_speed}.scn')
         with open(scenario_file_path_new, 'w') as file:
             file.writelines(wind_lines)
-
-
 
 # %%
 
 # list of rogue scenarios
-rogue_scenario_folder = 'rogue_scenarios/'
 rogue_scenario_files = os.listdir(rogue_scenario_folder)
 
 # remove anything that doesnt start with 'Flight_'
 rogue_scenario_files = [x for x in rogue_scenario_files if x.startswith('Flight_')]
 
 # list of wind scenarios
-wind_scenario_folder = 'wind_scenarios/'
 wind_scenario_files = os.listdir(wind_scenario_folder)
 
 # remove anything that doesnt start with 'Flight_'
@@ -139,7 +141,7 @@ batch_1_scenario = []
 for scenario in batch_1:
     # remove last 4 characters
     line1 = f'00:00:00>SCEN {scenario[:-4]}\n'
-    line2 = f'00:00:00>PCALL m2/{scenario}\n'
+    line2 = f'00:00:00>PCALL {scenario_path_bluesky}{scenario}\n'
     line3 = '00:00:00>FF\n'
     line4 = '00:00:00>SCHEDULE 01:30:00 HOLD\n'
     line5 = '00:00:00>SCHEDULE 01:30:00 DELETEALL\n\n'
@@ -151,7 +153,7 @@ for scenario in batch_1:
     batch_1_scenario.append(line5)
 
 # write to a file
-with open('batch_scenarios/batch_1.scn', 'w') as file:
+with open(f'{batch_scenario_folder}batch_1.scn', 'w') as file:
     file.writelines(batch_1_scenario)
 
 # now do batch scenario 2
@@ -159,7 +161,7 @@ batch_2_scenario = []
 for scenario in batch_2:
     # remove last 4 characters
     line1 = f'00:00:00>SCEN {scenario[:-4]}\n'
-    line2 = f'00:00:00>PCALL m2/{scenario}\n'
+    line2 = f'00:00:00>PCALL {scenario_path_bluesky}{scenario}\n'
     line3 = '00:00:00>FF\n'
     line4 = '00:00:00>SCHEDULE 01:30:00 HOLD\n'
     line5 = '00:00:00>SCHEDULE 01:30:00 DELETEALL\n\n'
@@ -171,6 +173,6 @@ for scenario in batch_2:
     batch_2_scenario.append(line5)
 
 # write to a file
-with open('batch_scenarios/batch_2.scn', 'w') as file:
+with open(f'{batch_scenario_folder}batch_2.scn', 'w') as file:
     file.writelines(batch_2_scenario)
 # %
