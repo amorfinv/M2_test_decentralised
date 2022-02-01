@@ -56,8 +56,8 @@ def create_scen(intention_file_name):
     lines = []
     for cnt, flight in enumerate(generated_traffic):
     
-        if cnt>10:#0 :
-            break #stop at 20 aircrafts or change that
+        # if cnt>10:#0 :
+        #     break #stop at 20 aircrafts or change that
     
         # Step 4: Add to dictionary
         
@@ -100,18 +100,20 @@ def create_scen(intention_file_name):
     
     # Step 4: Create scenario file from dictionary
     with open(scenario_folder+scenario_file_name, 'w+') as f:
-        f.write('00:00:00>HOLD\n00:00:00>PAN 48.204011819028494 16.363471515762452\n00:00:00>ZOOM 10\n')
+        # f.write('00:00:00>HOLD\n00:00:00>PAN 48.204011819028494 16.363471515762452\n00:00:00>ZOOM 10\n')
+        f.write('00:00:00.00>FF\n')
         f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV3\n00:00:00>CDMETHOD M2STATEBASED\n')
         f.write('00:00:00>STREETSENABLE\n')
         f.write(f'00:00:00>loadloiteringdill {scenario_loitering_dill_name}\n')
         f.write('00:00:00>CASMACHTHR 0\n')
+        f.write('00:00:00>LOADGEOJSON open_geofence id height\n00:00:00>LOADGEOJSON bldg_geofence fid h')
         f.write(''.join(lines))
         
-    print(intention_file_name)
+    # print(intention_file_name)
 
 def main():
     # create_scen(flight_intention_files[0])
-    pool = ThreadPool(1)
+    pool = ThreadPool(6)
     results = pool.map(create_scen, flight_intention_files)
     pool.close()
 
