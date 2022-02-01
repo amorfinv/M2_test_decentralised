@@ -36,11 +36,11 @@ scenario_folder_files = [x for x in scenario_folder_files if not x.endswith('R3.
 scenario_folder_files = [x for x in scenario_folder_files if not x.endswith('W1.scn')]
 scenario_folder_files = [x for x in scenario_folder_files if not x.endswith('W2.scn')]
 scenario_folder_files = [x for x in scenario_folder_files if not x.endswith('W3.scn')]
-
 # %%
 # only select the files that contain _40_
 scenario_files = [file for file in scenario_folder_files if '_40_' in file]
-
+rogue_scenario_files = []
+wind_scenario_files = []
 # open the scenario files, copy the lines and add the rogue aircrafts
 for scenario_file in scenario_files:
 
@@ -67,6 +67,8 @@ for scenario_file in scenario_files:
         with open(scenario_file_path_new, 'w') as file:
             file.writelines(rogue_lines)
 
+        rogue_scenario_files.append(scenario_file_path_new)
+
     # loop through the wind speeds
     for wind_speed in wind_speeds:
 
@@ -85,20 +87,10 @@ for scenario_file in scenario_files:
         scenario_file_path_new = wind_scenario_folder + scenario_file.replace('.scn', f'_W{wind_speed}.scn')
         with open(scenario_file_path_new, 'w') as file:
             file.writelines(wind_lines)
+        
+        wind_scenario_files.append(scenario_file_path_new)
 
 # %%
-
-# list of rogue scenarios
-rogue_scenario_files = os.listdir(rogue_scenario_folder)
-
-# remove anything that doesnt start with 'Flight_'
-rogue_scenario_files = [x for x in rogue_scenario_files if x.startswith('Flight_')]
-
-# list of wind scenarios
-wind_scenario_files = os.listdir(wind_scenario_folder)
-
-# remove anything that doesnt start with 'Flight_'
-wind_scenario_files = [x for x in wind_scenario_files if x.startswith('Flight_')]
 
 # combine all the lists
 final_scenario_files = scenario_folder_files + rogue_scenario_files + wind_scenario_files
@@ -135,7 +127,7 @@ ultra_scenarios_2 = ultra_scenarios[middle_ultra:]
 # assemble scenarios into two batches
 batch_1 = very_low_scenarios_1 + low_scenarios_1 + medium_scenarios_1 + high_scenarios_1 + ultra_scenarios_1
 batch_2 = very_low_scenarios_2 + low_scenarios_2 + medium_scenarios_2 + high_scenarios_2 + ultra_scenarios_2
-
+print(len(batch_1) + len(batch_2))
 # %%
 
 # create the first batch scenatio
