@@ -64,7 +64,10 @@ for scenario_file in scenario_files:
                 wind_lines = file.readlines()
             
             # add wind speed
-            wind_line = f'00:00:00>IMPL\n'
+            wind_line = f'00:00:00>IMPL WINDSIM M2WIND\n00:00:00>SETM2WIND {wind_speed} 315\n'
+
+            # add the rogue lines after the 7th line
+            wind_lines[9:9] = wind_line
             
             # write the lines to a new file
             scenario_file_path_new = 'wind_scenarios/' + scenario_file.replace('.scn', f'_W{wind_speed}.scn')
