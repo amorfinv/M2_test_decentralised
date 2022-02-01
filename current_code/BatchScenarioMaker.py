@@ -20,6 +20,14 @@ n_rogues = [1, 2, 3] # number of rogue aircrafts
 scenario_folder_files = os.listdir(scenario_folder)
 scenario_folder_files = [x for x in scenario_folder_files if x.startswith('Flight_')]
 
+# now remove anything that ends with R1.scn, R2.scn, R3.scn, W1.scn, W2.scn, W3.scn
+scenario_folder_files = [x for x in scenario_folder_files if not x.endswith('R1.scn')]
+scenario_folder_files = [x for x in scenario_folder_files if not x.endswith('R2.scn')]
+scenario_folder_files = [x for x in scenario_folder_files if not x.endswith('R3.scn')]
+scenario_folder_files = [x for x in scenario_folder_files if not x.endswith('W1.scn')]
+scenario_folder_files = [x for x in scenario_folder_files if not x.endswith('W2.scn')]
+scenario_folder_files = [x for x in scenario_folder_files if not x.endswith('W3.scn')]
+
 # %%
 # only select the files that contain _40_
 scenario_files = [file for file in scenario_folder_files if '_40_' in file]
