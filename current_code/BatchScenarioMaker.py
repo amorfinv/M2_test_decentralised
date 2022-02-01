@@ -5,100 +5,96 @@
 Created on Thu Jun  3 11:47:30 2021
 @author: andub
 """
-import osmnx as ox
-import numpy as np
-import BlueskySCNTools
-from plugins.streets.flow_control import street_graph,bbox
-from plugins.streets.agent_path_planning import PathPlanning,Path
-from plugins.streets.open_airspace_grid import Cell, open_airspace
 import os
-import dill
-import json
-import sys
-from pympler import asizeof
-from multiprocessing import Pool as ThreadPool
-from copy import deepcopy
+
+# folders
+wind_scenario_folder = 'wind_scenarios/'
+rogue_scenario_folder = 'rogue_scenarios/'
+scenario_folder = 'scenarios/'
 
 # configurations
 wind_speeds = [1,2,3] # knots
 n_rogues = [1, 2, 3] # number of rogue aircrafts
 
-
-# only select the files that contain _40_
-scenario_folder = 'scenarios/'
+# get scenario files in main scenario folder and remove anything that doesnt start with 'Flight_'
 scenario_folder_files = os.listdir(scenario_folder)
+scenario_folder_files = [x for x in scenario_folder_files if x.startswith('Flight_')]
+
+# %%
+# only select the files that contain _40_
 scenario_files = [file for file in scenario_folder_files if '_40_' in file]
 
 # open the scenario files, copy the lines and add the rogue aircrafts
 for scenario_file in scenario_files:
 
-        # loop through the number of rogue aircrafts
-        for n_rogue in n_rogues:
+    # loop through the number of rogue aircrafts
+    for n_rogue in n_rogues:
 
-            # open the scenario file
-            scenario_file_path = scenario_folder + scenario_file
-            with open(scenario_file_path) as file:
-                rogue_lines = file.readlines()
+        # open the scenario file
+        scenario_file_path = scenario_folder + scenario_file
+        with open(scenario_file_path) as file:
+            rogue_lines = file.readlines()
 
-            # loop through the numnber in n_rogue
-            rogue_line = []
-            for rogue in range(n_rogue):
-                # add the rogue aircrafts after the 7th line
-                rogue_line.append(f'00:00:00>SCHEDULE 00:15:00 PCALL rogues/R{rogue}.scn\n')
-            
-            # add the rogue lines after the 7th line
-            rogue_lines[9:9] = rogue_line
-
-            # write the lines to a new file
-            scenario_file_path_new = 'rogue_scenarios/' + scenario_file.replace('.scn', f'_R{n_rogue}.scn')
-
-            with open(scenario_file_path_new, 'w') as file:
-                file.writelines(rogue_lines)
+        # loop through the numnber in n_rogue
+        rogue_line = []
+        for rogue in range(n_rogue):
+            # add the rogue aircrafts after the 7th line
+            rogue_line.append(f'00:00:00>SCHEDULE 00:15:00 PCALL rogues/R{rogue}.scn\n')
         
-        # loop through the wind speeds
-        for wind_speed in wind_speeds:
+        # add the rogue lines after the 7th line
+        rogue_lines[9:9] = rogue_line
 
-            # open the scenario file
-            scenario_file_path = scenario_folder + scenario_file
-            with open(scenario_file_path) as file:
-                wind_lines = file.readlines()
-            
-            # add wind speed
-            wind_line = f'00:00:00>IMPL WINDSIM M2WIND\n00:00:00>SETM2WIND {wind_speed} 315\n'
+        # write the lines to a new file
+        scenario_file_path_new = 'rogue_scenarios/' + scenario_file.replace('.scn', f'_R{n_rogue}.scn')
 
-            # add the rogue lines after the 7th line
-            wind_lines[9:9] = wind_line
-            
-            # write the lines to a new file
-            scenario_file_path_new = 'wind_scenarios/' + scenario_file.replace('.scn', f'_W{wind_speed}.scn')
-            with open(scenario_file_path_new, 'w') as file:
-                file.writelines(wind_lines)
+        with open(scenario_file_path_new, 'w') as file:
+            file.writelines(rogue_lines)
+
+    # loop through the wind speeds
+    for wind_speed in wind_speeds:
+
+        # open the scenario file
+        scenario_file_path = scenario_folder + scenario_file
+        with open(scenario_file_path) as file:
+            wind_lines = file.readlines()
+        
+        # add wind speed
+        wind_line = f'00:00:00>IMPL WINDSIM M2WIND\n00:00:00>SETM2WIND {wind_speed} 315\n'
+
+        # add the rogue lines after the 7th line
+        wind_lines[9:9] = wind_line
+        
+        # write the lines to a new file
+        scenario_file_path_new = 'wind_scenarios/' + scenario_file.replace('.scn', f'_W{wind_speed}.scn')
+        with open(scenario_file_path_new, 'w') as file:
+            file.writelines(wind_lines)
 
 
 
 # %%
-
-# make a list of all regular scenario files
-scenario_files = scenario_folder_files
 
 # list of rogue scenarios
 rogue_scenario_folder = 'rogue_scenarios/'
 rogue_scenario_files = os.listdir(rogue_scenario_folder)
 
+# remove anything that doesnt start with 'Flight_'
+rogue_scenario_files = [x for x in rogue_scenario_files if x.startswith('Flight_')]
+
 # list of wind scenarios
 wind_scenario_folder = 'wind_scenarios/'
 wind_scenario_files = os.listdir(wind_scenario_folder)
 
+# remove anything that doesnt start with 'Flight_'
+wind_scenario_files = [x for x in wind_scenario_files if x.startswith('Flight_')]
+
 # combine all the lists
-scenario_files = scenario_files + rogue_scenario_files + wind_scenario_files
-
+final_scenario_files = scenario_folder_files + rogue_scenario_files + wind_scenario_files
 # %%
-
-very_low_scenarios = [file for file in scenario_files if 'very_low' in file]
-low_scenarios = [file for file in scenario_files if 'low' in file and 'very' not in file]
-medium_scenarios = [file for file in scenario_files if 'medium' in file]
-high_scenarios = [file for file in scenario_files if 'high' in file]
-ultra_scenarios = [file for file in scenario_files if 'ultra' in file]
+very_low_scenarios = [file for file in final_scenario_files if 'very_low' in file]
+low_scenarios = [file for file in final_scenario_files if 'low' in file and 'very' not in file]
+medium_scenarios = [file for file in final_scenario_files if 'medium' in file]
+high_scenarios = [file for file in final_scenario_files if 'high' in file]
+ultra_scenarios = [file for file in final_scenario_files if 'ultra' in file]
 
 # get number of files that have the word ultra, very_low, low, medium, high, very_high
 middle_very_low = len(very_low_scenarios) // 2
@@ -169,4 +165,4 @@ for scenario in batch_2:
 # write to a file
 with open('batch_scenarios/batch_2.scn', 'w') as file:
     file.writelines(batch_2_scenario)
-# %%
+# %
