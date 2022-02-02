@@ -1,3 +1,4 @@
+# %%
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jun  3 11:47:30 2021
@@ -14,6 +15,8 @@ import dill
 import json
 import sys
 from pympler import asizeof
+from shapely.geometry import LineString
+import geopandas as gpd
 from multiprocessing import Pool as ThreadPool
 
 # Initialize stuff
@@ -28,6 +31,10 @@ edges = ox.graph_to_gdfs(G)[1]
 gdf=ox.graph_to_gdfs(G, nodes=False, fill_edge_geometry=True)
 print('Graph loaded!')
 
+# load the geofence gdfs
+gdf_path = dir_path.replace('current_code' , 'current_code/geofences.gpkg')
+geo_gdf = gpd.read_file(gdf_path, driver='GPKG')
+
 #Load the open airspace grid
 input_file=open("open_airspace_final.dill", 'rb')
 grid=dill.load(input_file)
@@ -40,14 +47,42 @@ output_file=open(f"Flow_control.dill", 'wb')
 dill.dump(graph,output_file)
 output_file.close()    
 
+def scenario_dills():
+    dill_list = set()
+
+    scenario_folder = '/home/sim/Desktop/bluesky-M2/bluesky/scenario/DecentralisedM2/'
+    scenario_folder_files = os.listdir(scenario_folder)
+    scenario_folder_files = [file for file in scenario_folder_files if not 'R1' in file and not 'R2' in file and not 'R3' in file and not 'W1' in file and not 'W2' in file and not 'W3' in file and not 'batch' in file]
+
+    def check_scen_dills(scen):
+        with open(scenario_folder + scen, 'r') as f:
+            lines = f.readlines()
+            lines = lines[10:]
+        for line in lines:
+            dill_name = line.split(',')[2]
+            dill_list.add(int(dill_name.split('_')[0]))
+
+
+    for scenario in scenario_folder_files:
+        check_scen_dills(scenario)
+
+
+    return list(dill_list)
+
+dill_list = scenario_dills()
+
 # Origin-Destination pairs list
 pairs_list = bst.pairs_list
 
 # Create input array
 input_arr = []
-for i, pair in enumerate(pairs_list):
-    input_arr.append((i,pair))
+for i in dill_list:
+    input_arr.append((i,pairs_list[i]))
+# for i, pair in enumerate(pairs_list):
+#     if i in dill_list:
+#         input_arr.append((i,pair))
 
+# %%
 def create_dill(variables):
     file_num, flight = variables
     # Step 3: Loop through traffic, find path, add to dictionary
@@ -83,7 +118,7 @@ def create_dill(variables):
             if bigness_factor > 0.04:
                 print(f'ERROR IN {file_num,flight}')
                 break
-            
+        
         # if route==[]: ##TODO convert that to a while and 
         #     #No path was found so incease the exp_constant from default
         #     plan = PathPlanning(idx_type+1,grid,graph,gdf, origin_lon, origin_lat, destination_lon, destination_lat,0.03)
@@ -96,6 +131,16 @@ def create_dill(variables):
             print("unequal lens",len(route),len(edges))
             print(flight)
 
+        # check if route itnersects with the geofence
+        # make a linestring from the coords
+        linestring = LineString(route)
+
+        # loop through the geofence gdfs
+        for idx, geofence in enumerate(geo_gdf.geometry):
+            # check if the linestring intersects with the geofence
+            if linestring.intersects(geofence):
+                print(f'{file_num} path interects with the geofence')
+                
         # Delete the graph from plan and then save dill   
         del plan.flow_graph
 
@@ -120,9 +165,11 @@ def missingfiles(pairs_list, path):
             missing.append((i,pair))
     return missing
 
+
 def main():
+
     # create_dill(input_arr[0])
-    pool = ThreadPool(32)
+    pool = ThreadPool(2)
     results = pool.map(create_dill, input_arr)
     pool.close()
     
