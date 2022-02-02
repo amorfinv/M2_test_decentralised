@@ -149,7 +149,7 @@ def create_dill(variables):
         output_file=open(f"path_plan_dills/{file_loc_dill}.dill", 'wb')
         dill.dump(plan,output_file)
         output_file.close()
-        print(file_num, aircraft_type)
+        # print(file_num, aircraft_type)
         
 def missingfiles(pairs_list, path):
     '''Returns the missing dill file names.'''
