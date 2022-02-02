@@ -28,6 +28,12 @@ input_file=open("renamed_open_airspace_grid.dill", 'rb')
 #input_file=open("open_airspace_grid_updated.dill", 'rb')##for 3d path planning
 grid=dill.load(input_file)
 
+grid.grid[4687-4481].neighbors.remove(4670)
+grid.grid[4670-4481].neighbors.remove(4687)
+
+
+
+
 for i in grid.grid:
     if 4481+216 in i.neighbors:
         i.neighbors.remove(4481+216)
