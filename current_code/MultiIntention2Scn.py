@@ -106,7 +106,7 @@ def create_scen(intention_file_name):
         f.write('00:00:00>STREETSENABLE\n')
         f.write(f'00:00:00>loadloiteringdill {scenario_loitering_dill_name}\n')
         f.write('00:00:00>CASMACHTHR 0\n')
-        f.write('00:00:00>LOADGEOJSON open_geofence id height\n00:00:00>LOADGEOJSON bldg_geofence fid h')
+        f.write('00:00:00>LOADGEOJSON open_geofence id height\n00:00:00>LOADGEOJSON bldg_geofence fid h\n')
         f.write(''.join(lines))
         
     # print(intention_file_name)

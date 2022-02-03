@@ -11,9 +11,9 @@ import os
 scenario_folder = 'scenarios/'
 
 # paths for generated scenarios
-wind_scenario_folder = 'final_scenarios/'
-rogue_scenario_folder = 'final_scenarios/'
-batch_scenario_folder = 'final_scenarios/'
+wind_scenario_folder = 'wind_scenarios/'
+rogue_scenario_folder = 'rogue_scenarios/'
+batch_scenario_folder = 'batch_scenarios/'
 
 # set location of places that bluesky should search for all the blueksy scenarios
 # plus the location of the batch file
