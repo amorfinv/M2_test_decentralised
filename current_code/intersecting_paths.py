@@ -8,21 +8,24 @@ import numpy as np
 import geopandas as gpd
 import os
 import BlueskySCNTools
-from intersecting_ids import path_ids
+from intersecting_ids import path_ids2
 from plugins.streets.agent_path_planning import PathPlanning
 from plugins.streets.flow_control import street_graph
 import pandas
+from rich.pretty import pprint
+pprint(len(path_ids2))
 
 # Initialize stuff
 bst = BlueskySCNTools.BlueskySCNTools()
 pairs_list = bst.pairs_list
-filtered_pairs_list = np.array(bst.pairs_list)[path_ids]
+filtered_pairs_list = np.array(bst.pairs_list)[path_ids2]
 
 # load the geofence
 dir_path = os.path.dirname(os.path.realpath(__file__))
 gdf_path = dir_path.replace('current_code' , 'current_code/geofences.gpkg')
 geo_gdf = gpd.read_file(gdf_path, driver='GPKG')
 
+# %%
 # read the graph
 dir_path = os.path.dirname(os.path.realpath(__file__))
 graph_path = dir_path.replace('current_code', 
@@ -30,7 +33,7 @@ graph_path = dir_path.replace('current_code',
 G = ox.io.load_graphml(graph_path)
 edges = ox.graph_to_gdfs(G)[1]
 gdf=ox.graph_to_gdfs(G, nodes=False, fill_edge_geometry=True)
-print('Graph loaded!')
+pprint('Graph loaded!')
 
 #Load the open airspace grid
 input_file=open("open_airspace_final.dill", 'rb')
@@ -66,7 +69,7 @@ def kwikdist(lata, lona, latb, lonb):
 min_distances = []
 
 for i, flight in enumerate(filtered_pairs_list):
-    print(f'Processing flight {i}, {path_ids[i]}')
+    pprint(f'Processing flight {i}, {path_ids2[i]}')
     # First get the origin, destinations
     origin_lon = flight[0]
     origin_lat = flight[1]
@@ -119,7 +122,9 @@ for i, flight in enumerate(filtered_pairs_list):
                 min_distance.append(kwikdist(p1.x, p1.y, p2.x, p2.y))
             
             # select largest distance
-            min_distances.append((path_ids[i], max(min_distance)))
-            print((path_ids[i], max(min_distance)))
+            min_distances.append(max(min_distance))
+            pprint((path_ids2[i], max(min_distance), idx))
+
+            pprint(f'current maximum distance: {max(min_distances)}')
                     
 
