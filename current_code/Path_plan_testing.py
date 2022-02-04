@@ -179,8 +179,10 @@ grid=dill.load(input_file)
 # grid.grid[222].p3[1]=5343690.012145453
 # =============================================================================
 
-grid.grid[4687-4481].neighbors.remove(4670)
-grid.grid[4670-4481].neighbors.remove(4687)
+# =============================================================================
+# grid.grid[4687-4481].neighbors.remove(4670)
+# grid.grid[4670-4481].neighbors.remove(4687)
+# =============================================================================
 ##Initialise the flow control entity
 graph=street_graph(G,edges,grid) 
 
@@ -196,7 +198,8 @@ oo=(2*48.14248111+48.14683853)/3
 #plan = PathPlanning(1,grid,graph,gdf,16.3323430087,48.1442866785,16.26982427,48.2130230712)
 
 #plan = PathPlanning(1,grid,graph,gdf,16.27943821470807	,48.200246351345754,16.3096751604,48.2418381975,0.06)
-plan = PathPlanning(1,grid,graph,gdf,16.4231537829 ,48.157123073,16.313703829 ,48.1654460509,0.03)
+#plan = PathPlanning(1,grid,graph,gdf,16.3932382739, 48.2553693945, 16.4070825589, 48.1614052982,0.03)
+plan = PathPlanning(1,grid,graph,gdf,16.33250526, 48.15055387, 16.42270378, 48.15712307,0.03)
 #plan = PathPlanning(1,grid,graph,gdf,16.272532295,48.1962726022,16.4512130406,48.169089774)
 #plan = PathPlanning(1,grid,graph,gdf, 16.2794382147,48.2002463513,16.4418566454,48.1692075752)
 route,turns,edges,next_turn,groups,in_constrained,turn_speed=plan.plan()

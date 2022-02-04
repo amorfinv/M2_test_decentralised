@@ -417,8 +417,10 @@ def qdrdist(latd1, lond1, latd2, lond2):
     # d =2.*r*np.arcsin(np.sqrt(sin1*sin1 + coslat1*coslat2*sin2*sin2))
 
     # Corrected to avoid "nan" at westward direction
-    d = r*np.arccos(np.cos(lat1)*np.cos(lat2)*np.cos(lon2-lon1) + \
-                 np.sin(lat1)*np.sin(lat2))
+# =============================================================================
+#     d = r*np.arccos(np.cos(lat1)*np.cos(lat2)*np.cos(lon2-lon1) + \
+#                  np.sin(lat1)*np.sin(lat2))
+# =============================================================================
 
     # Bearing from Ref. http://www.movable-type.co.uk/scripts/latlong.html
 
@@ -432,7 +434,7 @@ def qdrdist(latd1, lond1, latd2, lond2):
                                 coslat1 * np.sin(lat2) -
                                 np.sin(lat1) * coslat2 * np.cos(lon2 - lon1)))
 
-    return qdr, d/nm
+    return qdr,0
 
         
 class Path:
@@ -2221,13 +2223,18 @@ class PathPlanning:
             
             return self.route,self.turns,self.edges_list,self.next_turn_point,self.groups,self.in_constrained,self.turn_speed
 
+
+        ##If the aircraft is currently at teh edge that the goal is , it should not replan
+        if next_node_index==self.goal_index_next:
+            return [],[],[],[],[],[],[] 
+
         prev_node_osmnx_id_init=prev_node_osmnx_id
         next_node_index_init=next_node_index
         lat_init=lat
         lon_init=lon
 
         replan_from_next_node=False
-        if next_node_index<4481 and  prev_node_osmnx_id<4481 and next_node_index!=self.goal_index:
+        if next_node_index<4481 and  prev_node_osmnx_id<4481 and next_node_index!=self.goal_index and next_node_index!=self.goal_index_next:
             ##only if next node in constrained
             transformer = Transformer.from_crs('epsg:4326','epsg:32633')
             p_curr=transformer.transform(lat,lon)
@@ -2248,7 +2255,9 @@ class PathPlanning:
                         break
                     elif next_node_index==edge[0]:
                         replan_from_next_node=False
-
+                        
+                if next_next_node==-1:
+                    replan_from_next_node=False
 # =============================================================================
 #                 if next_next_node==self.goal_index:
 #                     replan_from_next_node=False

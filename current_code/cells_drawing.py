@@ -88,7 +88,7 @@ for i in range(len(grid.grid)):
     y = np.array([[p.p0[0], p.p0[1]], [p.p1[0], p.p1[1]], [p.p2[0] ,p.p2[1]], [p.p3[0], p.p3[1]]])
     #p = Polygon(y, facecolor = c[i%4])
     pol = Polygon(y, facecolor = "none",edgecolor="r")
-    if i==216:
+    if i==4683-4481:
         pol = Polygon(y, facecolor = "none",edgecolor="y")
 
 # =============================================================================
