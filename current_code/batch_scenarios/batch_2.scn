@@ -88,14 +88,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_5_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_5_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_5_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_5_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_5_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_5_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_5_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_5_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -106,14 +106,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_4_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_4_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_4_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_4_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_4_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_4_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_4_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_4_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -124,14 +124,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_6_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_6_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_6_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_6_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_6_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_6_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_6_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_6_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -142,14 +142,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_7_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_7_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_7_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_7_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_7_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_7_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_7_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_7_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -160,14 +160,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_3_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_3_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_3_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_3_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_3_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_3_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_3_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_3_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -178,14 +178,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_2_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_2_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_2_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_2_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_2_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_2_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_2_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_2_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -196,14 +196,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_0_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_0_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_0_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_0_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_0_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_0_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_0_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_0_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -214,14 +214,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_1_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_1_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_1_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_1_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_1_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_1_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_1_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_1_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -232,14 +232,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_8_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_8_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_8_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_8_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_8_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_8_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_very_low_40_8_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_very_low_40_8_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -334,14 +334,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_1_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_1_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_1_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_1_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_1_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_1_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_1_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_1_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -352,14 +352,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_0_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_0_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_0_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_0_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_0_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_0_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_0_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_0_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -370,14 +370,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_2_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_2_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_2_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_2_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_2_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_2_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_2_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_2_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -388,14 +388,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_3_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_3_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_3_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_3_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_3_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_3_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_3_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_3_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -406,14 +406,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_7_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_7_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_7_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_7_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_7_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_7_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_7_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_7_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -424,14 +424,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_6_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_6_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_6_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_6_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_6_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_6_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_6_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_6_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -442,14 +442,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_4_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_4_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_4_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_4_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_4_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_4_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_4_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_4_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -460,14 +460,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_5_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_5_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_5_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_5_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_5_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_5_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_5_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_5_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -478,14 +478,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_8_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_8_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_8_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_8_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_low_40_8_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_8_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_low_40_8_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_low_40_8_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -580,14 +580,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_0_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_0_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_0_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_0_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_0_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_0_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_0_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_0_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -598,14 +598,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_1_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_1_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_1_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_1_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_1_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_1_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_1_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_1_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -616,14 +616,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_3_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_3_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_3_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_3_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_3_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_3_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_3_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_3_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -634,14 +634,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_2_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_2_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_2_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_2_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_2_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_2_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_2_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_2_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -652,14 +652,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_6_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_6_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_6_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_6_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_6_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_6_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_6_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_6_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -670,14 +670,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_7_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_7_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_7_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_7_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_7_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_7_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_7_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_7_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -688,14 +688,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_5_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_5_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_5_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_5_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_5_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_5_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_5_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_5_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -706,14 +706,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_4_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_4_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_4_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_4_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_4_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_4_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_4_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_4_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -724,14 +724,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_8_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_8_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_8_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_8_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_8_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_8_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_medium_40_8_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_medium_40_8_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -826,14 +826,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_1_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_1_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_1_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_1_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_1_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_1_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_1_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_1_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -844,14 +844,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_0_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_0_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_0_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_0_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_0_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_0_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_0_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_0_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -862,14 +862,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_2_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_2_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_2_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_2_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_2_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_2_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_2_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_2_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -880,14 +880,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_3_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_3_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_3_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_3_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_3_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_3_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_3_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_3_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -898,14 +898,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_7_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_7_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_7_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_7_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_7_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_7_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_7_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_7_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -916,14 +916,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_6_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_6_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_6_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_6_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_6_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_6_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_6_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_6_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -934,14 +934,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_4_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_4_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_4_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_4_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_4_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_4_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_4_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_4_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -952,14 +952,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_5_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_5_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_5_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_5_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_5_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_5_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_5_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_5_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -970,14 +970,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_8_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_8_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_8_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_8_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_high_40_8_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_8_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_high_40_8_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_high_40_8_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -1072,14 +1072,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_8_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_8_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_8_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_8_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_8_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_8_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_8_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_8_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -1090,14 +1090,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_2_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_2_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_2_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_2_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_2_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_2_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_2_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_2_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -1108,14 +1108,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_3_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_3_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_3_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_3_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_3_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_3_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_3_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_3_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -1126,14 +1126,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_1_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_1_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_1_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_1_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_1_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_1_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_1_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_1_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -1144,14 +1144,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_0_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_0_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_0_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_0_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_0_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_0_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_0_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_0_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -1162,14 +1162,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_4_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_4_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_4_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_4_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_4_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_4_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_4_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_4_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -1180,14 +1180,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_5_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_5_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_5_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_5_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_5_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_5_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_5_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_5_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -1198,14 +1198,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_7_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_7_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_7_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_7_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_7_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_7_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_7_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_7_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
@@ -1216,14 +1216,14 @@
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_6_W2
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_6_W2.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_6_W3
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_6_W3.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
 
-00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_6_W3
-00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_6_W3.scn
+00:00:00>SCEN wind_scenarios/Flight_intention_ultra_40_6_W5
+00:00:00>PCALL m2/wind_scenarios/Flight_intention_ultra_40_6_W5.scn
 00:00:00>FF
 00:00:00>SCHEDULE 01:30:00 HOLD
 00:00:00>SCHEDULE 01:30:00 DELETEALL
