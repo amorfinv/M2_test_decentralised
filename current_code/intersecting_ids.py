@@ -1,4 +1,4 @@
-path_ids2 = list(set([263557 ,
+path_ids = list(set([263557 ,
 263557 ,
 288468 ,
 288468 ,
