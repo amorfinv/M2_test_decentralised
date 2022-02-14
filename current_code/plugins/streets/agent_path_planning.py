@@ -79,7 +79,8 @@ def sort_cells_x(cells):
 def find_closest_cell(cells,p):
     cell_id=-1
     dist=float("inf")
-    for c in cells:
+    index=-1
+    for i,c in enumerate(cells):
 
         d1=distance_to_line(c.p0, c.p1, p) 
         d2=distance_to_line(c.p1, c.p2, p) 
@@ -89,9 +90,29 @@ def find_closest_cell(cells,p):
         if dd<dist:
             dist=dd
             cell_id=c.key_index
+            index=i
     
     
-    return cell_id
+    return cell_id,index
+
+def find_closest_point_of_cell(cell,p):
+    d1=distance_to_line(cell.p0, cell.p1, p) 
+    d2=distance_to_line(cell.p1, cell.p2, p) 
+    d3=distance_to_line(cell.p2, cell.p3, p) 
+    d4=distance_to_line(cell.p0, cell.p3, p) 
+    if d1<= d2 and d1<=d3 and d1<=d4:
+        linesegment=[[cell.p0[0],cell.p0[1]],[cell.p1[0],cell.p1[1]]]
+    elif d2<= d1 and d2<=d3 and d2<=d4:
+        linesegment=[[cell.p1[0],cell.p1[1]],[cell.p2[0],cell.p2[1]]]
+    elif d3<= d1 and d3<=d2 and d3<=d4:
+        linesegment=[[cell.p2[0],cell.p2[1]],[cell.p3[0],cell.p3[1]]]        
+    elif d4<= d1 and d4<=d3 and d4<=d2:
+        linesegment=[[cell.p0[0],cell.p0[1]],[cell.p3[0],cell.p3[1]]]
+    else:
+        print("something is wrong")
+        
+    p_closest=find_closest_point_on_linesegment(linesegment,p)
+    return p_closest
 
 # Given three collinear points p, q, r, the function checks if
 # point q lies on line segment 'pr'
@@ -188,6 +209,9 @@ def distance_to_line(A, B, E) :
  
 def find_closest_point_on_linesegment(line,point):
     ##https://diego.assencio.com/?index=ec3d5dfdfc0b6a0d147a656f0af332bd
+    
+    if line[0]==line[1]:
+        return line[0]
     
     pp=[0,0]
     ls=((point[0]-line[0][0])*(line[1][0]-line[0][0])+(point[1]-line[0][1])*(line[1][1]-line[0][1]))/((line[1][0]-line[0][0])*(line[1][0]-line[0][0])+(line[1][1]-line[0][1])*(line[1][1]-line[0][1]))
@@ -729,9 +753,10 @@ class PathPlanning:
         self.init_succesful=True
         self.loitering_edges=None
 
-        self.start_point=Point(tuple((lon_start,lat_start)))
-        self.goal_point=Point(tuple((lon_dest,lat_dest)))
+
         self.path_only_open=False
+        self.ousideOfCellsOrigin=False# boolean to indicate if the origin is in openairspace and not in any cell
+        self.ousideOfCellsDestination=False# boolean to indicate if the destination is in openairspace and not in any cell
         
 
 
@@ -773,14 +798,21 @@ class PathPlanning:
                         self.start_index=v
                         self.start_index_previous=u
                     else:
-                        self.start_index=find_closest_cell(self.open_airspace_grid.grid,p)
+                        self.start_index,index=find_closest_cell(self.open_airspace_grid.grid,p)
                         self.start_index_previous=5000
+                        self.ousideOfCellsOrigin=True
+                        self.lon_start_actual=lon_start
+                        self.lat_start_actual=lat_start
+                        new_start_point=find_closest_point_of_cell(self.open_airspace_grid.grid[index],p)
+                        transformer = Transformer.from_crs('epsg:32633','epsg:4326')
+                        lat_start,lon_start=transformer.transform(new_start_point[0],new_start_point[1])
 
  
                 else:
                     open_start=winner[1]
                     self.start_index=self.open_airspace_grid.grid[open_start].key_index
                     self.start_index_previous=5000
+                    
 
 
         
@@ -804,16 +836,25 @@ class PathPlanning:
                         self.goal_index=u
                         self.goal_index_next=v
                     else:
-                        self.goal_index=find_closest_cell(self.open_airspace_grid.grid,p)
+                        self.goal_index,index=find_closest_cell(self.open_airspace_grid.grid,p)
                         self.goal_index_next=5000
+                        self.ousideOfCellsDestination=True
+                        self.lon_dest_actual=lon_dest
+                        self.lat_dest_actual=lat_dest
+                        new_dest_point=find_closest_point_of_cell(self.open_airspace_grid.grid[index],p)
+                        transformer = Transformer.from_crs('epsg:32633','epsg:4326')
+                        lat_dest,lon_dest=transformer.transform(new_dest_point[0],new_dest_point[1])
 
                 else:
                     open_goal=winner[1]
                     self.goal_index=self.open_airspace_grid.grid[open_goal].key_index
                     self.goal_index_next=5000
+                    
 
         del self.open_airspace_cells
-        
+ 
+        self.start_point=Point(tuple((lon_start,lat_start)))
+        self.goal_point=Point(tuple((lon_dest,lat_dest)))
 
         #print(self.goal_index,self.start_index)            
 
@@ -826,6 +867,10 @@ class PathPlanning:
             #Start and destination in the same cell
             #print("same cell")
             self.in_same_cell=True
+            if self.ousideOfCellsOrigin:
+                self.start_point=Point(tuple((self.lon_start_actual,self.lat_start_actual)))
+            if self.ousideOfCellsDestination:
+                self.goal_point=Point(tuple((self.lon_dest_actual,self.lat_dest_actual)))
             return 
         
         
@@ -1330,9 +1375,27 @@ class PathPlanning:
                     next_turn_point.append(turn_coord[cnt])
                     
         del indices_nodes[0]
-                    
+        if self.ousideOfCellsOrigin:
+            route.insert(0,[self.lon_start_actual,self.lat_start_actual])
+            turns.insert(0,False)
+            edges_list.insert(0,edges_list[0])
+            next_turn_point.insert(0,next_turn_point[0])
+            groups.insert(0,groups[0])
+            in_constrained.insert(0,in_constrained[0])
+            turn_speed.insert(0,0)
+
+        if self.ousideOfCellsDestination:
+            route.append([self.lon_dest_actual,self.lat_dest_actual])
+            turns.append(True)
+            edges_list.append(edges_list[-1])
+            next_turn_point.append((-999,-999))
+            groups.append(groups[-1])
+            in_constrained.append(in_constrained[-1])
+            turn_speed.append(5)                     
         turns[-1]=True
         turn_speed[-1]=5
+        
+           
         
         #Checks if the whole path is in open airspace
         if len(set(groups)) == 1 and 2000 in groups:
@@ -1441,7 +1504,7 @@ class PathPlanning:
             group_numbers.append(graph.groups_list[path.start])
             turns.append(False)
 
-        if not self.flow_graph.nodes_graph[graph.key_indices_list[path.start]].open_airspace and not self.flow_graph.nodes_graph[self.start_index_previous].open_airspace :    
+        elif not self.flow_graph.nodes_graph[self.start_index_previous].open_airspace :    
 
             linestring=edges[self.start_index_previous][self.start_index].geometry
             coords = list(linestring.coords)
@@ -2452,8 +2515,7 @@ class PathPlanning:
                                 
                 del indices_nodes[0]
                 
-                turns[-1]=True
-                turn_speed[-1]=5
+
                 
                 #Checks if the whole path is in open airspace
                 if len(set(groups)) == 1 and 2000 in groups:
@@ -2596,8 +2658,17 @@ class PathPlanning:
                         else:
                             next_turn_point.append(turn_coord[cnt])
             
-                      
-                
+                if self.ousideOfCellsDestination:
+                    route.append([self.lon_dest_actual,self.lat_dest_actual])
+                    turns.append(False)
+                    edges_list.append(edges_list[-1])
+                    next_turn_point.append(next_turn_point[-1])
+                    groups.append(groups[-1])
+                    in_constrained.append(in_constrained[-1])
+                    turn_speed.append(0)      
+
+                turns[-1]=True
+                turn_speed[-1]=5                
                             
                 self.route=np.array(route,dtype=np.float64)
                 self.turns=np.array(turns,dtype=np.bool8) 
@@ -2751,8 +2822,19 @@ class PathPlanning:
                                             
                             del indices_nodes[0]
                             
+
+                            
+                            if self.ousideOfCellsDestination:
+                                route.append([self.lon_dest_actual,self.lat_dest_actual])
+                                turns.append(False)
+                                edges_list.append(edges_list[-1])
+                                next_turn_point.append((-999,-999))
+                                groups.append(groups[-1])
+                                in_constrained.append(in_constrained[-1])
+                                turn_speed.append(0)
+                                
                             turns[-1]=True
-                            turn_speed[-1]=5
+                            turn_speed[-1]=5                                
                             
                             #Checks if the whole path is in open airspace
                             if len(set(groups)) == 1 and 2000 in groups:
@@ -2797,7 +2879,7 @@ class PathPlanning:
         next_turn_point=None
 
         
-        self.start_point=Point(tuple((lon,lat)))
+        #self.start_point=Point(tuple((lon,lat)))
         
 
         ## check for changes in the aircrafts subgraph if any
@@ -2951,6 +3033,26 @@ class PathPlanning:
                 del indices_nodes[0]
                         
 
+
+
+                if self.ousideOfCellsOrigin:
+                    route.insert(0,[self.lon_start_actual,self.lat_start_actual])
+                    turns.insert(0,False)
+                    edges_list.insert(0,edges_list[0])
+                    next_turn_point.insert(0,next_turn_point[0])
+                    groups.insert(0,groups[0])
+                    in_constrained.insert(0,in_constrained[0])
+                    turn_speed.insert(0,0)
+        
+                if self.ousideOfCellsDestination:
+                    route.append([self.lon_dest_actual,self.lat_dest_actual])
+                    turns.append(False)
+                    edges_list.append(edges_list[-1])
+                    next_turn_point.append((-999,-999))
+                    groups.append(groups[-1])
+                    in_constrained.append(in_constrained[-1])
+                    turn_speed.append(0)  
+                    
                 turns[-1]=True
                 turn_speed[-1]=5
                 
