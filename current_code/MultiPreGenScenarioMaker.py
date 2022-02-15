@@ -50,7 +50,7 @@ output_file.close()
 def scenario_dills():
     dill_list = set()
 
-    scenario_folder = '/home/sim/Desktop/bluesky-M2/bluesky/scenario/DecentralisedM2/'
+    scenario_folder = 'scenarios/'
     scenario_folder_files = os.listdir(scenario_folder)
     scenario_folder_files = [file for file in scenario_folder_files if not 'R1' in file and not 'R2' in file and not 'R3' in file and not 'W1' in file and not 'W2' in file and not 'W3' in file and not 'batch' in file]
 
@@ -70,7 +70,7 @@ def scenario_dills():
     return list(dill_list)
 
 dill_list = scenario_dills()
-
+print(len(dill_list))
 # Origin-Destination pairs list
 pairs_list = bst.pairs_list
 
@@ -81,6 +81,9 @@ for i in dill_list:
     aircraft_type = i.split('_')[1]
     input_arr.append((idx, aircraft_type, pairs_list[idx]))
 
+print(len(input_arr))
+print(ccc)
+# %%
 
 def create_dill(variables):
     file_num, aircraft_type, flight = variables
