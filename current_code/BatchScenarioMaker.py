@@ -127,13 +127,19 @@ ultra_scenarios_2 = ultra_scenarios[middle_ultra:]
 # assemble scenarios into two batches
 batch_1 = very_low_scenarios_1 + low_scenarios_1 + medium_scenarios_1 + high_scenarios_1 + ultra_scenarios_1
 batch_2 = very_low_scenarios_2 + low_scenarios_2 + medium_scenarios_2 + high_scenarios_2 + ultra_scenarios_2
-print(len(batch_1) + len(batch_2))
+
 # %%
 
 # create the first batch scenatio
 
 batch_1_scenario = []
 for scenario in batch_1:
+
+    if 'rogue_scenarios' in scenario:
+        scenario = scenario.replace('rogue_scenarios/', "")
+    elif 'wind_scenarios' in scenario:
+        scenario = scenario.replace('wind_scenarios/', "")
+
     # remove last 4 characters
     line1 = f'00:00:00>SCEN {scenario[:-4]}\n'
     line2 = f'00:00:00>PCALL {scenario_path_bluesky}{scenario}\n'
@@ -155,6 +161,13 @@ with open(f'{batch_scenario_folder}batch_1.scn', 'w') as file:
 batch_2_scenario = []
 for scenario in batch_2:
     # remove last 4 characters
+
+    if 'rogue_scenarios' in scenario:
+        scenario = scenario.replace('rogue_scenarios/', "")
+        print(scenario)
+    elif 'wind_scenarios' in scenario:
+        scenario = scenario.replace('wind_scenarios/', "")
+    
     line1 = f'00:00:00>SCEN {scenario[:-4]}\n'
     line2 = f'00:00:00>PCALL {scenario_path_bluesky}{scenario}\n'
     line3 = '00:00:00>FF\n'
@@ -170,4 +183,5 @@ for scenario in batch_2:
 # write to a file
 with open(f'{batch_scenario_folder}batch_2.scn', 'w') as file:
     file.writelines(batch_2_scenario)
-# %
+
+# %%

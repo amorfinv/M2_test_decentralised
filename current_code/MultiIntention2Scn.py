@@ -102,6 +102,7 @@ def create_scen(intention_file_name):
     with open(scenario_folder+scenario_file_name, 'w+') as f:
         # f.write('00:00:00>HOLD\n00:00:00>PAN 48.204011819028494 16.363471515762452\n00:00:00>ZOOM 10\n')
         f.write('00:00:00.00>FF\n')
+        f.write('00:00:00>STARTM2LOG\n')
         f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV3\n00:00:00>CDMETHOD M2STATEBASED\n')
         f.write('00:00:00>STREETSENABLE\n')
         f.write(f'00:00:00>loadloiteringdill {scenario_loitering_dill_name}\n')
@@ -113,7 +114,7 @@ def create_scen(intention_file_name):
 
 def main():
     # create_scen(flight_intention_files[0])
-    pool = ThreadPool(6)
+    pool = ThreadPool(32)
     results = pool.map(create_scen, flight_intention_files)
     pool.close()
 
