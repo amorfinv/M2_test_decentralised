@@ -114,7 +114,7 @@ def create_scen(intention_file_name):
 
 def main():
     # create_scen(flight_intention_files[0])
-    pool = ThreadPool(32)
+    pool = ThreadPool(6)
     results = pool.map(create_scen, flight_intention_files)
     pool.close()
 
