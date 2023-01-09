@@ -14,13 +14,13 @@ import os
 import dill
 import json
 import sys
-from pympler import asizeof
 from shapely.geometry import LineString
 import geopandas as gpd
 from multiprocessing import Pool as ThreadPool
 
 # Initialize stuff
 bst = BlueskySCNTools.BlueskySCNTools()
+cpu_num = 32
 
 # Step 1: Import the graph we will be using
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -177,7 +177,7 @@ def create_dill(variables):
 def main():
 
     # create_dill(input_arr[0])
-    pool = ThreadPool(32)
+    pool = ThreadPool(cpu_num)
     results = pool.map(create_dill, input_arr)
     pool.close()
     
